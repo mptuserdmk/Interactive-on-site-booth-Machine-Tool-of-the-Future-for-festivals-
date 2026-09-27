@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Твой Паспорт Инженера — Станок Будущего</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    body {
+      overflow-y: auto;
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .digital-card-container {
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      margin: 0 auto;
+    }
+    .card-preview-box {
+      border: 3px solid var(--accent-cyan);
+      box-shadow: var(--glow-cyan);
+      border-radius: 16px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    .card-preview-box img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .action-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 25px;
+    }
+    .btn-tg {
+      background: #24A1DE;
+      color: #fff;
+      border: none;
+      padding: 18px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 18px;
+      text-decoration: none;
+      display: inline-block;
+      box-shadow: 0 0 20px rgba(36, 161, 222, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="digital-card-container">
+    <div class="brand-title" style="font-size: 20px;">⚡ FUTURE INDUSTRY 2026</div>
+    <h1 style="font-size: 28px; margin: 10px 0; color: #fff;">{{ session.machine_name if session else 'Инженер Будущего' }}</h1>
+    <div style="color: var(--accent-cyan); font-weight: 700;">СУПЕРСИЛА: {{ session.power_name if session else 'ТОЧНОСТЬ' }}</div>
+
+    <div class="card-preview-box">
+      {% if session and session.final_card_path %}
+        <img src="/storage/cards/{{ session.id }}_card.jpg" alt="Digital Card">
+      {% else %}
+        <p style="padding: 40px; color: var(--text-muted);">Изображение формируется...</p>
+      {% endif %}
+    </div>
+
+    <p style="font-size: 15px; color: var(--text-muted); line-height: 1.4;">
+      {{ session.machine_desc if session else '' }}
+    </p>
+
+    <div class="action-group">
+      {% if session and session.final_card_path %}
+        <a href="/storage/cards/{{ session.id }}_card.jpg" download="stanok_budushego_{{ session.id }}.jpg" class="btn-cyber" style="text-decoration: none; justify-content: center; font-size: 18px; padding: 18px;">
+          📥 СКАЧАТЬ КАРТОЧКУ (HD)
+        </a>
+      {% endif %}
+      
+      <a href="https://t.me/share/url?url={{ request.url }}&text=Моя%20профессия%20будущего%20на%20фестивале%20Станок%20Будущего!" target="_blank" class="btn-tg">
+        ✈️ ПОДЕЛИТЬСЯ В TELEGRAM
+      </a>
+    </div>
+
+    <div style="margin-top: 40px; font-size: 12px; color: var(--text-muted);">
+      {{ settings.FESTIVAL_HASHTAG }} ● СТАНОК БУДУЩЕГО
+    </div>
+  </div>
+</body>
+</html>
