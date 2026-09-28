@@ -1,0 +1,20 @@
+История прогонов E2E (Playwright/Chromium 153, живой изолированный сервер на 127.0.0.1).
+Киоск грузит React/ReactDOM/Babel с unpkg.com и Tailwind с cdn.tailwindcss.com (S10, вендоринг не выполнен).
+
+1) до фиксов UI (idle, мобильная камера):            4 failed, 15 passed, 1 xfailed — Welcome через 16,20 с; 2 теста: Page.goto timeout 30 с (CDN);
+                                                      idle: отсчёт застыл на «5» (дефект N12); iPhone: поздняя ошибка камеры затёрла статус (N19)
+2) после фиксов UI:                                   19 passed, 1 xfailed (офлайн), 246,5 с — Welcome через 5,51 с
+3) повтор (параллельно с soak, для чистых скриншотов): 1 failed, 18 passed, 1 xfailed — Welcome через 37,98 с; test_resolutions[1080x1920]:
+                                                      приветствие не появилось за 20 с (CDN/компиляция JSX в браузере)
+   изолированно тесты разрешений: 5 failed, 1 passed (без нагрузки) → HEAD https://unpkg.com/react@18.3.1/... занял 29,2 с;
+   отдельный тест разрешения 1920x1080 — passed за 60,7 с
+4) после увеличения ожидания первой отрисовки до 90 с: 3 failed, 16 passed, 1 xfailed — Welcome через 41,46 с; три теста: приветствие не
+                                                      появилось за 90 с (CDN)
+
+Вывод: логика UI проходит все 19 сценариев (прогон 2); нестабильность прогонов 1, 3, 4 целиком вызвана задержкой CDN
+(первая отрисовка 5,5–41 с и более 90 с). Это доказательство S10: после `python scripts\vendor_frontend.py` E2E и киоск
+не зависят от внешней сети.
+
+5) после вендоринга (scripts/vendor_frontend.py, с разрешения): 19 passed, 1 failed — Welcome через 2,06 с; упал test_double_tap_color_prints_once:
+   UI стал быстрым, экран сменился между dispatch_event — тест исправлен (тройной click в одном такте)
+6) финальный: 20 passed (включая test_kiosk_works_fully_offline — весь не-localhost трафик заблокирован), 171 с — Welcome через 1,55 с

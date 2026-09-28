@@ -1,13 +1,12 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
 from app.session.manager import session_manager
 from app.printing.manager import print_manager
 
 router = APIRouter(prefix="/api/print", tags=["Printing"])
 
 class ReprintRequest(BaseModel):
-    session_id: str
+    session_id: str = Field(max_length=128)
 
 @router.get("/status", summary="Get printer status and available devices")
 async def get_print_status():

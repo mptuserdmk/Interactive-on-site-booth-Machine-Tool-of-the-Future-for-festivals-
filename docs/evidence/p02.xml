@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="8" skipped="0" tests="62" time="32.129" timestamp="2026-09-28T17:46:02.156308+03:00" hostname="DESKTOP-TAF7O8F"><testcase classname="tests.unit.test_ai_providers" name="test_bothub_success_url" time="1.039" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_success_b64" time="0.918" /><testcase classname="tests.unit.test_ai_providers" name="test_fal_success" time="0.918" /><testcase classname="tests.unit.test_ai_providers" name="test_replicate_success_no_nameerror" time="1.929" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_responses_fail_cleanly[http_401]" time="0.910" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_responses_fail_cleanly[http_429]" time="0.903" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_responses_fail_cleanly[http_500]" time="0.901" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_responses_fail_cleanly[empty_data]" time="0.896" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_responses_fail_cleanly[broken_json]" time="0.880" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_responses_fail_cleanly[no_url_no_b64]" time="0.888" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_timeout_fails_cleanly" time="0.869" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_download_is_failure_not_success[404]" time="0.878" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_download_is_failure_not_success[html]" time="0.936" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_download_is_failure_not_success[huge]" time="0.882" /><testcase classname="tests.unit.test_ai_providers" name="test_fallback_to_mock_is_flagged" time="0.951" /><testcase classname="tests.unit.test_ai_providers" name="test_fallback_visible_in_session_and_health" time="1.785" /><testcase classname="tests.unit.test_ai_providers" name="test_placeholder_or_invalid_key_is_not_healthy[\u0432\u0430\u0448_bothub_api_\u043a\u043b\u044e\u0447]" time="0.016" /><testcase classname="tests.unit.test_ai_providers" name="test_placeholder_or_invalid_key_is_not_healthy[your_api_key_here]" time="0.016" /><testcase classname="tests.unit.test_ai_providers" name="test_placeholder_or_invalid_key_is_not_healthy[   ]" time="0.013" /><testcase classname="tests.unit.test_ai_providers" name="test_placeholder_or_invalid_key_is_not_healthy[sk-abc\n]" time="0.013" /><testcase classname="tests.unit.test_ai_providers" name="test_valid_looking_key_is_healthy" time="0.013" /><testcase classname="tests.unit.test_ai_providers" name="test_placeholder_key_never_reaches_provider" time="0.890" /><testcase classname="tests.unit.test_ai_providers" name="test_unknown_provider_uses_mock" time="0.028" /><testcase classname="tests.unit.test_ai_providers" name="test_mock_provider_inputs[missing]" time="0.094" /><testcase classname="tests.unit.test_ai_providers" name="test_mock_provider_inputs[cmyk]" time="0.082" /><testcase classname="tests.unit.test_ai_providers" name="test_mock_provider_inputs[rgba_png]" time="0.068" /><testcase classname="tests.unit.test_ai_providers" name="test_mock_provider_inputs[tiny]" time="0.031" /><testcase classname="tests.unit.test_ai_providers" name="test_mock_provider_inputs[not_image]" time="0.019" /><testcase classname="tests.chaos.test_chaos" name="test_ai_outage_session_completes_via_fallback_and_is_flagged[timeout]" time="1.201" /><testcase classname="tests.chaos.test_chaos" name="test_ai_outage_session_completes_via_fallback_and_is_flagged[connect_error]" time="1.268" /><testcase classname="tests.chaos.test_chaos" name="test_ai_outage_session_completes_via_fallback_and_is_flagged[http_429]" time="1.414" /><testcase classname="tests.chaos.test_chaos" name="test_ai_outage_session_completes_via_fallback_and_is_flagged[http_500]" time="1.466" /><testcase classname="tests.chaos.test_chaos" name="test_ai_outage_session_completes_via_fallback_and_is_flagged[not_image]" time="1.514" /><testcase classname="tests.chaos.test_chaos" name="test_disk_full_during_composition" time="0.251" /><testcase classname="tests.chaos.test_chaos" name="test_health_reports_low_disk" time="0.064" /><testcase classname="tests.chaos.test_chaos" name="test_unplugged_camera_does_not_silently_capture_placeholder" time="0.085"><failure message="AssertionError: capture с мёртвой камеры → 200&#10;assert 200 == 503&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x0000017A4330CF50&gt;
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x0000017A43AD71C0&gt;
+
+    @pytest.mark.regression
+    async def test_unplugged_camera_does_not_silently_capture_placeholder(client, monkeypatch):
+        """Камеру выдернули → capture молча сохраняет mock-кадр «CAPTURED MOCK PHOTO» как фото ребёнка."""
+        from app.camera.manager import camera_manager
+        from app.config.settings import settings
+        monkeypatch.setattr(camera_manager, "cap", DeadCapture())
+        monkeypatch.setattr(camera_manager, "is_running", True)
+        monkeypatch.setattr(settings, "CAMERA_MOCK_FALLBACK", False, raising=False)
+        r = await do(client, "capture")
+&gt;       assert r.status_code == 503, f"capture с мёртвой камеры → {r.status_code}"
+E       AssertionError: capture с мёртвой камеры → 200
+E       assert 200 == 503
+E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
+
+tests\chaos\test_chaos.py:113: AssertionError</failure></testcase><testcase classname="tests.chaos.test_chaos" name="test_camera_reconnects_after_replug" time="0.117" /><testcase classname="tests.chaos.test_chaos" name="test_start_without_env_file" time="1.598" /><testcase classname="tests.chaos.test_chaos" name="test_start_with_broken_env_value_gives_clear_error" time="0.968" /><testcase classname="tests.chaos.test_chaos" name="test_start_without_combinations_gives_clear_error" time="1.004" /><testcase classname="tests.security.test_info_leak_xss" name="test_api_docs_disabled_in_prod[/docs]" time="0.018"><failure message="AssertionError: /docs открыт в проде&#10;assert 200 == 404&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x0000017A43B3D490&gt;, url = '/docs'
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("url", ["/docs", "/redoc", "/openapi.json"])
+    async def test_api_docs_disabled_in_prod(client, url):
+        r = await client.get(url)
+&gt;       assert r.status_code == 404, f"{url} открыт в проде"
+E       AssertionError: /docs открыт в проде
+E       assert 200 == 404
+E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
+
+tests\security\test_info_leak_xss.py:24: AssertionError</failure></testcase><testcase classname="tests.security.test_info_leak_xss" name="test_api_docs_disabled_in_prod[/redoc]" time="0.020"><failure message="AssertionError: /redoc открыт в проде&#10;assert 200 == 404&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x0000017A43B3CA10&gt;, url = '/redoc'
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("url", ["/docs", "/redoc", "/openapi.json"])
+    async def test_api_docs_disabled_in_prod(client, url):
+        r = await client.get(url)
+&gt;       assert r.status_code == 404, f"{url} открыт в проде"
+E       AssertionError: /redoc открыт в проде
+E       assert 200 == 404
+E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
+
+tests\security\test_info_leak_xss.py:24: AssertionError</failure></testcase><testcase classname="tests.security.test_info_leak_xss" name="test_api_docs_disabled_in_prod[/openapi.json]" time="0.038"><failure message="AssertionError: /openapi.json открыт в проде&#10;assert 200 == 404&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x0000017A43A13E90&gt;, url = '/openapi.json'
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("url", ["/docs", "/redoc", "/openapi.json"])
+    async def test_api_docs_disabled_in_prod(client, url):
+        r = await client.get(url)
+&gt;       assert r.status_code == 404, f"{url} открыт в проде"
+E       AssertionError: /openapi.json открыт в проде
+E       assert 200 == 404
+E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
+
+tests\security\test_info_leak_xss.py:24: AssertionError</failure></testcase><testcase classname="tests.security.test_info_leak_xss" name="test_env_and_sources_not_served[/static/../.env]" time="0.013" /><testcase classname="tests.security.test_info_leak_xss" name="test_env_and_sources_not_served[/static/%2e%2e/.env]" time="0.015" /><testcase classname="tests.security.test_info_leak_xss" name="test_env_and_sources_not_served[/storage/../.env]" time="0.015" /><testcase classname="tests.security.test_info_leak_xss" name="test_env_and_sources_not_served[/static/..%5c..%5c.env]" time="0.015" /><testcase classname="tests.security.test_info_leak_xss" name="test_env_and_sources_not_served[/.env]" time="0.013" /><testcase classname="tests.security.test_info_leak_xss" name="test_env_and_sources_not_served[/static/../app/config/settings.py]" time="0.014" /><testcase classname="tests.security.test_info_leak_xss" name="test_provider_error_body_not_exposed_to_clients" time="0.163" /><testcase classname="tests.security.test_info_leak_xss" name="test_pipeline_exception_details_not_exposed" time="0.301" /><testcase classname="tests.security.test_info_leak_xss" name="test_500_has_no_traceback" time="0.016" /><testcase classname="tests.security.test_info_leak_xss" name="test_api_key_not_printed_to_logs" time="1.368" /><testcase classname="tests.security.test_info_leak_xss" name="test_card_page_escapes_reflected_input" time="0.033" /><testcase classname="tests.security.test_info_leak_xss" name="test_telegram_share_link_param_injection" time="0.488"><failure message="AssertionError: {'url': ['http://testserver/card/sess_cce96ece28e8019b342e976a6d9b2bba?', 'https://phish.example'], 'text': ['ВЗЛОМ', 'Моя профессия будущего на фестивале Станок Будущего!']}&#10;assert (2 == 1)&#10; +  where 2 = len(['ВЗЛОМ', 'Моя профессия будущего на фестивале Станок Будущего!'])&#10; +    where ['ВЗЛОМ', 'Моя профессия будущего на фестивале Станок Будущего!'] = &lt;built-in method get of dict object at 0x0000017A4416A380&gt;('text', [])&#10; +      where &lt;built-in method get of dict object at 0x0000017A4416A380&gt; = {'url': ['http://testserver/card/sess_cce96ece28e8019b342e976a6d9b2bba?', 'https://phish.example'], 'text': ['ВЗЛОМ', 'Моя профессия будущего на фестивале Станок Будущего!']}.get">client = &lt;httpx.AsyncClient object at 0x0000017A43A13A10&gt;, fast_pipeline = True
+
+    @pytest.mark.regression
+    async def test_telegram_share_link_param_injection(client, fast_pipeline):
+        """S13: ?&amp;text=... из адресной строки подставляется в ссылку t.me без URL-кодирования."""
+        sid = await drive_to(client, "COMPLETED")
+        r = await client.get(f"/card/{sid}?&amp;text=%D0%92%D0%97%D0%9B%D0%9E%D0%9C&amp;url=https://phish.example")
+        href = re.search(r'href="(https://t\.me/share/url\?[^"]+)"', r.text).group(1).replace("&amp;amp;", "&amp;")
+        q = parse_qs(urlparse(href).query)
+&gt;       assert len(q.get("text", [])) == 1 and "ВЗЛОМ" not in q["text"][0], q
+E       AssertionError: {'url': ['http://testserver/card/sess_cce96ece28e8019b342e976a6d9b2bba?', 'https://phish.example'], 'text': ['ВЗЛОМ', 'Моя профессия будущего на фестивале Станок Будущего!']}
+E       assert (2 == 1)
+E        +  where 2 = len(['ВЗЛОМ', 'Моя профессия будущего на фестивале Станок Будущего!'])
+E        +    where ['ВЗЛОМ', 'Моя профессия будущего на фестивале Станок Будущего!'] = &lt;built-in method get of dict object at 0x0000017A4416A380&gt;('text', [])
+E        +      where &lt;built-in method get of dict object at 0x0000017A4416A380&gt; = {'url': ['http://testserver/card/sess_cce96ece28e8019b342e976a6d9b2bba?', 'https://phish.example'], 'text': ['ВЗЛОМ', 'Моя профессия будущего на фестивале Станок Будущего!']}.get
+
+tests\security\test_info_leak_xss.py:96: AssertionError</failure></testcase><testcase classname="tests.security.test_info_leak_xss" name="test_stored_xss_fields_rendered_via_innerhtml_are_server_controlled" time="0.015" /><testcase classname="tests.security.test_info_leak_xss" name="test_answer_id_with_html_not_stored" time="0.104" /><testcase classname="tests.security.test_info_leak_xss" name="test_templates_do_not_load_external_resources[kiosk.html]" time="0.014"><failure message="AssertionError: kiosk.html тянет внешние ресурсы: ['https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@600;700;800;900&amp;display=swap', 'https://cdn.tailwindcss.com', 'https://unpkg.com/react@18/umd/react.production.min.js', 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js', 'https://unpkg.com/@babel/standalone/babel.min.js']&#10;assert ['https://fon....min.js', ...] == []&#10;  &#10;  Left contains 7 more items, first extra item: 'https://fonts.googleapis.com'&#10;  Use -v to get more diff">tpl = 'kiosk.html'
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("tpl", ["kiosk.html", "operator.html", "mobile_camera.html", "digital_card.html"])
+    def test_templates_do_not_load_external_resources(tpl):
+        """S10: без интернета киоск — белый экран (React/Babel/Tailwind с CDN), QR оператора — api.qrserver.com."""
+        html = (TEMPLATES / tpl).read_text(encoding="utf-8")
+        found = []
+        for m in EXTERNAL.finditer(html):
+            url = m.group(1) or m.group(2)
+            if url.startswith("https://t.me/share"):
+                continue  # навигационная ссылка «Поделиться», не ресурс страницы
+            found.append(url)
+&gt;       assert found == [], f"{tpl} тянет внешние ресурсы: {found}"
+E       AssertionError: kiosk.html тянет внешние ресурсы: ['https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@600;700;800;900&amp;display=swap', 'https://cdn.tailwindcss.com', 'https://unpkg.com/react@18/umd/react.production.min.js', 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js', 'https://unpkg.com/@babel/standalone/babel.min.js']
+E       assert ['https://fon....min.js', ...] == []
+E         
+E         Left contains 7 more items, first extra item: 'https://fonts.googleapis.com'
+E         Use -v to get more diff
+
+tests\security\test_info_leak_xss.py:133: AssertionError</failure></testcase><testcase classname="tests.security.test_info_leak_xss" name="test_templates_do_not_load_external_resources[operator.html]" time="0.013"><failure message="AssertionError: operator.html тянет внешние ресурсы: ['https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=${encodeURIComponent(otaUrl)}']&#10;assert ['https://api...ent(otaUrl)}'] == []&#10;  &#10;  Left contains one more item: 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=${encodeURIComponent(otaUrl)}'&#10;  Use -v to get more diff">tpl = 'operator.html'
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("tpl", ["kiosk.html", "operator.html", "mobile_camera.html", "digital_card.html"])
+    def test_templates_do_not_load_external_resources(tpl):
+        """S10: без интернета киоск — белый экран (React/Babel/Tailwind с CDN), QR оператора — api.qrserver.com."""
+        html = (TEMPLATES / tpl).read_text(encoding="utf-8")
+        found = []
+        for m in EXTERNAL.finditer(html):
+            url = m.group(1) or m.group(2)
+            if url.startswith("https://t.me/share"):
+                continue  # навигационная ссылка «Поделиться», не ресурс страницы
+            found.append(url)
+&gt;       assert found == [], f"{tpl} тянет внешние ресурсы: {found}"
+E       AssertionError: operator.html тянет внешние ресурсы: ['https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=${encodeURIComponent(otaUrl)}']
+E       assert ['https://api...ent(otaUrl)}'] == []
+E         
+E         Left contains one more item: 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=${encodeURIComponent(otaUrl)}'
+E         Use -v to get more diff
+
+tests\security\test_info_leak_xss.py:133: AssertionError</failure></testcase><testcase classname="tests.security.test_info_leak_xss" name="test_templates_do_not_load_external_resources[mobile_camera.html]" time="0.014" /><testcase classname="tests.security.test_info_leak_xss" name="test_templates_do_not_load_external_resources[digital_card.html]" time="0.014" /><testcase classname="tests.security.test_info_leak_xss" name="test_dependencies_pinned_with_lockfile" time="0.014"><failure message="AssertionError: нет requirements.lock&#10;assert False&#10; +  where False = exists()&#10; +    where exists = WindowsPath('C:/Users/Гусь/Desktop/Practika/requirements.lock').exists">@pytest.mark.regression
+    def test_dependencies_pinned_with_lockfile():
+        """S12: зависимости `&gt;=`, lock-файла нет → на стенде в день фестиваля ставятся другие версии."""
+        lock = ROOT / "requirements.lock"
+&gt;       assert lock.exists(), "нет requirements.lock"
+E       AssertionError: нет requirements.lock
+E       assert False
+E        +  where False = exists()
+E        +    where exists = WindowsPath('C:/Users/Гусь/Desktop/Practika/requirements.lock').exists
+
+tests\security\test_info_leak_xss.py:140: AssertionError</failure></testcase></testsuite></testsuites>

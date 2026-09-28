@@ -1,9 +1,9 @@
-from fastapi import APIRouter, UploadFile, File, Response
+import asyncio
+from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import StreamingResponse
-from pathlib import Path
-from datetime import datetime
 from app.config.settings import settings
-from app.camera.manager import camera_manager
+from app.camera.image_io import normalize_photo, max_upload_bytes, UploadRejected
+from app.camera.manager import camera_manager, CameraUnavailable
 from app.session.manager import session_manager
 
 router = APIRouter(prefix="/api/camera", tags=["Camera"])
@@ -21,32 +21,35 @@ async def stream_camera():
 
 @router.post("/capture", summary="Capture snapshot from USB webcam")
 async def capture_usb_snapshot():
-    sess = session_manager.get_active_session()
-    if not sess:
-        sess = session_manager.create_session()
-        
+    sess = session_manager.begin_photo()
     out_path = settings.PHOTOS_DIR / f"{sess.id}_raw.jpg"
-    camera_manager.capture_usb_snapshot(out_path)
-    await session_manager.attach_photo(out_path)
+    # OpenCV-захват и запись файла блокируют — в пул потоков (H13)
+    try:
+        await asyncio.to_thread(camera_manager.capture_usb_snapshot, out_path)
+    except CameraUnavailable as e:
+        raise HTTPException(status_code=503, detail=str(e)) from e
+    await session_manager.attach_photo(sess.id, out_path)
     return {
         "status": "ok",
         "session_id": sess.id,
-        "photo_url": f"/storage/photos/{out_path.name}"
+        "photo_url": f"/media/photos/{sess.id}.jpg"
     }
 
 @router.post("/upload-ota", summary="Over-the-air photo upload from iPhone/Android")
 async def upload_ota_photo(file: UploadFile = File(...)):
-    sess = session_manager.get_active_session()
-    if not sess:
-        sess = session_manager.create_session()
-        
+    # Сначала проверка и нормализация (S4, H16), потом сессия: мусор не создаёт PHOTO_TAKEN
+    contents = await file.read(max_upload_bytes() + 1)
+    try:
+        jpeg, _size = await asyncio.to_thread(normalize_photo, contents)
+    except UploadRejected as e:
+        raise HTTPException(status_code=e.status_code, detail=str(e)) from e
+    sess = session_manager.begin_photo()
     out_path = settings.PHOTOS_DIR / f"{sess.id}_raw.jpg"
-    contents = await file.read()
-    camera_manager.save_mobile_ota_photo(contents, out_path)
-    await session_manager.attach_photo(out_path)
+    await asyncio.to_thread(camera_manager.save_mobile_ota_photo, jpeg, out_path)
+    await session_manager.attach_photo(sess.id, out_path)
     return {
         "status": "ok",
         "session_id": sess.id,
-        "photo_url": f"/storage/photos/{out_path.name}",
+        "photo_url": f"/media/photos/{sess.id}.jpg",
         "message": "Photo uploaded from mobile camera successfully"
     }

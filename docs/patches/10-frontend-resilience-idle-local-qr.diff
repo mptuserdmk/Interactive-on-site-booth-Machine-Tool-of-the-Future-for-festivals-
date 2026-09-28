@@ -1,0 +1,960 @@
+﻿diff --git a/app/api/routes_media.py b/app/api/routes_media.py
+index ced8b20..eed90c0 100644
+--- a/app/api/routes_media.py
++++ b/app/api/routes_media.py
+@@ -4,11 +4,13 @@
+   /media/photos/{id}.jpg — сырое фото ребёнка, только для активной сессии и только доверенному
+                            клиенту (киоск/оператор; проверка в AccessControlMiddleware).
+ """
++import io
+ import re
+ from pathlib import Path
+-from fastapi import APIRouter, HTTPException
++from fastapi import APIRouter, HTTPException, Query, Response
+ from fastapi.responses import FileResponse
+ from app.config.settings import settings
++from app.composition.qr import generate_qr_code
+ from app.storage.database import db
+ from app.session.manager import session_manager
+ 
+@@ -37,6 +39,15 @@ async def card_image(session_id: str):
+                         headers={"Cache-Control": "private, max-age=600", "X-Content-Type-Options": "nosniff"})
+ 
+ 
++@router.get("/api/qr.png", summary="QR code for the operator panel (generated locally)")
++async def qr_png(data: str = Query(..., min_length=1, max_length=512)):
++    # Раньше панель оператора отдавала URL стенда (а теперь и токен камеры) стороннему api.qrserver.com (S10)
++    img = generate_qr_code(data, size=300)
++    buf = io.BytesIO()
++    img.convert("RGB").save(buf, "PNG")
++    return Response(buf.getvalue(), media_type="image/png", headers=NO_CACHE)
++
++
+ @router.get("/media/photos/{session_id}.jpg", summary="Raw photo of the active session (kiosk review only)")
+ async def raw_photo(session_id: str):
+     sess = session_manager.get_active_session()
+diff --git a/app/main.py b/app/main.py
+index 1f12e44..faeba9b 100644
+--- a/app/main.py
++++ b/app/main.py
+@@ -57,6 +57,17 @@ templates_dir = frontend_dir / "templates"
+ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+ 
+ templates = Jinja2Templates(directory=str(templates_dir))
++VENDOR_DIR = static_dir / "vendor"
++
++
++def vendor_assets() -> dict:
++    """Какие фронтенд-библиотеки лежат локально (офлайн-режим, S10). Остальное — с CDN."""
++    has = lambda name: (VENDOR_DIR / name).is_file()  # noqa: E731
++    return {
++        "react": has("react-18.3.1.production.min.js") and has("react-dom-18.3.1.production.min.js"),
++        "babel": has("babel-standalone-7.26.10.min.js"),
++        "tailwind": has("tailwindcss-3.4.17.js"),
++    }
+ 
+ @app.exception_handler(SessionError)
+ async def session_error_handler(request: Request, exc: SessionError):
+@@ -77,7 +88,7 @@ async def root_page(request: Request):
+     return templates.TemplateResponse(
+         request=request,
+         name="kiosk.html",
+-        context={"settings": settings}
++        context={"settings": settings, "vendor": vendor_assets()}
+     )
+ 
+ @app.get("/kiosk", summary="Visitor Touchscreen Kiosk UI")
+@@ -85,7 +96,7 @@ async def kiosk_page(request: Request):
+     return templates.TemplateResponse(
+         request=request,
+         name="kiosk.html",
+-        context={"settings": settings}
++        context={"settings": settings, "vendor": vendor_assets()}
+     )
+ 
+ @app.get("/operator", summary="Operator Control Dashboard")
+diff --git a/frontend/static/js/kiosk_app.jsx b/frontend/static/js/kiosk_app.jsx
+index 8c01895..188e822 100644
+--- a/frontend/static/js/kiosk_app.jsx
++++ b/frontend/static/js/kiosk_app.jsx
+@@ -11,6 +11,26 @@
+ 
+ const { useState, useEffect, useRef, useCallback } = React;
+ 
++// --- API helper: раньше ошибки fetch уходили только в console.error, ребёнок не видел реакции (H19) ---
++async function api(url, options = {}) {
++  const res = await fetch(url, options);
++  let body = null;
++  try { body = await res.json(); } catch (e) { /* пустой ответ */ }
++  if (!res.ok) {
++    const err = new Error((body && body.detail) || `Ошибка ${res.status}`);
++    err.status = res.status;
++    throw err;
++  }
++  return body;
++}
++
++function friendlyError(e) {
++  if (e && e.status === 409) return "Секунду… экран обновляется";
++  if (e && e.status === 503) return "Камера не отвечает — позови оператора 📷";
++  if (e instanceof TypeError) return "Нет связи со стендом — позови оператора";
++  return (e && e.message) || "Что-то пошло не так — попробуй ещё раз";
++}
++
+ // --- ICONS (Playful Geometric Inline SVGs) ---
+ const ICONS = {
+   // Elements
+@@ -282,7 +302,7 @@ function WelcomeScreen({ onStart }) {
+ }
+ 
+ // --- SCREEN 2: CAMERA CAPTURE (3/5 Viewport, 2/5 Actions) ---
+-function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake }) {
++function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, busy }) {
+   const [streamKey, setStreamKey] = useState(Date.now());
+   const [isCapturing, setIsCapturing] = useState(false);
+   const [flash, setFlash] = useState(false);
+@@ -373,7 +393,7 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake }) {
+                 <button
+                   type="button"
+                   aria-label="Сделать фотографию"
+-                  disabled={isCapturing}
++                  disabled={isCapturing || busy}
+                   onClick={handleShutter}
+                   className="w-28 h-28 rounded-full bg-coral hover:bg-coral-light active:scale-95 border-b-8 border-coral-dark text-white flex items-center justify-center shadow-tactile transition-all cursor-pointer focus-visible:ring-4 focus-visible:ring-coral/40"
+                 >
+@@ -385,10 +405,11 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake }) {
+               </div>
+             ) : (
+               <div className="flex flex-col gap-4">
+-                <TactileButton 
+-                  variant="primary" 
+-                  size="lg" 
++                <TactileButton
++                  variant="primary"
++                  size="lg"
+                   onClick={onConfirm}
++                  loading={busy}
+                   ariaLabel="Подтвердить фотографию и перейти к выбору"
+                   className="w-full"
+                 >
+@@ -396,10 +417,11 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake }) {
+                   {ICONS.arrowRight}
+                 </TactileButton>
+ 
+-                <TactileButton 
+-                  variant="secondary" 
+-                  size="md" 
++                <TactileButton
++                  variant="secondary"
++                  size="md"
+                   onClick={onRetake}
++                  disabled={busy}
+                   ariaLabel="Переснять фотографию"
+                   className="w-full"
+                 >
+@@ -416,7 +438,7 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake }) {
+ }
+ 
+ // --- SCREEN 3, 4, 5: SELECTION SCREENS (Elements, Superpowers, Colors) ---
+-function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type }) {
++function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type, busy }) {
+   return (
+     <section className="flex-1 w-full max-w-6xl mx-auto flex flex-col gap-6 animate-fade-in" aria-label={title}>
+       {/* Header */}
+@@ -439,6 +461,8 @@ function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type
+               <button
+                 key={opt.id}
+                 type="button"
++                disabled={busy}
++                aria-pressed={isSelected}
+                 onClick={() => onSelect(opt.id)}
+                 aria-label={`Выбрать цвет ${opt.name}`}
+                 className={`
+@@ -461,6 +485,8 @@ function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type
+             <button
+               key={opt.id}
+               type="button"
++              disabled={busy}
++              aria-pressed={isSelected}
+               onClick={() => onSelect(opt.id)}
+               aria-label={`Выбрать вариант ${opt.name}`}
+               className={`
+@@ -607,6 +633,28 @@ function ResultScreen({ session, onFinish }) {
+   );
+ }
+ 
++// --- SCREEN 8: ERROR (раньше ERROR показывался как «🎉 ОБРАЗ УСПЕШНО СОЗДАН!») ---
++function ErrorScreen({ session, onFinish, busy }) {
++  const hasCard = Boolean(session?.final_card_path);
++  return (
++    <main className="flex-1 flex flex-col items-center justify-center text-center px-6 max-w-3xl mx-auto animate-fade-in" role="alert">
++      <div className="w-28 h-28 rounded-full bg-amber/20 border-4 border-amber flex items-center justify-center text-5xl mb-6">🛠️</div>
++      <h2 className="font-display font-black text-4xl sm:text-5xl text-ink mb-3">
++        {hasCard ? "КАРТОЧКА ГОТОВА, НО НЕ НАПЕЧАТАЛАСЬ" : "УПС! ЧТО-ТО ПОШЛО НЕ ТАК"}
++      </h2>
++      <p className="font-sans text-xl text-ink-muted mb-8 max-w-xl">
++        {hasCard ? "Позови оператора — он допечатает твой паспорт за минуту." : "Позови оператора или попробуй ещё раз с начала."}
++      </p>
++      {hasCard && (
++        <img src={`/media/cards/${session.id}.jpg?t=${Date.now()}`} alt="Твой паспорт инженера" className="w-64 rounded-2xl shadow-tactile mb-8" />
++      )}
++      <TactileButton variant="primary" size="xl" onClick={onFinish} disabled={busy} ariaLabel="Вернуться на главный экран">
++        <span>НАЧАТЬ ЗАНОВО</span>
++      </TactileButton>
++    </main>
++  );
++}
++
+ // --- IDLE INACTIVITY MODAL (KFC-Style 15s Timer -> 5s Modal) ---
+ function IdleModal({ isOpen, countdown, onStay, onLeave }) {
+   if (!isOpen) return null;
+@@ -666,47 +714,92 @@ function KioskRoot() {
+   const idleTimerRef = useRef(null);
+   const countdownIntervalRef = useRef(null);
+ 
+-  // Load Quiz Schema
++  // Состояние связи и обратная связь на действия (H18, H19)
++  const [connected, setConnected] = useState(true);
++  const [busy, setBusy] = useState(false);
++  const [notice, setNotice] = useState(null);
++  const busyRef = useRef(false);
++  const noticeTimerRef = useRef(null);
++
++  const showNotice = useCallback((text) => {
++    setNotice(text);
++    clearTimeout(noticeTimerRef.current);
++    noticeTimerRef.current = setTimeout(() => setNotice(null), 4000);
++  }, []);
++
++  const syncActiveSession = useCallback(async () => {
++    try {
++      const data = await api('/api/session/active');
++      setSession(data && data.status !== 'IDLE' ? data : null);
++    } catch (e) { /* покажет баннер связи */ }
++  }, []);
++
++  // Одно действие за раз: двойной тап не шлёт второй запрос (H2 на клиенте)
++  const runAction = useCallback(async (fn) => {
++    if (busyRef.current) return;
++    busyRef.current = true;
++    setBusy(true);
++    try {
++      await fn();
++    } catch (e) {
++      showNotice(friendlyError(e));
++      if (e && e.status === 409) syncActiveSession();
++    } finally {
++      busyRef.current = false;
++      setBusy(false);
++    }
++  }, [showNotice, syncActiveSession]);
++
++  // Load Quiz Schema (повтор при ошибке, чтобы киоск не остался без вариантов ответа)
+   useEffect(() => {
+-    fetch('/api/quiz/schema')
+-      .then(res => res.json())
+-      .then(data => setQuizSchema(data))
+-      .catch(err => console.error("Error loading quiz schema", err));
++    let timer;
++    const load = () => api('/api/quiz/schema').then(setQuizSchema).catch(() => { timer = setTimeout(load, 3000); });
++    load();
++    return () => clearTimeout(timer);
+   }, []);
+ 
+-  // WebSocket for Live State Synchronisation
++  // WebSocket с переподключением и ресинхронизацией: раньше после обрыва киоск «замерзал» до F5 (H18)
+   useEffect(() => {
+     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+     const wsUrl = `${protocol}//${window.location.host}/ws`;
+-    const ws = new WebSocket(wsUrl);
+-
+-    ws.onmessage = (event) => {
+-      try {
+-        const msg = JSON.parse(event.data);
+-        if (msg.type === 'SESSION_UPDATE') {
+-          setSession(msg.data);
++    let ws = null;
++    let timer = null;
++    let attempt = 0;
++    let stopped = false;
++
++    const connect = () => {
++      ws = new WebSocket(wsUrl);
++      ws.onopen = () => {
++        attempt = 0;
++        setConnected(true);
++        syncActiveSession();
++      };
++      ws.onmessage = (event) => {
++        try {
++          const msg = JSON.parse(event.data);
++          if (msg.type === 'SESSION_UPDATE') {
++            setSession(msg.data && msg.data.status !== 'IDLE' ? msg.data : null);
++          }
++        } catch (e) {
++          console.error("WS parse error", e);
+         }
+-      } catch (e) {
+-        console.error("WS parse error", e);
+-      }
++      };
++      ws.onclose = () => {
++        setConnected(false);
++        if (!stopped) timer = setTimeout(connect, Math.min(10000, 1000 * 2 ** attempt++));
++      };
++      ws.onerror = () => ws.close();
+     };
++    connect();
+ 
+-    return () => ws.close();
+-  }, []);
+-
+-  // Initial Session Check
+-  useEffect(() => {
+-    fetch('/api/session/active')
+-      .then(res => res.json())
+-      .then(data => {
+-        if (data && data.status !== 'IDLE') {
+-          setSession(data);
+-        }
+-      })
+-      .catch(() => {});
+-  }, []);
++    return () => {
++      stopped = true;
++      clearTimeout(timer);
++      if (ws) ws.close();
++    };
++  }, [syncActiveSession]);
+ 
+-  // 15s Inactivity Watcher
++  // 15s Inactivity Watcher: таймер бездействия только открывает модалку
+   const resetIdleTimer = useCallback(() => {
+     if (isIdleModalOpen) return;
+     clearTimeout(idleTimerRef.current);
+@@ -717,21 +810,8 @@ function KioskRoot() {
+     }
+ 
+     idleTimerRef.current = setTimeout(() => {
+-      setIsIdleModalOpen(true);
+       setIdleCountdown(5);
+-
+-      clearInterval(countdownIntervalRef.current);
+-      countdownIntervalRef.current = setInterval(() => {
+-        setIdleCountdown(prev => {
+-          if (prev <= 1) {
+-            clearInterval(countdownIntervalRef.current);
+-            setIsIdleModalOpen(false);
+-            handleReset();
+-            return 0;
+-          }
+-          return prev - 1;
+-        });
+-      }, 1000);
++      setIsIdleModalOpen(true);
+     }, 15000);
+   }, [session, isIdleModalOpen]);
+ 
+@@ -748,71 +828,55 @@ function KioskRoot() {
+       window.removeEventListener('pointerdown', handleActivity);
+       window.removeEventListener('click', handleActivity);
+       clearTimeout(idleTimerRef.current);
+-      clearInterval(countdownIntervalRef.current);
+     };
+   }, [resetIdleTimer]);
+ 
+-  // Actions
+-  const handleStartSession = async () => {
+-    try {
+-      const res = await fetch('/api/session/new', { method: 'POST' });
+-      const sess = await res.json();
+-      setSession(sess);
+-    } catch (e) {
+-      console.error(e);
+-    }
+-  };
++  // Отсчёт 5…0 живёт в собственном эффекте. Раньше интервал запускался внутри таймера и тут же
++  // очищался cleanup-ом эффекта выше (смена isIdleModalOpen → новый resetIdleTimer) — отсчёт
++  // навсегда застывал на «5», автосброс не происходил никогда.
++  useEffect(() => {
++    if (!isIdleModalOpen) return;
++    countdownIntervalRef.current = setInterval(() => setIdleCountdown(prev => Math.max(0, prev - 1)), 1000);
++    return () => clearInterval(countdownIntervalRef.current);
++  }, [isIdleModalOpen]);
+ 
+-  const handleCapturePhoto = async () => {
+-    try {
+-      await fetch('/api/camera/capture', { method: 'POST' });
+-    } catch (e) {
+-      console.error(e);
++  useEffect(() => {
++    if (isIdleModalOpen && idleCountdown <= 0) {
++      handleReset();
+     }
+-  };
++  }, [isIdleModalOpen, idleCountdown]);
++  // Actions: одно действие за раз, ошибки видны на экране (H19)
++  const handleStartSession = () => runAction(async () => {
++    const sess = await api('/api/session/new', { method: 'POST' });
++    setSession(sess);
++  });
+ 
+-  const handleConfirmPhoto = async () => {
+-    try {
+-      await fetch('/api/session/photo/confirm', { method: 'POST' });
+-    } catch (e) {
+-      console.error(e);
+-    }
+-  };
++  const handleCapturePhoto = () => runAction(() => api('/api/camera/capture', { method: 'POST' }));
+ 
+-  const handleRetakePhoto = async () => {
+-    try {
+-      await fetch('/api/session/photo/retake', { method: 'POST' });
+-    } catch (e) {
+-      console.error(e);
+-    }
+-  };
++  const handleConfirmPhoto = () => runAction(() => api('/api/session/photo/confirm', { method: 'POST' }));
+ 
+-  const handleSelectChoice = async (questionType, choiceId) => {
+-    try {
+-      await fetch('/api/session/answer', {
+-        method: 'POST',
+-        headers: { 'Content-Type': 'application/json' },
+-        body: JSON.stringify({ question_type: questionType, answer_id: choiceId })
+-      });
+-    } catch (e) {
+-      console.error(e);
+-    }
+-  };
++  const handleRetakePhoto = () => runAction(() => api('/api/session/photo/retake', { method: 'POST' }));
++
++  const handleSelectChoice = (questionType, choiceId) => runAction(() => api('/api/session/answer', {
++    method: 'POST',
++    headers: { 'Content-Type': 'application/json' },
++    body: JSON.stringify({ question_type: questionType, answer_id: choiceId })
++  }));
+ 
+   const handleReset = async () => {
++    setIsIdleModalOpen(false);
++    clearInterval(countdownIntervalRef.current);
+     try {
+-      await fetch('/api/session/reset', { method: 'POST' });
+-      setSession(null);
+-      setSelectedElement(null);
+-      setSelectedPower(null);
+-      setSelectedColor(null);
+-      setIsIdleModalOpen(false);
+-      clearInterval(countdownIntervalRef.current);
++      await api('/api/session/reset', { method: 'POST' });
+     } catch (e) {
+-      console.error(e);
++      showNotice(friendlyError(e));
+     }
++    // Экран возвращается к приветствию даже без связи с сервером
++    setSession(null);
++    setSelectedElement(null);
++    setSelectedPower(null);
++    setSelectedColor(null);
+   };
+-
+   // Determine current step index for the tracker
+   const getStepIndex = () => {
+     if (!session || session.status === 'IDLE') return 0;
+@@ -833,6 +897,7 @@ function KioskRoot() {
+       return (
+         <CameraScreen 
+           isReview={false} 
++          busy={busy}
+           onCapture={handleCapturePhoto} 
+           onConfirm={handleConfirmPhoto} 
+           onRetake={handleRetakePhoto} 
+@@ -844,6 +909,7 @@ function KioskRoot() {
+       return (
+         <CameraScreen 
+           isReview={true} 
++          busy={busy}
+           sessionId={session.id} 
+           onCapture={handleCapturePhoto} 
+           onConfirm={handleConfirmPhoto} 
+@@ -858,7 +924,8 @@ function KioskRoot() {
+           title="ВЫБЕРИ СВОЙ ВАЙБ 🚀" 
+           subtitle="Какая стихия и отрасль будущего тебе ближе всего?" 
+           options={quizSchema[0]?.options || []} 
+-          selectedId={session.element_id} 
++          selectedId={session.element} 
++          busy={busy}
+           onSelect={(id) => handleSelectChoice('element', id)} 
+           type="element" 
+         />
+@@ -871,7 +938,8 @@ function KioskRoot() {
+           title="ВЫБЕРИ СУПЕРСИЛУ ⚡" 
+           subtitle="Что поможет тебе совершать инженерные открытия?" 
+           options={quizSchema[1]?.options || []} 
+-          selectedId={session.power_id} 
++          selectedId={session.power} 
++          busy={busy}
+           onSelect={(id) => handleSelectChoice('power', id)} 
+           type="power" 
+         />
+@@ -884,7 +952,8 @@ function KioskRoot() {
+           title="ВЫБЕРИ ЦВЕТ ОБРАЗА 🎨" 
+           subtitle="Какой цвет подчеркнет твой стиль и оборудование?" 
+           options={quizSchema[2]?.options || []} 
+-          selectedId={session.color_id} 
++          selectedId={session.color} 
++          busy={busy}
+           onSelect={(id) => handleSelectChoice('color', id)} 
+           type="color" 
+         />
+@@ -895,11 +964,29 @@ function KioskRoot() {
+       return <GeneratingScreen session={session} />;
+     }
+ 
++    if (session.status === 'ERROR') {
++      return <ErrorScreen session={session} onFinish={handleReset} busy={busy} />;
++    }
++
+     return <ResultScreen session={session} onFinish={handleReset} />;
+   };
+ 
+   return (
+     <div className="w-full max-w-[1280px] mx-auto min-h-screen flex flex-col justify-between p-6 sm:p-8 select-none">
++      {/* Потеря связи со стендом (H18) */}
++      {!connected && (
++        <div role="status" className="fixed top-0 inset-x-0 z-40 bg-coral text-white text-center font-display font-black text-xl py-3">
++          НЕТ СВЯЗИ СО СТЕНДОМ — ПЕРЕПОДКЛЮЧАЕМСЯ…
++        </div>
++      )}
++
++      {/* Сообщение об ошибке действия (H19) */}
++      {notice && (
++        <div role="alert" className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-ink text-white font-display font-bold text-xl px-8 py-4 rounded-2xl shadow-tactile">
++          {notice}
++        </div>
++      )}
++
+       {/* Step Tracker (visible when session is active) */}
+       {session && session.status !== 'IDLE' && (
+         <StepTracker currentStep={getStepIndex()} />
+@@ -913,8 +1000,8 @@ function KioskRoot() {
+       {/* Minimal Bottom Bar */}
+       <footer className="mt-8 pt-4 border-t-2 border-border-line flex items-center justify-between text-ink-muted text-sm font-sans">
+         <div className="flex items-center gap-2">
+-          <span className="w-2.5 h-2.5 rounded-full bg-teal"></span>
+-          <span className="font-bold">ТЕРМИНАЛ ГОТОВ К РАБОТЕ</span>
++          <span className={`w-2.5 h-2.5 rounded-full ${connected ? 'bg-teal' : 'bg-coral'}`}></span>
++          <span className="font-bold">{connected ? 'ТЕРМИНАЛ ГОТОВ К РАБОТЕ' : 'НЕТ СВЯЗИ СО СТЕНДОМ'}</span>
+         </div>
+         <div>
+           <span>СТАНОК БУДУЩЕГО 2026</span>
+diff --git a/frontend/templates/kiosk.html b/frontend/templates/kiosk.html
+index 6ae508c..27e0f99 100644
+--- a/frontend/templates/kiosk.html
++++ b/frontend/templates/kiosk.html
+@@ -5,13 +5,10 @@
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+   <title>Станок Будущего // Киоск</title>
+   
+-  <!-- Google Fonts: Fredoka & Nunito for Display, Inter for Text -->
+-  <link rel="preconnect" href="https://fonts.googleapis.com">
+-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+-  
+-  <!-- Tailwind CSS CDN -->
+-  <script src="https://cdn.tailwindcss.com"></script>
++  <!-- Шрифты: системные (Google Fonts блокировал отрисовку на перегруженном Wi-Fi и не работал офлайн, S10) -->
++
++  <!-- Tailwind: локальная копия из static/vendor (scripts/vendor_frontend.py), CDN — только запасной вариант -->
++  {% if vendor.tailwind %}<script src="/static/vendor/tailwindcss-3.4.17.js"></script>{% else %}<script src="https://cdn.tailwindcss.com/3.4.17"></script>{% endif %}
+   <script>
+     tailwind.config = {
+       theme: {
+@@ -54,8 +51,8 @@
+             }
+           },
+           fontFamily: {
+-            display: ['Fredoka', 'Nunito', 'sans-serif'],
+-            sans: ['Inter', 'system-ui', 'sans-serif']
++            display: ['"Segoe UI Black"', '"Segoe UI"', 'Arial Black', 'system-ui', 'sans-serif'],
++            sans: ['"Segoe UI"', 'system-ui', 'sans-serif']
+           },
+           borderWidth: {
+             '3': '3px',
+@@ -90,10 +87,11 @@
+     }
+   </script>
+ 
+-  <!-- React 18 and Babel Standalone for seamless execution -->
+-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
++  <!-- React 18 + Babel: закреплённые версии; локальные копии, если scripts/vendor_frontend.py уже запускался -->
++  {% if vendor.react %}<script src="/static/vendor/react-18.3.1.production.min.js"></script>
++  <script src="/static/vendor/react-dom-18.3.1.production.min.js"></script>{% else %}<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
++  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>{% endif %}
++  {% if vendor.babel %}<script src="/static/vendor/babel-standalone-7.26.10.min.js"></script>{% else %}<script src="https://unpkg.com/@babel/standalone@7.26.10/babel.min.js"></script>{% endif %}
+ 
+   <style>
+     :root {
+@@ -111,12 +109,14 @@
+     body {
+       background-color: var(--surface);
+       color: var(--ink);
+-      font-family: 'Inter', system-ui, sans-serif;
++      font-family: 'Segoe UI', system-ui, sans-serif;
+       margin: 0;
+       padding: 0;
+       overflow-x: hidden;
+       touch-action: manipulation;
+       -webkit-tap-highlight-color: transparent;
++      -webkit-touch-callout: none;
++      overscroll-behavior: none; /* без pull-to-refresh и свайпа «назад» */
+       user-select: none;
+     }
+ 
+@@ -127,7 +127,7 @@
+     }
+   </style>
+ </head>
+-<body class="kiosk-grid-bg min-h-screen">
++<body class="kiosk-grid-bg min-h-screen" oncontextmenu="return false">
+   <!-- React App Root Container -->
+   <div id="react-kiosk-root"></div>
+ 
+diff --git a/frontend/templates/mobile_camera.html b/frontend/templates/mobile_camera.html
+index a751cce..41567d2 100644
+--- a/frontend/templates/mobile_camera.html
++++ b/frontend/templates/mobile_camera.html
+@@ -94,7 +94,7 @@
+     <button class="shutter-btn" id="btn-shutter">📸</button>
+     <label class="btn-secondary" style="font-size: 14px; padding: 12px 18px; cursor: pointer;">
+       📁 Из галереи
+-      <input type="file" id="file-input" accept="image/*" style="display: none;">
++      <input type="file" id="file-input" accept="image/jpeg,image/png" style="display: none;">
+     </label>
+   </div>
+ 
+@@ -119,11 +119,23 @@
+         toast.innerText = 'Камера готова! Нажмите 📸 для съемки';
+       } catch (err) {
+         console.error(err);
+-        toast.innerText = 'Камера заблокирована браузером. Используйте кнопку "Из галереи"';
++        // getUserMedia работает только по HTTPS или на localhost (S11).
++        // Запоздалая ошибка камеры не должна затирать результат уже отправленного фото.
++        if (uploading || uploadedOnce) return;
++        toast.innerText = window.isSecureContext
++          ? 'Камера заблокирована браузером. Используйте кнопку "Из галереи"'
++          : 'Живая камера доступна только по HTTPS. Используйте кнопку "Из галереи" — она работает';
+       }
+     }
+ 
++    let uploading = false;
++    let uploadedOnce = false;
++
+     async function uploadBlob(blob) {
++      if (uploading) return;  // двойной тап по затвору не шлёт второе фото
++      uploading = true;
++      uploadedOnce = true;
++      btnShutter.disabled = true;
+       toast.innerText = '⏳ Отправляем снимок на стенд...';
+       const formData = new FormData();
+       formData.append('file', blob, 'iphone_capture.jpg');
+@@ -133,15 +145,22 @@
+           method: 'POST',
+           body: formData
+         });
+-        const data = await res.json();
+-        if (data.status === 'ok') {
++        const data = await res.json().catch(() => ({}));
++        if (res.ok && data.status === 'ok') {
+           toast.innerText = '✅ Фото мгновенно передано на экран стенда!';
+           if (navigator.vibrate) navigator.vibrate(100);
++        } else if (res.status === 401) {
++          toast.innerText = 'Нет доступа: отсканируйте QR на панели оператора ещё раз';
++        } else if (res.status === 409) {
++          toast.innerText = 'Стенд сейчас занят (идёт квиз или печать) — дождитесь нового участника';
+         } else {
+-          toast.innerText = 'Ошибка отправки: ' + data.message;
++          toast.innerText = 'Ошибка отправки: ' + (data.detail || ('HTTP ' + res.status));
+         }
+       } catch (e) {
+         toast.innerText = 'Ошибка связи со стендом';
++      } finally {
++        uploading = false;
++        btnShutter.disabled = false;
+       }
+     }
+ 
+diff --git a/frontend/templates/operator.html b/frontend/templates/operator.html
+index 5894130..cb7b0e9 100644
+--- a/frontend/templates/operator.html
++++ b/frontend/templates/operator.html
+@@ -198,18 +198,20 @@
+         </div>
+ 
+         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+-          <button class="op-action-btn primary" onclick="fetch('/api/session/new', {method:'POST'})">➕ НОВАЯ СЕССИЯ</button>
+-          <button class="op-action-btn" onclick="fetch('/api/camera/capture', {method:'POST'})">📸 СДЕЛАТЬ ФОТО</button>
+-          <button class="op-action-btn" onclick="fetch('/api/session/photo/retake', {method:'POST'})">🔄 ПЕРЕСНЯТЬ</button>
+-          <button class="op-action-btn" onclick="fetch('/api/session/photo/confirm', {method:'POST'})">✅ ПОДТВЕРДИТЬ</button>
+-          <button class="op-action-btn" onclick="fetch('/api/print/trigger-active', {method:'POST'})">🖨️ ПЕЧАТАТЬ</button>
+-          <button class="op-action-btn" style="color: var(--accent-error);" onclick="fetch('/api/session/reset', {method:'POST'})">⏹️ СБРОС</button>
++          <button class="op-action-btn primary" onclick="act('/api/session/new')">➕ НОВАЯ СЕССИЯ</button>
++          <button class="op-action-btn" onclick="act('/api/camera/capture')">📸 СДЕЛАТЬ ФОТО</button>
++          <button class="op-action-btn" onclick="act('/api/session/photo/retake')">🔄 ПЕРЕСНЯТЬ</button>
++          <button class="op-action-btn" onclick="act('/api/session/photo/confirm')">✅ ПОДТВЕРДИТЬ</button>
++          <button class="op-action-btn" onclick="act('/api/print/trigger-active')">🖨️ ПЕЧАТАТЬ</button>
++          <button class="op-action-btn" style="color: var(--accent-error);" onclick="act('/api/session/reset')">⏹️ СБРОС</button>
+         </div>
+ 
+         <div style="margin-top: 18px; font-family: var(--font-mono); font-size: 12px; background: #06090f; padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+           <div><span style="color: var(--text-muted);">ПАРАМЕТРЫ:</span> <span id="op-sess-elem">-</span> / <span id="op-sess-pwr">-</span> / <span id="op-sess-col">-</span></div>
+           <div style="margin-top: 4px;"><span style="color: var(--text-muted);">ПРОФЕССИЯ:</span> <span id="op-sess-title" style="color: var(--accent-cyan); font-weight: 700;">-</span></div>
++          <div style="margin-top: 4px;"><span style="color: var(--text-muted);">ОШИБКА:</span> <span id="op-sess-error" style="color: var(--accent-error);">-</span></div>
+         </div>
++        <div id="op-alerts" style="margin-top: 12px; font-family: var(--font-mono); font-size: 12px; color: var(--accent-error);"></div>
+       </div>
+ 
+       <!-- Right Column: Reprint Spooler -->
+@@ -238,28 +240,77 @@
+   </div>
+ 
+   <script>
++    // Экранирование всего, что попадает в innerHTML (защита на будущее, S7)
++    function esc(v) {
++      return String(v ?? '').replace(/[&<>"']/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch]));
++    }
++
++    // Кнопки оператора: раньше fetch без проверки ответа — ошибки (409/429/503) не было видно
++    async function act(url, body) {
++      try {
++        const res = await fetch(url, {
++          method: 'POST',
++          headers: body ? { 'Content-Type': 'application/json' } : {},
++          body: body ? JSON.stringify(body) : undefined
++        });
++        const data = await res.json().catch(() => ({}));
++        if (!res.ok) {
++          alert('Не выполнено: ' + (data.detail || ('HTTP ' + res.status)));
++          return null;
++        }
++        return data;
++      } catch (e) {
++        alert('Нет связи со стендом');
++        return null;
++      }
++    }
++
++    function setStat(id, ok, text) {
++      const el = document.getElementById(id);
++      el.innerText = text;
++      el.style.color = ok ? 'var(--accent-emerald)' : 'var(--accent-error)';
++    }
++
+     async function loadHealth() {
+       try {
+         const res = await fetch('/api/health');
+         const data = await res.json();
+-        
+-        document.getElementById('stat-cam').innerText = data.diagnostics.camera.ok ? `OK (${data.diagnostics.camera.source})` : 'ОШИБКА';
+-        document.getElementById('stat-cam').style.color = data.diagnostics.camera.ok ? 'var(--accent-emerald)' : 'var(--accent-error)';
++        const d = data.diagnostics;
++        const alerts = [];
+ 
+-        document.getElementById('stat-ai').innerText = data.diagnostics.ai.ok ? `OK (${data.diagnostics.ai.provider})` : 'ОШИБКА';
+-        document.getElementById('stat-ai').style.color = data.diagnostics.ai.ok ? 'var(--accent-emerald)' : 'var(--accent-error)';
++        setStat('stat-cam', d.camera.ok, d.camera.ok ? `OK (${d.camera.source})` : 'НЕТ USB-КАМЕРЫ');
+ 
+-        document.getElementById('stat-pr').innerText = data.diagnostics.printer.ok ? `OK (${data.diagnostics.printer.active_printer})` : 'ОШИБКА';
+-        document.getElementById('stat-pr').style.color = data.diagnostics.printer.ok ? 'var(--accent-emerald)' : 'var(--accent-error)';
++        const ai = d.ai;
++        let aiText = ai.ok ? `OK (${ai.provider})` : (ai.key_ok ? 'FALLBACK → MOCK' : 'КЛЮЧ НЕ НАСТРОЕН');
++        if (ai.is_mock) aiText = 'MOCK (офлайн-заглушка)';
++        setStat('stat-ai', ai.ok && !ai.is_mock, aiText + (ai.fallback_count ? ` · fallback: ${ai.fallback_count}` : ''));
++        if (ai.last_fallback) alerts.push('AI недоступен: последние карточки сделаны заглушкой (mock). ' + (ai.last_error || ''));
+ 
+-        document.getElementById('stat-net').innerText = data.diagnostics.network.ok ? 'ONLINE' : 'OFFLINE';
+-        document.getElementById('stat-disk').innerText = `${data.diagnostics.disk.free_gb} GB`;
++        setStat('stat-pr', d.printer.ok, d.printer.ok ? `OK (${d.printer.active_printer})` : ('ОШИБКА: ' + (d.printer.problem || 'принтер не готов')));
++        if (d.printer.queue_jobs > 3) alerts.push(`Очередь печати: ${d.printer.queue_jobs} заданий`);
++
++        setStat('stat-net', d.network.qr_url_ok, (d.network.ok ? 'ONLINE' : 'OFFLINE') + ' · QR: ' + d.network.qr_base_url);
++        if (!d.network.qr_url_ok) alerts.push(d.network.ip_changed
++          ? `IP стенда сменился (${d.network.current_ip}) — перезапустите стенд, иначе QR на карточках ведёт на старый адрес`
++          : 'QR на карточках ведёт на 127.0.0.1 — телефоны гостей их не откроют. Задайте BASE_URL в .env');
++
++        setStat('stat-disk', d.disk.ok, `${d.disk.free_gb} GB`);
++        if (!d.disk.ok) alerts.push('Мало места на диске — запустите scripts\\cleanup_storage.py');
++
++        document.getElementById('op-alerts').innerHTML = alerts.map(a => `<div>⚠️ ${esc(a)}</div>`).join('');
++        const allOk = d.camera.ok && ai.ok && d.printer.ok && d.network.qr_url_ok && d.disk.ok;
++        const pill = document.getElementById('hw-status-pill');
++        pill.innerText = allOk ? 'ONLINE' : 'ВНИМАНИЕ';
++        pill.className = 'status-pill' + (allOk ? '' : ' error');
+ 
+         const otaUrl = data.mobile_camera_url;
+         document.getElementById('ota-url-text').innerText = otaUrl;
+-        document.getElementById('ota-qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(otaUrl)}`;
++        // QR генерируется на стенде: URL с токеном камеры не уходит стороннему сервису
++        document.getElementById('ota-qr-image').src = `/api/qr.png?data=${encodeURIComponent(otaUrl)}`;
+       } catch (e) {
+-        console.error(e);
++        const pill = document.getElementById('hw-status-pill');
++        pill.innerText = 'НЕТ СВЯЗИ';
++        pill.className = 'status-pill error';
+       }
+     }
+ 
+@@ -275,11 +326,11 @@
+         tbody.innerHTML = list.map(item => `
+           <tr>
+             <td>
+-              <div style="font-weight: 700; color: #fff;">${item.machine_name || 'Инженер'}</div>
+-              <div style="font-size: 10px; color: var(--text-muted);">${item.id}</div>
++              <div style="font-weight: 700; color: #fff;">${esc(item.machine_name || 'Инженер')}</div>
++              <div style="font-size: 10px; color: var(--text-muted);">${esc(item.status)} · код ${esc(String(item.id).split('_').pop().slice(-6).toUpperCase())}</div>
+             </td>
+             <td style="text-align: right;">
+-              <button class="op-action-btn" style="padding: 4px 8px; font-size: 10px;" onclick="reprintCard('${item.id}')">🖨️ REPRINT</button>
++              ${item.final_card_path ? `<button class="op-action-btn" style="padding: 4px 8px; font-size: 10px;" data-sid="${esc(item.id)}" onclick="reprintCard(this.dataset.sid)">🖨️ REPRINT</button>` : ''}
+             </td>
+           </tr>
+         `).join('');
+@@ -289,38 +340,36 @@
+     }
+ 
+     async function reprintCard(sessionId) {
+-      try {
+-        const res = await fetch('/api/print/reprint', {
+-          method: 'POST',
+-          headers: { 'Content-Type': 'application/json' },
+-          body: JSON.stringify({ session_id: sessionId })
+-        });
+-        const d = await res.json();
+-        alert(d.success ? 'Карточка отправлена в очередь печати!' : ('Ошибка печати: ' + d.error));
+-      } catch (e) {
+-        alert('Ошибка связи с сервером');
+-      }
++      const d = await act('/api/print/reprint', { session_id: sessionId });
++      if (d) alert(d.success ? 'Карточка отправлена в очередь печати!' : ('Ошибка печати: ' + d.error));
+     }
+ 
+-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+-    ws.onmessage = (e) => {
+-      const msg = JSON.parse(e.data);
+-      if (msg.type === 'SESSION_UPDATE' && msg.data) {
+-        const sess = msg.data;
+-        document.getElementById('active-sess-id').innerText = sess.id || 'НЕТ';
+-        document.getElementById('active-sess-status').innerText = sess.status || 'IDLE';
+-        document.getElementById('op-sess-elem').innerText = sess.element_name || sess.element || '-';
+-        document.getElementById('op-sess-pwr').innerText = sess.power_name || sess.power || '-';
+-        document.getElementById('op-sess-col').innerText = sess.color_name || sess.color || '-';
+-        document.getElementById('op-sess-title').innerText = sess.machine_name || '-';
+-        loadHistory();
+-      }
+-    };
++    // WebSocket с переподключением
++    function connectWs() {
++      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
++      const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
++      ws.onmessage = (e) => {
++        const msg = JSON.parse(e.data);
++        if (msg.type === 'SESSION_UPDATE' && msg.data) {
++          const sess = msg.data;
++          document.getElementById('active-sess-id').innerText = sess.id ? String(sess.id).slice(-6).toUpperCase() : 'НЕТ';
++          document.getElementById('active-sess-status').innerText = sess.status || 'IDLE';
++          document.getElementById('active-sess-status').className = 'status-pill' + (sess.status === 'ERROR' ? ' error' : '');
++          document.getElementById('op-sess-elem').innerText = sess.element_name || sess.element || '-';
++          document.getElementById('op-sess-pwr').innerText = sess.power_name || sess.power || '-';
++          document.getElementById('op-sess-col').innerText = sess.color_name || sess.color || '-';
++          document.getElementById('op-sess-title').innerText = sess.machine_name || '-';
++          document.getElementById('op-sess-error').innerText = sess.error_message || '-';
++          loadHistory();
++        }
++      };
++      ws.onclose = () => setTimeout(connectWs, 2000);
++    }
+ 
++    connectWs();
+     loadHealth();
+     loadHistory();
+     setInterval(loadHealth, 10000);
+-  </script>
++    setInterval(loadHistory, 15000);  </script>
+ </body>
+ </html>
+diff --git a/scripts/vendor_frontend.py b/scripts/vendor_frontend.py
+new file mode 100644
+index 0000000..1645a87
+--- /dev/null
++++ b/scripts/vendor_frontend.py
+@@ -0,0 +1,66 @@
++"""
++Офлайн-режим киоска (S10): скачивает закреплённые версии React, ReactDOM, Babel Standalone и Tailwind Play CDN
++в frontend/static/vendor/. После этого kiosk.html грузит их локально и работает без интернета.
++
++    python scripts\\vendor_frontend.py            # скачать и записать SHA-256 в vendor/SHA256SUMS
++    python scripts\\vendor_frontend.py --verify   # проверить, что файлы не изменились
++
++Запускать один раз при подготовке стенда (нужен интернет), затем закоммитить vendor/ вместе с SHA256SUMS.
++Долгосрочно правильнее собрать фронт Vite-ом (JSX → JS заранее, Tailwind → CSS), отказавшись от Babel в браузере.
++"""
++import argparse
++import hashlib
++import sys
++import urllib.request
++from pathlib import Path
++
++VENDOR = Path(__file__).resolve().parent.parent / "frontend" / "static" / "vendor"
++FILES = {
++    "react-18.3.1.production.min.js": "https://unpkg.com/react@18.3.1/umd/react.production.min.js",
++    "react-dom-18.3.1.production.min.js": "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js",
++    "babel-standalone-7.26.10.min.js": "https://unpkg.com/@babel/standalone@7.26.10/babel.min.js",
++    "tailwindcss-3.4.17.js": "https://cdn.tailwindcss.com/3.4.17",
++}
++
++
++def sha256(p: Path) -> str:
++    return hashlib.sha256(p.read_bytes()).hexdigest()
++
++
++def download():
++    VENDOR.mkdir(parents=True, exist_ok=True)
++    lines = []
++    for name, url in FILES.items():
++        req = urllib.request.Request(url, headers={"User-Agent": "stanok-vendor/1.0"})
++        with urllib.request.urlopen(req, timeout=60) as resp:
++            data = resp.read()
++        if len(data) < 10_000 or data.lstrip()[:1] == b"<":
++            raise SystemExit(f"{url}: подозрительный ответ ({len(data)} байт)")
++        (VENDOR / name).write_bytes(data)
++        lines.append(f"{sha256(VENDOR / name)}  {name}  {url}")
++        print(f"OK {name}: {len(data)} байт")
++    (VENDOR / "SHA256SUMS").write_text("\n".join(lines) + "\n", encoding="utf-8")
++
++
++def verify() -> bool:
++    sums = VENDOR / "SHA256SUMS"
++    if not sums.exists():
++        print("нет SHA256SUMS")
++        return False
++    ok = True
++    for line in sums.read_text(encoding="utf-8").splitlines():
++        digest, name = line.split()[:2]
++        p = VENDOR / name
++        good = p.exists() and sha256(p) == digest
++        ok &= good
++        print(("OK  " if good else "BAD ") + name)
++    return ok
++
++
++if __name__ == "__main__":
++    ap = argparse.ArgumentParser()
++    ap.add_argument("--verify", action="store_true")
++    args = ap.parse_args()
++    if args.verify:
++        sys.exit(0 if verify() else 1)
++    download()

@@ -1,0 +1,192 @@
+﻿app\ai\cloud_providers.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\ai\cloud_providers.py:5:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\ai\cloud_providers.py:5:31: F401 [*] `typing.Optional` imported but unused
+app\ai\cloud_providers.py:22:16: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\ai\cloud_providers.py:35:18: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:74:22: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:83:16: BLE001 Do not catch blind exception: `Exception`
+app\ai\cloud_providers.py:102:16: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\ai\cloud_providers.py:114:18: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:152:27: F821 Undefined name `asyncio`
+app\ai\cloud_providers.py:160:30: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:179:16: BLE001 Do not catch blind exception: `Exception`
+app\ai\cloud_providers.py:204:16: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\ai\cloud_providers.py:226:26: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:278:20: RUF019 [*] Unnecessary key check before dictionary access
+app\ai\cloud_providers.py:282:26: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:284:22: RUF019 [*] Unnecessary key check before dictionary access
+app\ai\cloud_providers.py:286:26: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:303:16: BLE001 Do not catch blind exception: `Exception`
+app\ai\manager.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\ai\manager.py:2:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\ai\manager.py:11:25: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\ai\manager.py:26:16: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\ai\mock_provider.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\ai\mock_provider.py:4:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\ai\mock_provider.py:5:38: F401 [*] `PIL.ImageOps` imported but unused
+app\ai\mock_provider.py:5:59: F401 [*] `PIL.ImageFilter` imported but unused
+app\ai\mock_provider.py:20:16: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\ai\mock_provider.py:76:16: BLE001 Do not catch blind exception: `Exception`
+app\ai\models.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\ai\models.py:2:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\ai\models.py:2:30: F401 [*] `typing.Dict` imported but unused
+app\ai\models.py:2:36: F401 [*] `typing.Any` imported but unused
+app\ai\models.py:10:22: UP045 [*] Use `X | None` for type annotations
+app\ai\models.py:15:17: UP045 [*] Use `X | None` for type annotations
+app\ai\models.py:18:12: UP045 [*] Use `X | None` for type annotations
+app\ai\prompts.py:1:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\ai\prompts.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\ai\prompts.py:3:28: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\ai\provider.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\ai\provider.py:3:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\ai\provider.py:3:31: F401 [*] `typing.Optional` imported but unused
+app\ai\provider.py:16:16: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\api\routes_camera.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\api\routes_camera.py:1:50: F401 [*] `fastapi.Response` imported but unused
+app\api\routes_camera.py:3:21: F401 [*] `pathlib.Path` imported but unused
+app\api\routes_camera.py:4:22: F401 [*] `datetime.datetime` imported but unused
+app\api\routes_camera.py:38:47: B008 Do not perform function call `File` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+app\api\routes_health.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\api\routes_health.py:2:8: F401 [*] `httpx` imported but unused
+app\api\routes_health.py:26:5: RUF059 Unpacked variable `total` is never used
+app\api\routes_health.py:26:12: RUF059 Unpacked variable `used` is never used
+app\api\routes_health.py:36:12: BLE001 Do not catch blind exception: `Exception`
+app\api\routes_print.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\api\routes_print.py:3:20: F401 [*] `typing.Optional` imported but unused
+app\api\routes_session.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\api\routes_session.py:1:32: F401 [*] `fastapi.HTTPException` imported but unused
+app\api\routes_session.py:1:47: F401 [*] `fastapi.Body` imported but unused
+app\api\routes_session.py:3:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\api\routes_session.py:3:1: UP035 `typing.List` is deprecated, use `list` instead
+app\api\routes_session.py:3:30: F401 [*] `typing.Dict` imported but unused
+app\api\routes_session.py:3:36: F401 [*] `typing.Any` imported but unused
+app\api\routes_session.py:3:41: F401 [*] `typing.List` imported but unused
+app\api\routes_session.py:18:39: UP045 Use `X | None` for type annotations
+app\api\routes_ws.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\api\routes_ws.py:3:1: UP035 `typing.List` is deprecated, use `list` instead
+app\api\routes_ws.py:10:34: UP006 [*] Use `list` instead of `List` for type annotation
+app\api\routes_ws.py:33:20: BLE001 Do not catch blind exception: `Exception`
+app\api\routes_ws.py:60:13: S110 `try`-`except`-`pass` detected, consider logging the exception
+app\api\routes_ws.py:60:20: BLE001 Do not catch blind exception: `Exception`
+app\camera\manager.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\camera\manager.py:1:8: F401 [*] `time` imported but unused
+app\camera\manager.py:6:1: UP035 [*] Import from `collections.abc` instead: `Generator`
+app\camera\manager.py:6:1: UP035 `typing.Tuple` is deprecated, use `tuple` instead
+app\camera\manager.py:6:30: F401 [*] `typing.Generator` imported but unused
+app\camera\manager.py:13:19: UP045 [*] Use `X | None` for type annotations
+app\camera\manager.py:16:26: UP045 [*] Use `X | None` for type annotations
+app\camera\manager.py:18:30: UP045 [*] Use `X | None` for type annotations
+app\camera\manager.py:36:16: BLE001 Do not catch blind exception: `Exception`
+app\camera\manager.py:36:29: F841 [*] Local variable `e` is assigned to but never used
+app\camera\manager.py:71:29: UP006 [*] Use `tuple` instead of `Tuple` for type annotation
+app\camera\models.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\camera\models.py:10:12: UP045 [*] Use `X | None` for type annotations
+app\composition\composer.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\composition\composer.py:3:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\composition\composer.py:3:31: F401 [*] `typing.Optional` imported but unused
+app\composition\composer.py:4:46: F401 [*] `PIL.ImageFilter` imported but unused
+app\composition\composer.py:52:16: BLE001 Do not catch blind exception: `Exception`
+app\composition\composer.py:111:16: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\composition\qr.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\composition\qr.py:3:21: F401 [*] `pathlib.Path` imported but unused
+app\config\settings.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\config\settings.py:1:8: F401 [*] `os` imported but unused
+app\config\settings.py:18:12: BLE001 Do not catch blind exception: `Exception`
+app\main.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\main.py:1:8: F401 [*] `os` imported but unused
+app\main.py:2:21: F401 [*] `pathlib.Path` imported but unused
+app\main.py:98:11: F541 [*] f-string without any placeholders
+app\printing\manager.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\printing\manager.py:6:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\printing\manager.py:6:1: UP035 `typing.List` is deprecated, use `list` instead
+app\printing\manager.py:6:20: F401 [*] `typing.Optional` imported but unused
+app\printing\manager.py:13:29: UP006 [*] Use `list` instead of `List` for type annotation
+app\printing\manager.py:13:34: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\printing\manager.py:15:41: UP006 [*] Use `list` instead of `List` for type annotation
+app\printing\manager.py:25:29: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\printing\manager.py:35:69: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\printing\manager.py:42:34: SIM201 Use `sys.platform != "win32"` instead of `not sys.platform == "win32"`
+app\printing\manager.py:67:16: BLE001 Do not catch blind exception: `Exception`
+app\printing\manager.py:68:65: RUF010 [*] Use explicit conversion flag
+app\quiz\combinations.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\quiz\combinations.py:3:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\quiz\combinations.py:3:1: UP035 `typing.List` is deprecated, use `list` instead
+app\quiz\combinations.py:7:35: UP045 [*] Use `X | None` for type annotations
+app\quiz\combinations.py:9:29: UP006 [*] Use `list` instead of `List` for type annotation
+app\quiz\combinations.py:9:34: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\quiz\combinations.py:10:22: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\quiz\combinations.py:10:34: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\quiz\combinations.py:25:26: UP006 [*] Use `list` instead of `List` for type annotation
+app\quiz\combinations.py:25:31: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\quiz\combinations.py:28:61: UP045 [*] Use `X | None` for type annotations
+app\quiz\combinations.py:28:70: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\quiz\combinations.py:31:43: UP045 [*] Use `X | None` for type annotations
+app\quiz\combinations.py:31:52: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\quiz\engine.py:1:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\quiz\engine.py:1:1: UP035 `typing.List` is deprecated, use `list` instead
+app\quiz\engine.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\quiz\engine.py:45:31: UP006 [*] Use `list` instead of `List` for type annotation
+app\quiz\engine.py:45:36: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\quiz\engine.py:48:62: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\session\manager.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\session\manager.py:5:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\session\manager.py:5:1: UP035 `typing.List` is deprecated, use `list` instead
+app\session\manager.py:5:41: F401 [*] `typing.List` imported but unused
+app\session\manager.py:19:30: UP045 [*] Use `X | None` for type annotations
+app\session\manager.py:31:24: BLE001 Do not catch blind exception: `Exception`
+app\session\manager.py:35:27: DTZ005 `datetime.datetime.now()` called without a `tz` argument
+app\session\manager.py:38:24: DTZ003 `datetime.datetime.utcnow()` used
+app\session\manager.py:45:37: UP045 [*] Use `X | None` for type annotations
+app\session\manager.py:48:72: UP045 [*] Use `X | None` for type annotations
+app\session\manager.py:124:69: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\session\manager.py:174:16: BLE001 Do not catch blind exception: `Exception`
+app\session\manager.py:205:57: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\session\models.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\session\models.py:2:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\session\models.py:25:14: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:26:19: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:27:12: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:28:17: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:29:12: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:30:17: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:31:21: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:32:19: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:33:19: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:34:15: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:35:17: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:36:27: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:37:22: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:39:20: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:40:23: UP045 [*] Use `X | None` for type annotations
+app\session\models.py:41:11: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\storage\database.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\storage\database.py:4:1: UP035 `typing.Dict` is deprecated, use `dict` instead
+app\storage\database.py:4:1: UP035 `typing.List` is deprecated, use `list` instead
+app\storage\database.py:47:34: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\storage\database.py:48:15: DTZ003 `datetime.datetime.utcnow()` used
+app\storage\database.py:84:47: UP045 [*] Use `X | None` for type annotations
+app\storage\database.py:84:56: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\storage\database.py:94:28: BLE001 Do not catch blind exception: `Exception`
+app\storage\database.py:99:55: UP006 [*] Use `list` instead of `List` for type annotation
+app\storage\database.py:99:60: UP006 [*] Use `dict` instead of `Dict` for type annotation
+app\storage\files.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+app\storage\files.py:1:8: F401 [*] `os` imported but unused
+app\storage\files.py:2:8: F401 [*] `shutil` imported but unused
+app\storage\files.py:13:35: UP045 [*] Use `X | None` for type annotations
+app\storage\files.py:21:12: BLE001 Do not catch blind exception: `Exception`
+app\storage\files.py:25:61: UP045 [*] Use `X | None` for type annotations
+run.py:1:1: I001 [*] Import block is un-sorted or un-formatted
+run.py:1:8: F401 [*] `os` imported but unused
+run.py:2:8: F401 [*] `sys` imported but unused
+run.py:17:11: F541 [*] f-string without any placeholders
+tests\conftest.py:64:43: RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+tests\conftest.py:65:49: RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+tests\conftest.py:180:5: I001 [*] Import block is un-sorted or un-formatted
+tests\conftest.py:205:5: I001 [*] Import block is un-sorted or un-formatted
+tests\helpers.py:6:1: UP035 [*] Import from `collections.abc` instead: `Iterable`
+tests\helpers.py:17:81: UP045 [*] Use `X | None` for type annotations
+tests\test_full_lifecycle.py:8:1: I001 [*] Import block is un-sorted or un-formatted
+tests\test_kiosk.py:6:1: I001 [*] Import block is un-sorted or un-formatted
+tests\test_kiosk.py:25:5: I001 [*] Import block is un-sorted or un-formatted
+Found 190 errors.
+[*] 136 fixable with the `--fix` option (3 hidden fixes can be enabled with the `--unsafe-fixes` option).

@@ -1,0 +1,9 @@
+﻿
+## tests.load.test_event_loop_lag
+  [SKIP] test_pipeline_does_not_block_event_loop  замер задержки — только последовательно
+  [SKIP] test_upload_processing_does_not_block_event_loop  замер задержки — только последовательно
+  [SKIP] test_capture_lag  замер задержки — только последовательно
+  [SKIP] test_mock_frame_cost  замер задержки — только последовательно
+
+## tests.test_full_lifecycle
+  [FAIL] test_full_cycle_with_real_mock_delays  assert 5.156723199994303 <= 5.0

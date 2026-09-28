@@ -1,0 +1,307 @@
+﻿
+## tests.blackbox.test_api_boundaries
+  [FAIL] test_card_page_unknown_session_is_404  assert 200 == 404
+  [FAIL] test_history_limit_values_no_5xx[999999999999999999999]  AssertionError: ('999999999999999999999', 500)
+  [FAIL] test_unknown_answer_id_rejected_422[]  AssertionError: ('', 200)
+  [FAIL] test_history_limit_out_of_range_rejected[-1]  AssertionError: ('-1', 200)
+  [FAIL] test_history_limit_out_of_range_rejected[0]  AssertionError: ('0', 200)
+  [FAIL] test_history_limit_out_of_range_rejected[1000000000]  AssertionError: ('1000000000', 200)
+  [FAIL] test_unknown_answer_id_rejected_422[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx…]  AssertionError: ('xxxxxxxxxxxxxxxxxxxx', 200)
+  [FAIL] test_unknown_answer_id_rejected_422[<script>alert(1)</script>]  AssertionError: ('<script>alert(1)</sc', 200)
+  [FAIL] test_unknown_answer_id_rejected_422[../../etc/passwd]  AssertionError: ('../../etc/passwd', 200)
+  [FAIL] test_unknown_answer_id_rejected_422[lava]  AssertionError: ('lava', 200)
+  [FAIL] test_unknown_question_type_rejected_422[]  assert 200 == 422
+  [FAIL] test_unknown_question_type_rejected_422[elements]  assert 200 == 422
+  [FAIL] test_unknown_question_type_rejected_422[COLOR]  assert 200 == 422
+  [FAIL] test_unknown_question_type_rejected_422[photo]  assert 200 == 422
+  [FAIL] test_unknown_question_type_rejected_422[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx…]  assert 200 == 422
+  [FAIL] test_unknown_combination_never_silently_becomes_combo_1  AssertionError: lava+precision+azure напечатан как «Космический Токарь-Оптик»
+
+## tests.chaos.test_chaos
+  [FAIL] test_ai_outage_session_completes_via_fallback_and_is_flagged[timeout]  AssertionError: timeout: fallback не отмечен, meta={}
+  [FAIL] test_ai_outage_session_completes_via_fallback_and_is_flagged[connect_error]  AssertionError: connect_error: fallback не отмечен, meta={}
+  [FAIL] test_ai_outage_session_completes_via_fallback_and_is_flagged[http_429]  AssertionError: http_429: fallback не отмечен, meta={}
+  [FAIL] test_ai_outage_session_completes_via_fallback_and_is_flagged[http_500]  AssertionError: http_500: fallback не отмечен, meta={}
+  [FAIL] test_ai_outage_session_completes_via_fallback_and_is_flagged[not_image]  AssertionError: not_image: ERROR cannot identify image file 'C:\\Users\\1358~1\\AppData\\Local\\Temp\\stanok_tests_jlzie1qb\\storage\\generated\\sess_20260928171828_ab59_ai.jpg'
+  [FAIL] test_disk_full_during_composition  AssertionError: фото осталось после сбоя
+  [FAIL] test_unplugged_camera_does_not_silently_capture_placeholder  AssertionError: capture с мёртвой камеры → 200
+
+## tests.integration.test_history_privacy
+  [FAIL] test_reset_after_completed_keeps_completed_in_history  AssertionError: assert 'IDLE' == 'COMPLETED'
+  [FAIL] test_reset_after_error_keeps_error_in_history  AssertionError: За 5 с статус не стал ['ERROR']; последний: PRINTING
+  [FAIL] test_raw_photo_deleted_even_if_print_failed  AssertionError: сырое фото ребёнка осталось после ошибки печати
+  [FAIL] test_raw_photo_deleted_if_ai_failed  AssertionError: assert 'sess_20260928171845_5809_raw.jpg' not in ['sess_20260928171845_5809_raw.jpg']
+  [FAIL] test_raw_photo_deleted_when_session_abandoned  AssertionError: assert 'sess_20260928171846_f710_raw.jpg' not in ['sess_20260928171846_f710_raw.jpg']
+  [FAIL] test_generated_face_image_not_kept_after_card_composed  AssertionError: assert 'sess_20260928171846_8c8d_ai.jpg' not in ['sess_20260928171846_8c8d_ai.jpg']
+  [FAIL] test_retention_script_removes_old_cards_and_rows  ModuleNotFoundError: No module named 'scripts.cleanup_storage'
+
+## tests.integration.test_races
+  [FAIL] test_new_session_during_generation_old_session_not_left_hanging  AssertionError: За 10 с статус не стал ['COMPLETED', 'ERROR', 'IDLE']; последний: GENERATING
+  [FAIL] test_reset_during_generation_kiosk_stays_idle  AssertionError: после сброса активна сессия в статусе COMPLETED
+  [FAIL] test_reset_during_printing_card_still_printed_once_kiosk_idle  AssertionError: assert ({'id': 'sess_20260928171826_af84', 'created_at': '2026-09-28T14:18:26.370147', 'status': 'COMPLETED', 'element': 'space', ...} is None or 'COMPLETED' == 'IDLE'
+  [FAIL] test_trigger_print_during_auto_print_does_not_double_print  failed on setup with "worker 'gw5' crashed while running 'tests/integration/test_races.py::test_trigger_print_during_auto_print_does_not_double_print'"
+  [FAIL] test_double_tap_color_starts_exactly_one_pipeline[2]  AssertionError: AI вызван 2 раз(а) на 2 тапов; коды ответов [200, 200]
+  [FAIL] test_double_tap_color_starts_exactly_one_pipeline[5]  AssertionError: AI вызван 5 раз(а) на 5 тапов; коды ответов [200, 200, 200, 200, 200]
+  [FAIL] test_double_tap_color_starts_exactly_one_pipeline[10]  AssertionError: AI вызван 10 раз(а) на 10 тапов; коды ответов [200, 200, 200, 200, 200, 200, 200, 200, 200, 200]
+  [FAIL] test_sequential_double_color_is_rejected  assert 200 == 409
+  [FAIL] test_new_session_during_generation_does_not_print_foreign_card  AssertionError: За 10 с статус не стал ['COMPLETED', 'ERROR', 'IDLE']; последний: GENERATING
+  [FAIL] test_photo_upload_during_generation_does_not_hijack_session  assert 200 == 409
+
+## tests.integration.test_state_machine
+  [FAIL] test_invalid_transition_after_completed[confirm]  AssertionError: COMPLETED + confirm: 200 {"status":"ok","session":{"id":"sess_20260928171815_01ac","created_at":"2026-09-28T14:18:15.130947","status":"QUIZ_ELEMENT","element":"space","element_name":"Космос","power":"prec
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[PHOTO_TAKEN-power]  AssertionError: PHOTO_TAKEN + power: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171815_33c0","created_at":"2026-09-28T14:18:15.640734","status":"QUIZ_COLOR","element":null,"element_name":null,
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[PHOTO_TAKEN-color]  AssertionError: PHOTO_TAKEN + color: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171815_6d1f","created_at":"2026-09-28T14:18:15.743050","status":"PHOTO_TAKEN","element":null,"element_name":null
+  [FAIL] test_invalid_transition_after_completed[retake]  AssertionError: COMPLETED + retake: 200 {"status":"ok","session":{"id":"sess_20260928171815_035b","created_at":"2026-09-28T14:18:15.841479","status":"PHOTO_PENDING","element":"space","element_name":"Космос","power":"prec
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[PHOTO_TAKEN-trigger_print]  AssertionError: PHOTO_TAKEN + trigger_print: ожидали 409, получили 200 {"status":"ok"}
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_ELEMENT-confirm]  AssertionError: QUIZ_ELEMENT + confirm: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171815_5fe4","created_at":"2026-09-28T14:18:15.965920","status":"QUIZ_ELEMENT","element":null,"element_name":
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_ELEMENT-retake]  AssertionError: QUIZ_ELEMENT + retake: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171816_af1d","created_at":"2026-09-28T14:18:16.096784","status":"PHOTO_PENDING","element":null,"element_name":
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_ELEMENT-power]  AssertionError: QUIZ_ELEMENT + power: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171816_219a","created_at":"2026-09-28T14:18:16.215585","status":"QUIZ_COLOR","element":null,"element_name":null
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_ELEMENT-color]  AssertionError: QUIZ_ELEMENT + color: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171816_92df","created_at":"2026-09-28T14:18:16.324893","status":"QUIZ_ELEMENT","element":null,"element_name":nu
+  [FAIL] test_invalid_transition_after_completed[element]  AssertionError: COMPLETED + element: 200 {"status":"ok","session":{"id":"sess_20260928171816_0a75","created_at":"2026-09-28T14:18:16.426995","status":"QUIZ_POWER","element":"space","element_name":"Космос","power":"precis
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_ELEMENT-capture]  AssertionError: QUIZ_ELEMENT + capture: ожидали 409, получили 200 {"status":"ok","session_id":"sess_20260928171816_c21e","photo_url":"/storage/photos/sess_20260928171816_c21e_raw.jpg"}
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_ELEMENT-trigger_print]  AssertionError: QUIZ_ELEMENT + trigger_print: ожидали 409, получили 200 {"status":"ok"}
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_POWER-confirm]  AssertionError: QUIZ_POWER + confirm: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171816_ee01","created_at":"2026-09-28T14:18:16.727391","status":"QUIZ_ELEMENT","element":"space","element_name"
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_POWER-retake]  AssertionError: QUIZ_POWER + retake: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171816_108f","created_at":"2026-09-28T14:18:16.856481","status":"PHOTO_PENDING","element":"space","element_name"
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_POWER-element]  AssertionError: QUIZ_POWER + element: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171816_8435","created_at":"2026-09-28T14:18:16.979434","status":"QUIZ_POWER","element":"space","element_name":n
+  [FAIL] test_capture_after_completed_starts_new_session  AssertionError: assert 'sess_20260928171816_6e85' != 'sess_20260928171816_6e85'
+  [FAIL] test_invalid_transition_after_completed[power]  AssertionError: COMPLETED + power: 200 {"status":"ok","session":{"id":"sess_20260928171817_ef54","created_at":"2026-09-28T14:18:17.021244","status":"QUIZ_COLOR","element":"space","element_name":"Космос","power":"precisio
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_POWER-color]  AssertionError: QUIZ_POWER + color: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171817_cd33","created_at":"2026-09-28T14:18:17.111409","status":"QUIZ_POWER","element":"space","element_name":nul
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_POWER-capture]  AssertionError: QUIZ_POWER + capture: ожидали 409, получили 200 {"status":"ok","session_id":"sess_20260928171817_029f","photo_url":"/storage/photos/sess_20260928171817_029f_raw.jpg"}
+  [FAIL] test_invalid_transition_after_completed[color]  AssertionError: COMPLETED + color: 200 {"status":"ok","session":{"id":"sess_20260928171817_530d","created_at":"2026-09-28T14:18:17.636925","status":"GENERATING","element":"space","element_name":"Космос","power":"precisio
+  [FAIL] test_pipeline_passes_through_all_states  AssertionError: статус PHOTO_PENDING не транслировался; видели [<SessionState.PHOTO_TAKEN: 'PHOTO_TAKEN'>, <SessionState.QUIZ_ELEMENT: 'QUIZ_ELEMENT'>, <SessionState.QUIZ_POWER: 'QUIZ_POWER'>, <SessionState.QUIZ_COLOR: '
+  [FAIL] test_invalid_transition_after_completed[trigger_print]  AssertionError: COMPLETED + trigger_print: 200 {"status":"ok"}
+  [FAIL] test_print_failure_goes_to_error_not_stuck_in_printing  AssertionError: За 5 с статус не стал ['COMPLETED', 'ERROR']; последний: PRINTING
+  [FAIL] test_manual_print_retry_after_print_error  AssertionError: За 5 с статус не стал ['ERROR']; последний: PRINTING
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_POWER-trigger_print]  AssertionError: QUIZ_POWER + trigger_print: ожидали 409, получили 200 {"status":"ok"}
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_COLOR-confirm]  AssertionError: QUIZ_COLOR + confirm: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171832_ba80","created_at":"2026-09-28T14:18:32.412510","status":"QUIZ_ELEMENT","element":"space","element_name"
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_COLOR-retake]  AssertionError: QUIZ_COLOR + retake: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171832_8d4e","created_at":"2026-09-28T14:18:32.602992","status":"PHOTO_PENDING","element":"space","element_name"
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_COLOR-element]  AssertionError: QUIZ_COLOR + element: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171832_2e6f","created_at":"2026-09-28T14:18:32.793736","status":"QUIZ_POWER","element":"space","element_name":n
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_COLOR-power]  AssertionError: QUIZ_COLOR + power: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928171832_92c0","created_at":"2026-09-28T14:18:32.980501","status":"QUIZ_COLOR","element":"space","element_name":nul
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_COLOR-capture]  AssertionError: QUIZ_COLOR + capture: ожидали 409, получили 200 {"status":"ok","session_id":"sess_20260928171833_60d4","photo_url":"/storage/photos/sess_20260928171833_60d4_raw.jpg"}
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[QUIZ_COLOR-trigger_print]  AssertionError: QUIZ_COLOR + trigger_print: ожидали 409, получили 200 {"status":"ok"}
+  [FAIL] test_invalid_transition_during_generating[confirm]  AssertionError: GENERATING + confirm: 200 {"status":"ok","session":{"id":"sess_20260928171833_9410","created_at":"2026-09-28T14:18:33.529715","status":"QUIZ_ELEMENT","element":"space","element_name":"Космос","power":"pre
+  [FAIL] test_invalid_transition_during_generating[retake]  AssertionError: GENERATING + retake: 200 {"status":"ok","session":{"id":"sess_20260928171833_e6b1","created_at":"2026-09-28T14:18:33.720331","status":"PHOTO_PENDING","element":"space","element_name":"Космос","power":"pre
+  [FAIL] test_invalid_transition_during_generating[element]  AssertionError: GENERATING + element: 200 {"status":"ok","session":{"id":"sess_20260928171833_65fc","created_at":"2026-09-28T14:18:33.912050","status":"QUIZ_POWER","element":"space","element_name":"Космос","power":"preci
+  [FAIL] test_invalid_transition_during_generating[power]  AssertionError: GENERATING + power: 200 {"status":"ok","session":{"id":"sess_20260928171834_e219","created_at":"2026-09-28T14:18:34.190454","status":"QUIZ_COLOR","element":"space","element_name":"Космос","power":"precisi
+  [FAIL] test_invalid_transition_during_generating[color]  AssertionError: GENERATING + color: 200 {"status":"ok","session":{"id":"sess_20260928171834_ca32","created_at":"2026-09-28T14:18:34.664821","status":"GENERATING","element":"space","element_name":"Космос","power":"precisi
+  [FAIL] test_invalid_transition_during_generating[capture]  AssertionError: GENERATING + capture: 200 {"status":"ok","session_id":"sess_20260928171834_b3b3","photo_url":"/storage/photos/sess_20260928171834_b3b3_raw.jpg"}
+  [FAIL] test_invalid_transition_during_generating[trigger_print]  AssertionError: GENERATING + trigger_print: 200 {"status":"ok"}
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[NONE-confirm]  AssertionError: NONE + confirm: ожидали 409, получили 500 Internal Server Error
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[NONE-retake]  AssertionError: NONE + retake: ожидали 409, получили 200 {"status":"ok","session":null}
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[NONE-element]  AssertionError: NONE + element: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928172133_d9a5","created_at":"2026-09-28T14:21:33.908369","status":"QUIZ_POWER","element":"space","element_name":null,"p
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[NONE-power]  AssertionError: NONE + power: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928172133_60bd","created_at":"2026-09-28T14:21:33.957711","status":"QUIZ_COLOR","element":null,"element_name":null,"power"
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[NONE-color]  AssertionError: NONE + color: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928172134_a55d","created_at":"2026-09-28T14:21:34.003436","status":"PHOTO_PENDING","element":null,"element_name":null,"pow
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[NONE-trigger_print]  AssertionError: NONE + trigger_print: ожидали 409, получили 200 {"status":"ok"}
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[PHOTO_PENDING-confirm]  AssertionError: PHOTO_PENDING + confirm: ожидали 409, получили 500 Internal Server Error
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[PHOTO_PENDING-element]  AssertionError: PHOTO_PENDING + element: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928172134_94ff","created_at":"2026-09-28T14:21:34.125711","status":"QUIZ_POWER","element":"space","element_name
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[PHOTO_PENDING-power]  AssertionError: PHOTO_PENDING + power: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928172134_78a7","created_at":"2026-09-28T14:21:34.172148","status":"QUIZ_COLOR","element":null,"element_name":nul
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[PHOTO_PENDING-color]  AssertionError: PHOTO_PENDING + color: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928172134_c0f9","created_at":"2026-09-28T14:21:34.220773","status":"PHOTO_PENDING","element":null,"element_name":
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[PHOTO_PENDING-trigger_print]  AssertionError: PHOTO_PENDING + trigger_print: ожидали 409, получили 200 {"status":"ok"}
+  [FAIL] test_invalid_transition_is_409_and_state_unchanged[PHOTO_TAKEN-element]  AssertionError: PHOTO_TAKEN + element: ожидали 409, получили 200 {"status":"ok","session":{"id":"sess_20260928172134_b89d","created_at":"2026-09-28T14:21:34.307899","status":"QUIZ_POWER","element":"space","element_name":
+
+## tests.integration.test_state_machine_property.TestKioskStateMachine
+  [FAIL] runTest  AssertionError: POST /api/session/photo/confirm → 500: Internal Server Error
+
+## tests.load.test_event_loop_lag
+  [FAIL] test_mock_frame_cost  assert 0.02043622000007114 < 0.002
+  [FAIL] test_pipeline_does_not_block_event_loop  assert 0.5772303000022657 < 0.1
+
+## tests.security.test_access_control
+  [FAIL] test_remote_device_without_token_is_rejected[POST /api/session/new]  AssertionError: POST /api/session/new без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[POST /api/session/reset]  AssertionError: POST /api/session/reset без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[POST /api/session/photo/confirm]  AssertionError: POST /api/session/photo/confirm без токена с чужого устройства → 500
+  [FAIL] test_remote_device_without_token_is_rejected[POST /api/session/photo/retake]  AssertionError: POST /api/session/photo/retake без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[POST /api/session/answer]  AssertionError: POST /api/session/answer без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[GET /api/session/active]  AssertionError: GET /api/session/active без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[GET /api/session/history]  AssertionError: GET /api/session/history без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[POST /api/camera/capture]  AssertionError: POST /api/camera/capture без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[GET /api/camera/status]  AssertionError: GET /api/camera/status без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[POST /api/print/trigger-active]  AssertionError: POST /api/print/trigger-active без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[POST /api/print/reprint]  AssertionError: POST /api/print/reprint без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[GET /api/print/status]  AssertionError: GET /api/print/status без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[GET /api/health]  AssertionError: GET /api/health без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[GET /operator]  AssertionError: GET /operator без токена с чужого устройства → 200
+  [FAIL] test_remote_device_without_token_is_rejected[GET /kiosk]  AssertionError: GET /kiosk без токена с чужого устройства → 200
+  [FAIL] test_remote_upload_without_token_is_rejected  assert 200 == 401
+  [FAIL] test_wrong_token_rejected  assert 200 == 401
+  [FAIL] test_camera_token_only_allows_upload  AttributeError: 'Settings' object has no attribute 'CAMERA_TOKEN'. Did you mean: 'CAMERA_INDEX'?
+  [FAIL] test_remote_reprint_dos_blocked  AssertionError: гость напечатал 20 лишних карточек
+  [FAIL] test_operator_token_grants_access  AttributeError: 'Settings' object has no attribute 'ACCESS_TOKEN'
+  [FAIL] test_raw_child_photo_not_publicly_accessible  AssertionError: /storage/photos/sess_20260928171822_f0af_raw.jpg → 200 (98487 байт фото ребёнка)
+  [FAIL] test_websocket_rejects_remote_without_token  Failed: DID NOT RAISE WebSocketDisconnect
+  [FAIL] test_reprint_rate_limited  AssertionError: повторная допечатка сразу же: 200
+  [FAIL] test_generated_face_not_publicly_accessible  AssertionError: /storage/generated → 200
+  [FAIL] test_kiosk_can_see_raw_photo_for_review  assert 404 == 200
+  [FAIL] test_session_id_is_unguessable  AssertionError: ['sess_20260928171822_6096', 'sess_20260928171822_164c', 'sess_20260928171822_b6ee']
+  [FAIL] test_cors_does_not_reflect_foreign_origin  AssertionError: {'vary': 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Networ...D, OPTIONS, PATCH, POST, PUT, QUERY', 'access-control-max-age': '600', 'access-cont
+  [FAIL] test_csrf_from_foreign_origin_blocked_even_on_loopback  assert 200 == 403
+  [FAIL] test_websocket_rejects_foreign_origin  Failed: DID NOT RAISE WebSocketDisconnect
+
+## tests.security.test_info_leak_xss
+  [FAIL] test_api_docs_disabled_in_prod[/docs]  AssertionError: /docs открыт в проде
+  [FAIL] test_api_docs_disabled_in_prod[/redoc]  AssertionError: /redoc открыт в проде
+  [FAIL] test_api_docs_disabled_in_prod[/openapi.json]  AssertionError: /openapi.json открыт в проде
+  [FAIL] test_provider_error_body_not_exposed_to_clients  AssertionError: AI Error: Bothub API error 500: {"internal":"stacktrace at /srv/secret"}
+  [FAIL] test_pipeline_exception_details_not_exposed  AssertionError: [Errno 28] No space left on device: 'C:\\Users\\Гусь\\secret\\storage\\cards\\x.jpg'
+  [FAIL] test_telegram_share_link_param_injection  AssertionError: {'url': ['http://testserver/card/sess_20260928171827_9276?', 'https://phish.example'], 'text': ['ВЗЛОМ', 'Моя профессия будущего на фестивале Станок Будущего!']}
+  [FAIL] test_answer_id_with_html_not_stored  assert 200 in (409, 422)
+  [FAIL] test_templates_do_not_load_external_resources[kiosk.html]  AssertionError: kiosk.html тянет внешние ресурсы: ['https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800&family=Inter:wght@400;500;600;700&fam
+  [FAIL] test_templates_do_not_load_external_resources[operator.html]  AssertionError: operator.html тянет внешние ресурсы: ['https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(otaUrl)}']
+  [FAIL] test_dependencies_pinned_with_lockfile  AssertionError: нет requirements.lock
+
+## tests.security.test_upload
+  [FAIL] test_png_disguised_as_jpg_is_normalized_to_jpeg  AssertionError: на диске лежит PNG под именем .jpg
+  [FAIL] test_non_images_rejected[empty--image/jpeg]  AssertionError: empty: 200 {"status":"ok","session_id":"sess_20260928171825_c883","photo_url":"/storage/photos/sess_20260928171825_c883_raw.jpg","m
+  [FAIL] test_non_images_rejected[text-hello, I am not an image-image/jpeg]  AssertionError: text: 200 {"status":"ok","session_id":"sess_20260928171825_74f6","photo_url":"/storage/photos/sess_20260928171825_74f6_raw.jpg","m
+  [FAIL] test_non_images_rejected[html-<html><script>alert(1)</script></html>-text/html]  AssertionError: html: 200 {"status":"ok","session_id":"sess_20260928171825_8688","photo_url":"/storage/photos/sess_20260928171825_8688_raw.jpg","m
+  [FAIL] test_non_images_rejected[svg-<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>-image/svg+xml]  AssertionError: svg: 200 {"status":"ok","session_id":"sess_20260928171825_c6a9","photo_url":"/storage/photos/sess_20260928171825_c6a9_raw.jpg","m
+  [FAIL] test_non_images_rejected[exe-MZ\x90\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\…]  AssertionError: exe: 200 {"status":"ok","session_id":"sess_20260928171825_ed8c","photo_url":"/storage/photos/sess_20260928171825_ed8c_raw.jpg","m
+  [FAIL] test_non_images_rejected[heic-\x00\x00\x00\x18ftypheic\x00\x00\x00\x00mif1heic\x00\x00\x00\x00\x00\x…]  AssertionError: heic: 200 {"status":"ok","session_id":"sess_20260928171825_1307","photo_url":"/storage/photos/sess_20260928171825_1307_raw.jpg","m
+  [FAIL] test_heic_rejection_message_is_actionable  assert 200 == 415
+  [FAIL] test_oversized_upload_rejected_413  AssertionError: 16 МБ приняты: 200
+  [FAIL] test_oversized_by_content_length_rejected_before_parsing  assert 400 == 413
+  [FAIL] test_decompression_bomb_rejected  AssertionError: бомба принята: 200
+  [FAIL] test_huge_resolution_12000px_rejected_or_downscaled  AssertionError: (12000, 12000)
+  [FAIL] test_polyglot_payload_stripped  AssertionError: assert b'<script>' not in b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x0...P\x01E\x14P\x01E\x14P\x01E\x14P\x01E\x14P\x01E\x14P\x07\x
+  [FAIL] test_exif_orientation_normalized_on_upload  AssertionError: размер на диске (800, 600), ориентация не применена
+
+## tests.unit.test_ai_providers
+  [FAIL] test_placeholder_or_invalid_key_is_not_healthy[\u0432\u0430\u0448_bothub_api_\u043a\u043b\u044e\u0447]  AssertionError: bothub: ключ 'ваш_bothub_api_ключ' считается рабочим
+  [FAIL] test_placeholder_or_invalid_key_is_not_healthy[your_api_key_here]  AssertionError: bothub: ключ 'your_api_key_here' считается рабочим
+  [FAIL] test_placeholder_or_invalid_key_is_not_healthy[   ]  AssertionError: bothub: ключ '   ' считается рабочим
+  [FAIL] test_placeholder_or_invalid_key_is_not_healthy[sk-abc\n]  AssertionError: bothub: ключ 'sk-abc\n' считается рабочим
+  [FAIL] test_bothub_success_url  AssertionError: RESPX: <Request('POST', 'https://openai.bothub.chat/v1/images/edits')> not mocked!
+  [FAIL] test_bothub_success_b64  AssertionError: RESPX: <Request('POST', 'https://openai.bothub.chat/v1/images/edits')> not mocked!
+  [FAIL] test_fal_success  AssertionError: RESPX: <Request('POST', 'https://fal.run/fal-ai/flux/dev/image-to-image')> not mocked!
+  [FAIL] test_replicate_success_no_nameerror  AssertionError: Replicate упал: RESPX: <Request('POST', 'https://api.replicate.com/v1/predictions')> not mocked!
+  [FAIL] test_fallback_visible_in_session_and_health  AssertionError: в сессии нет признака fallback: meta={}
+
+## tests.unit.test_database
+  [FAIL] test_wal_mode_enabled  AssertionError: assert 'delete' == 'wal'
+  [FAIL] test_history_limit_is_bounded[-1]  AssertionError: assert 300 <= 200
+  [FAIL] test_parallel_writes_no_locked_errors  assert ["Operational... is locked')"] == []
+  [FAIL] test_history_limit_is_bounded[1000000000]  AssertionError: assert 300 <= 200
+  [FAIL] test_corrupted_db_file_does_not_crash_startup  sqlite3.DatabaseError: file is not a database
+  [FAIL] test_db_file_deleted_at_runtime_recovers  PermissionError: [WinError 32] Процесс не может получить доступ к файлу, так как этот файл занят другим процессом: 'C:\\Users\\Гусь\\AppData\\Local\\Temp\\pytest-of-Гусь\\pytest-3\\popen-gw3\\test_db_file_deleted_at_runt
+  [FAIL] test_interrupted_sessions_marked_on_startup  AssertionError: {'sess_t_00003': 'PRINTING', 'sess_t_00002': 'READY_TO_PRINT', 'sess_t_00001': 'COMPOSING', 'sess_t_00000': 'GENERATING'}
+  [FAIL] test_connections_are_closed_explicitly  AssertionError: ['unclosed database in <sqlite3.Connection object at 0x0000019FDD63CB80>', 'unclosed database in <sqlite3.Connection object at 0x0000019FDD63D120>', 'unclosed database in <sqlite3.Connection object at 0x0
+
+## tests.unit.test_printing
+  [FAIL] test_no_printers_is_not_ready  assert True is False
+  [FAIL] test_printer_error_status_is_not_ready[16]  AssertionError: {'is_ready': True, 'printers': ['DNP DS620'], 'active_printer': 'DNP DS620', 'simulation_mode': False, ...}
+  [FAIL] test_printer_error_status_is_not_ready[128]  AssertionError: {'is_ready': True, 'printers': ['DNP DS620'], 'active_printer': 'DNP DS620', 'simulation_mode': False, ...}
+  [FAIL] test_hardware_print_targets_configured_printer_without_dialog  AssertionError: печать через ShellExecute 'print': [('startfile', ('C:\\Users\\Гусь\\AppData\\Local\\Temp\\pytest-of-Гусь\\pytest-3\\popen-gw3\\test_hardware_print_targets_co0\\c.jpg', 'print'))]
+  [FAIL] test_pywin32_in_prod_requirements  AssertionError: assert 'pywin32' in 'fastapi>=0.110.0\nuvicorn[standard]>=0.28.0\njinja2>=3.1.3\npython-multipart>=0.0.9\npydantic>=2.6.0\npydantic-settin...\npillow>=10.2.0\nopencv-python>=4.9.0.80\nhttpx>=0.27.0\nqrcod
+  [FAIL] test_printer_error_status_is_not_ready[2]  AssertionError: {'is_ready': True, 'printers': ['DNP DS620'], 'active_printer': 'DNP DS620', 'simulation_mode': False, ...}
+  [FAIL] test_configured_printer_missing_is_not_ready  AssertionError: {'is_ready': True, 'printers': ['Samsung ML-1860 Series'], 'active_printer': 'DNP DS620', 'simulation_mode': False, ...}
+  [FAIL] test_pywin32_missing_status_unknown_not_ready  AssertionError: {'is_ready': True, 'printers': ['Default Windows Printer (Simulated/Direct)'], 'active_printer': 'Default Windows Printer (Simulated/Direct)', 'simulation_mode': False, ...}
+
+## tests.unit.test_settings_network
+  [FAIL] test_base_url_respects_port  AssertionError: assert 'http://172.20.10.2:8000' == 'http://192.168.0.10:8080'
+  [FAIL] test_local_ip_without_default_route_uses_interface_address  AssertionError: assert '127.0.0.1' == '192.168.4.23'
+  [FAIL] test_health_warns_when_qr_url_is_loopback  AssertionError: {'ok': True}
+
+## tests.visual.test_card_composition
+  [FAIL] test_card_layout_all_combinations[1]  AssertionError: комбинация #1 «Космический Токарь-Оптик»:
+  [FAIL] test_card_layout_all_combinations[2]  AssertionError: комбинация #2 «Космический Токарь-Оптик»:
+  [FAIL] test_card_layout_all_combinations[3]  AssertionError: комбинация #3 «Космический Токарь-Оптик»:
+  [FAIL] test_card_layout_all_combinations[4]  AssertionError: комбинация #4 «Космический Токарь-Оптик»:
+  [FAIL] test_card_layout_all_combinations[5]  AssertionError: комбинация #5 «Пилот Орбитального Дронофлота»:
+  [FAIL] test_card_layout_all_combinations[6]  AssertionError: комбинация #6 «Пилот Орбитального Дронофлота»:
+  [FAIL] test_card_layout_all_combinations[7]  AssertionError: комбинация #7 «Пилот Орбитального Дронофлота»:
+  [FAIL] test_card_layout_all_combinations[8]  AssertionError: комбинация #8 «Пилот Орбитального Дронофлота»:
+  [FAIL] test_card_layout_all_combinations[9]  AssertionError: комбинация #9 «Инженер Плазменных Двигателей»:
+  [FAIL] test_card_layout_all_combinations[10]  AssertionError: комбинация #10 «Инженер Плазменных Двигателей»:
+  [FAIL] test_card_layout_all_combinations[11]  AssertionError: комбинация #11 «Инженер Плазменных Двигателей»:
+  [FAIL] test_card_layout_all_combinations[12]  AssertionError: комбинация #12 «Инженер Плазменных Двигателей»:
+  [FAIL] test_card_layout_all_combinations[13]  AssertionError: комбинация #13 «Архитектор Гравитационных Траекторий»:
+  [FAIL] test_card_layout_all_combinations[14]  AssertionError: комбинация #14 «Архитектор Гравитационных Траекторий»:
+  [FAIL] test_card_layout_all_combinations[15]  AssertionError: комбинация #15 «Архитектор Гравитационных Траекторий»:
+  [FAIL] test_card_layout_all_combinations[16]  AssertionError: комбинация #16 «Архитектор Гравитационных Траекторий»:
+  [FAIL] test_card_layout_all_combinations[17]  AssertionError: комбинация #17 «Хранитель Орбитального Биокупола»:
+  [FAIL] test_card_layout_all_combinations[18]  AssertionError: комбинация #18 «Хранитель Орбитального Биокупола»:
+  [FAIL] test_card_layout_all_combinations[19]  AssertionError: комбинация #19 «Хранитель Орбитального Биокупола»:
+  [FAIL] test_card_layout_all_combinations[20]  AssertionError: комбинация #20 «Хранитель Орбитального Биокупола»:
+  [FAIL] test_card_layout_all_combinations[21]  AssertionError: комбинация #21 «Квантовый Калибровщик Реактора»:
+  [FAIL] test_card_layout_all_combinations[28]  AssertionError: комбинация #28 «Оператор Сверхбыстрых Нейтронов»:
+  [FAIL] test_card_layout_all_combinations[22]  AssertionError: комбинация #22 «Квантовый Калибровщик Реактора»:
+  [FAIL] test_card_layout_all_combinations[29]  AssertionError: комбинация #29 «Мастер Термоядерного Синтеза»:
+  [FAIL] test_card_layout_all_combinations[23]  AssertionError: комбинация #23 «Квантовый Калибровщик Реактора»:
+  [FAIL] test_card_layout_all_combinations[30]  AssertionError: комбинация #30 «Мастер Термоядерного Синтеза»:
+  [FAIL] test_card_layout_all_combinations[24]  AssertionError: комбинация #24 «Квантовый Калибровщик Реактора»:
+  [FAIL] test_card_layout_all_combinations[31]  AssertionError: комбинация #31 «Мастер Термоядерного Синтеза»:
+  [FAIL] test_card_layout_all_combinations[25]  AssertionError: комбинация #25 «Оператор Сверхбыстрых Нейтронов»:
+  [FAIL] test_card_layout_all_combinations[32]  AssertionError: комбинация #32 «Мастер Термоядерного Синтеза»:
+  [FAIL] test_card_layout_all_combinations[26]  AssertionError: комбинация #26 «Оператор Сверхбыстрых Нейтронов»:
+  [FAIL] test_card_layout_all_combinations[33]  AssertionError: комбинация #33 «Квантовый Криптограф Энергосетей»:
+  [FAIL] test_card_layout_all_combinations[27]  AssertionError: комбинация #27 «Оператор Сверхбыстрых Нейтронов»:
+  [FAIL] test_card_layout_all_combinations[34]  AssertionError: комбинация #34 «Квантовый Криптограф Энергосетей»:
+  [FAIL] test_card_layout_all_combinations[40]  AssertionError: комбинация #40 «Эколог Изотопной Безопасности»:
+  [FAIL] test_card_layout_all_combinations[35]  AssertionError: комбинация #35 «Квантовый Криптограф Энергосетей»:
+  [FAIL] test_card_layout_all_combinations[41]  AssertionError: комбинация #41 «Наладчик Прецизионных Манипуляторов»:
+  [FAIL] test_card_layout_all_combinations[36]  AssertionError: комбинация #36 «Квантовый Криптограф Энергосетей»:
+  [FAIL] test_card_layout_all_combinations[42]  AssertionError: комбинация #42 «Наладчик Прецизионных Манипуляторов»:
+  [FAIL] test_card_layout_all_combinations[37]  AssertionError: комбинация #37 «Эколог Изотопной Безопасности»:
+  [FAIL] test_card_layout_all_combinations[38]  AssertionError: комбинация #38 «Эколог Изотопной Безопасности»:
+  [FAIL] test_card_layout_all_combinations[43]  AssertionError: комбинация #43 «Наладчик Прецизионных Манипуляторов»:
+  [FAIL] test_card_layout_all_combinations[39]  AssertionError: комбинация #39 «Эколог Изотопной Безопасности»:
+  [FAIL] test_card_layout_all_combinations[44]  AssertionError: комбинация #44 «Наладчик Прецизионных Манипуляторов»:
+  [FAIL] test_card_layout_all_combinations[50]  AssertionError: комбинация #50 «Конструктор Тяжёлых Экзоскелетов»:
+  [FAIL] test_card_layout_all_combinations[54]  AssertionError: комбинация #54 «Обучатель Нейросетевых Станков»:
+  [FAIL] test_card_layout_all_combinations[51]  AssertionError: комбинация #51 «Конструктор Тяжёлых Экзоскелетов»:
+  [FAIL] test_card_layout_all_combinations[55]  AssertionError: комбинация #55 «Обучатель Нейросетевых Станков»:
+  [FAIL] test_card_layout_all_combinations[52]  AssertionError: комбинация #52 «Конструктор Тяжёлых Экзоскелетов»:
+  [FAIL] test_card_layout_all_combinations[56]  AssertionError: комбинация #56 «Обучатель Нейросетевых Станков»:
+  [FAIL] test_card_layout_all_combinations[53]  AssertionError: комбинация #53 «Обучатель Нейросетевых Станков»:
+  [FAIL] test_card_layout_all_combinations[57]  AssertionError: комбинация #57 «Инженер Гуманоидных Ассистентов»:
+  [FAIL] test_card_layout_all_combinations[58]  AssertionError: комбинация #58 «Инженер Гуманоидных Ассистентов»:
+  [FAIL] test_card_layout_all_combinations[62]  AssertionError: комбинация #62 «Хирург Нанороботизированных Систем»:
+  [FAIL] test_card_layout_all_combinations[59]  AssertionError: комбинация #59 «Инженер Гуманоидных Ассистентов»:
+  [FAIL] test_card_layout_all_combinations[63]  AssertionError: комбинация #63 «Хирург Нанороботизированных Систем»:
+  [FAIL] test_card_layout_all_combinations[60]  AssertionError: комбинация #60 «Инженер Гуманоидных Ассистентов»:
+  [FAIL] test_card_layout_all_combinations[64]  AssertionError: комбинация #64 «Хирург Нанороботизированных Систем»:
+  [FAIL] test_card_layout_all_combinations[61]  AssertionError: комбинация #61 «Хирург Нанороботизированных Систем»:
+  [FAIL] test_card_layout_all_combinations[65]  AssertionError: комбинация #65 «Генный Синтезатор Быстрого Реагирования»:
+  [FAIL] test_card_layout_all_combinations[71]  AssertionError: комбинация #71 «Создатель Бионических Протезов»:
+  [FAIL] test_card_layout_all_combinations[66]  AssertionError: комбинация #66 «Генный Синтезатор Быстрого Реагирования»:
+  [FAIL] test_card_layout_all_combinations[72]  AssertionError: комбинация #72 «Создатель Бионических Протезов»:
+  [FAIL] test_card_layout_all_combinations[67]  AssertionError: комбинация #67 «Генный Синтезатор Быстрого Реагирования»:
+  [FAIL] test_card_layout_all_combinations[73]  AssertionError: комбинация #73 «Архитектор Цифровых Двойников Органов»:
+  [FAIL] test_card_layout_all_combinations[75]  AssertionError: комбинация #75 «Архитектор Цифровых Двойников Органов»:
+  [FAIL] test_card_layout_all_combinations[74]  AssertionError: комбинация #74 «Архитектор Цифровых Двойников Органов»:
+  [FAIL] test_card_layout_all_combinations[76]  AssertionError: комбинация #76 «Архитектор Цифровых Двойников Органов»:
+  [FAIL] test_card_layout_all_combinations[77]  AssertionError: комбинация #77 «Хранитель Биогенетического Резерва»:
+  [FAIL] test_card_layout_all_combinations[79]  AssertionError: комбинация #79 «Хранитель Биогенетического Резерва»:
+  [FAIL] test_card_layout_all_combinations[78]  AssertionError: комбинация #78 «Хранитель Биогенетического Резерва»:
+  [FAIL] test_card_layout_all_combinations[80]  AssertionError: комбинация #80 «Хранитель Биогенетического Резерва»:
+  [FAIL] test_card_layout_all_combinations[81]  AssertionError: комбинация #81 «Лазерный Метролог Сверхсплавов»:
+  [FAIL] test_card_layout_all_combinations[68]  AssertionError: комбинация #68 «Генный Синтезатор Быстрого Реагирования»:
+  [FAIL] test_card_layout_all_combinations[83]  AssertionError: комбинация #83 «Лазерный Метролог Сверхсплавов»:
+  [FAIL] test_card_layout_all_combinations[82]  AssertionError: комбинация #82 «Лазерный Метролог Сверхсплавов»:
+  [FAIL] test_card_layout_all_combinations[84]  AssertionError: комбинация #84 «Лазерный Метролог Сверхсплавов»:
+  [FAIL] test_card_layout_all_combinations[69]  AssertionError: комбинация #69 «Создатель Бионических Протезов»:
+  [FAIL] test_card_layout_all_combinations[85]  AssertionError: комбинация #85 «Оператор Плазменной 3D-Печати»:
+  [FAIL] test_card_layout_all_combinations[86]  AssertionError: комбинация #86 «Оператор Плазменной 3D-Печати»:
+  [FAIL] test_card_layout_all_combinations[87]  AssertionError: комбинация #87 «Оператор Плазменной 3D-Печати»:
+  [FAIL] test_card_layout_all_combinations[70]  AssertionError: комбинация #70 «Создатель Бионических Протезов»:
+  [FAIL] test_card_layout_all_combinations[88]  AssertionError: комбинация #88 «Оператор Плазменной 3D-Печати»:
+  [FAIL] test_card_layout_all_combinations[89]  AssertionError: комбинация #89 «Сталевар Квантово-Дуговых Печей»:
+  [FAIL] test_card_layout_all_combinations[90]  AssertionError: комбинация #90 «Сталевар Квантово-Дуговых Печей»:
+  [FAIL] test_card_layout_all_combinations[91]  AssertionError: комбинация #91 «Сталевар Квантово-Дуговых Печей»:
+  [FAIL] test_card_layout_all_combinations[92]  AssertionError: комбинация #92 «Сталевар Квантово-Дуговых Печей»:
+  [FAIL] test_card_layout_all_combinations[93]  AssertionError: комбинация #93 «Синтезатор Метаматериалов»:
+  [FAIL] test_card_layout_all_combinations[94]  AssertionError: комбинация #94 «Синтезатор Метаматериалов»:
+  [FAIL] test_card_layout_all_combinations[95]  AssertionError: комбинация #95 «Синтезатор Метаматериалов»:
+  [FAIL] test_card_layout_all_combinations[96]  AssertionError: комбинация #96 «Синтезатор Метаматериалов»:
+  [FAIL] test_card_layout_all_combinations[97]  AssertionError: комбинация #97 «Инженер Безотходной Металлургии»:
+  [FAIL] test_card_layout_all_combinations[98]  AssertionError: комбинация #98 «Инженер Безотходной Металлургии»:
+  [FAIL] test_card_layout_all_combinations[99]  AssertionError: комбинация #99 «Инженер Безотходной Металлургии»:
+  [FAIL] test_card_layout_all_combinations[100]  AssertionError: комбинация #100 «Инженер Безотходной Металлургии»:
+  [FAIL] test_card_layout_all_combinations[45]  AssertionError: комбинация #45 «Диспетчер Кибернетических Роев»:
+  [FAIL] test_card_has_300_dpi_metadata  AssertionError: dpi=None
+  [FAIL] test_card_shows_distinct_session_code  AssertionError: ['ПАСПОРТ ИНЖЕНЕРА БУДУЩЕГО // ID: SESS_202', 'ПАСПОРТ ИНЖЕНЕРА БУДУЩЕГО // ID: SESS_202']
+  [FAIL] test_card_layout_all_combinations[46]  AssertionError: комбинация #46 «Диспетчер Кибернетических Роев»:
+  [FAIL] test_card_layout_all_combinations[47]  AssertionError: комбинация #47 «Диспетчер Кибернетических Роев»:
+  [FAIL] test_card_layout_all_combinations[48]  AssertionError: комбинация #48 «Диспетчер Кибернетических Роев»:
+  [FAIL] test_card_layout_all_combinations[49]  AssertionError: комбинация #49 «Конструктор Тяжёлых Экзоскелетов»:
+  [FAIL] test_iphone_exif_orientation_respected_on_card  AssertionError: лицо не сверху: яркость верх-центр=128, лево-середина=222 → фото повернуто

@@ -94,7 +94,7 @@
     <button class="shutter-btn" id="btn-shutter">📸</button>
     <label class="btn-secondary" style="font-size: 14px; padding: 12px 18px; cursor: pointer;">
       📁 Из галереи
-      <input type="file" id="file-input" accept="image/*" style="display: none;">
+      <input type="file" id="file-input" accept="image/jpeg,image/png" style="display: none;">
     </label>
   </div>
 
@@ -119,11 +119,23 @@
         toast.innerText = 'Камера готова! Нажмите 📸 для съемки';
       } catch (err) {
         console.error(err);
-        toast.innerText = 'Камера заблокирована браузером. Используйте кнопку "Из галереи"';
+        // getUserMedia работает только по HTTPS или на localhost (S11).
+        // Запоздалая ошибка камеры не должна затирать результат уже отправленного фото.
+        if (uploading || uploadedOnce) return;
+        toast.innerText = window.isSecureContext
+          ? 'Камера заблокирована браузером. Используйте кнопку "Из галереи"'
+          : 'Живая камера доступна только по HTTPS. Используйте кнопку "Из галереи" — она работает';
       }
     }
 
+    let uploading = false;
+    let uploadedOnce = false;
+
     async function uploadBlob(blob) {
+      if (uploading) return;  // двойной тап по затвору не шлёт второе фото
+      uploading = true;
+      uploadedOnce = true;
+      btnShutter.disabled = true;
       toast.innerText = '⏳ Отправляем снимок на стенд...';
       const formData = new FormData();
       formData.append('file', blob, 'iphone_capture.jpg');
@@ -133,15 +145,22 @@
           method: 'POST',
           body: formData
         });
-        const data = await res.json();
-        if (data.status === 'ok') {
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.status === 'ok') {
           toast.innerText = '✅ Фото мгновенно передано на экран стенда!';
           if (navigator.vibrate) navigator.vibrate(100);
+        } else if (res.status === 401) {
+          toast.innerText = 'Нет доступа: отсканируйте QR на панели оператора ещё раз';
+        } else if (res.status === 409) {
+          toast.innerText = 'Стенд сейчас занят (идёт квиз или печать) — дождитесь нового участника';
         } else {
-          toast.innerText = 'Ошибка отправки: ' + data.message;
+          toast.innerText = 'Ошибка отправки: ' + (data.detail || ('HTTP ' + res.status));
         }
       } catch (e) {
         toast.innerText = 'Ошибка связи со стендом';
+      } finally {
+        uploading = false;
+        btnShutter.disabled = false;
       }
     }
 

@@ -1,0 +1,10 @@
+﻿python.exe : WARNING:venv:Actual environment location may have moved due to redirects, links or junctions.
+At line:1 char:385
++ ... ython.exe"; & $py -m pip_audit -r requirements.txt --progress-spinner ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (WARNING:venv:Ac...s or junctions.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Requested location: "C:\Users\1358~1\AppData\Local\Temp\tmpg1pbm0k7\Scripts\python.exe"
+  Actual location:    "C:\Users\Гусь\AppData\Local\Temp\tmpg1pbm0k7\Scripts\python.exe"
+No known vulnerabilities found

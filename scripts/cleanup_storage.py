@@ -1,0 +1,84 @@
+"""
+Процедура конца дня / retention (152-ФЗ, фото несовершеннолетних).
+
+Что делает:
+  1. (опционально) экспортирует историю сессий в CSV БЕЗ путей к файлам и без фото — для отчёта;
+  2. удаляет исходные фото, AI-портреты и карточки старше порога;
+  3. удаляет строки сессий старше порога из БД;
+  4. удаляет «сироты» — файлы в storage/, которым нет строки в БД.
+
+Запуск (Windows, из корня проекта, сервер можно не останавливать):
+    python scripts\\cleanup_storage.py --older-than-hours 12 --export data\\report_2026-09-28.csv
+    python scripts\\cleanup_storage.py --older-than-hours 0 --dry-run      # что будет удалено
+"""
+import argparse
+import csv
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from app.config.settings import settings  # noqa: E402
+from app.storage.database import db  # noqa: E402
+
+EXPORT_FIELDS = ["id", "created_at", "status", "element", "power", "color", "combination_id",
+                 "machine_name", "print_status", "duration_seconds"]
+
+
+def _unlink(path, dry_run: bool) -> bool:
+    if not path:
+        return False
+    p = Path(path)
+    if p.is_file():
+        if not dry_run:
+            p.unlink()
+        return True
+    return False
+
+
+def cleanup(older_than_hours: float, now: float | None = None, dry_run: bool = False, export: str | None = None) -> dict:
+    now = time.time() if now is None else now
+    cutoff = datetime.fromtimestamp(now - older_than_hours * 3600, tz=timezone.utc).isoformat()
+    old = db.sessions_older_than(cutoff)
+    report = {"sessions": len(old), "cards_deleted": 0, "photos_deleted": 0, "generated_deleted": 0,
+              "orphans_deleted": 0, "dry_run": dry_run, "cutoff": cutoff}
+
+    if export:
+        with open(export, "w", newline="", encoding="utf-8-sig") as f:
+            w = csv.DictWriter(f, fieldnames=EXPORT_FIELDS, extrasaction="ignore")
+            w.writeheader()
+            for row in db.get_recent_sessions(limit=200) if not old else old:
+                w.writerow(row)
+
+    for row in old:
+        report["photos_deleted"] += _unlink(row.get("photo_path"), dry_run)
+        report["generated_deleted"] += _unlink(row.get("generated_image_path"), dry_run)
+        report["cards_deleted"] += _unlink(row.get("final_card_path"), dry_run)
+    if not dry_run:
+        db.delete_sessions([r["id"] for r in old])
+
+    # Сироты: файл есть, строки в БД нет (крэш между записью файла и БД, ручные копии и т.п.)
+    for folder in (settings.PHOTOS_DIR, settings.GENERATED_DIR, settings.CARDS_DIR):
+        for f in Path(folder).glob("sess_*"):
+            sid = f.name.rsplit("_", 1)[0]
+            if f.is_file() and f.stat().st_mtime < now - older_than_hours * 3600 and not db.get_session(sid):
+                report["orphans_deleted"] += _unlink(f, dry_run)
+    return report
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Удаление фото и карточек посетителей старше порога")
+    ap.add_argument("--older-than-hours", type=float, default=12)
+    ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--export", help="CSV с историей (без путей и фото)")
+    args = ap.parse_args()
+    rep = cleanup(args.older_than_hours, dry_run=args.dry_run, export=args.export)
+    print(rep)
+
+
+if __name__ == "__main__":
+    main()

@@ -59,9 +59,9 @@
 
     <div class="card-preview-box">
       {% if session and session.final_card_path %}
-        <img src="/storage/cards/{{ session.id }}_card.jpg" alt="Digital Card">
+        <img src="/media/cards/{{ session.id }}.jpg" alt="Digital Card">
       {% else %}
-        <p style="padding: 40px; color: var(--text-muted);">Изображение формируется...</p>
+        <p style="padding: 40px; color: var(--text-muted);">{{ "Изображение формируется..." if session else "Карточка не найдена или уже удалена" }}</p>
       {% endif %}
     </div>
 
@@ -71,12 +71,12 @@
 
     <div class="action-group">
       {% if session and session.final_card_path %}
-        <a href="/storage/cards/{{ session.id }}_card.jpg" download="stanok_budushego_{{ session.id }}.jpg" class="btn-cyber" style="text-decoration: none; justify-content: center; font-size: 18px; padding: 18px;">
+        <a href="/media/cards/{{ session.id }}.jpg" download="stanok_budushego.jpg" class="btn-cyber" style="text-decoration: none; justify-content: center; font-size: 18px; padding: 18px;">
           📥 СКАЧАТЬ КАРТОЧКУ (HD)
         </a>
       {% endif %}
       
-      <a href="https://t.me/share/url?url={{ request.url }}&text=Моя%20профессия%20будущего%20на%20фестивале%20Станок%20Будущего!" target="_blank" class="btn-tg">
+      <a href="{{ share_url }}" target="_blank" rel="noopener noreferrer" class="btn-tg">
         ✈️ ПОДЕЛИТЬСЯ В TELEGRAM
       </a>
     </div>

@@ -42,8 +42,15 @@ QUESTIONS = [
     }
 ]
 
+_VALID_ANSWERS = {q["id"]: {opt["id"] for opt in q["options"]} for q in QUESTIONS}
+
+
 def get_questions_schema() -> List[Dict[str, Any]]:
     return QUESTIONS
+
+
+def is_valid_answer(question_type: str, answer_id: str) -> bool:
+    return answer_id in _VALID_ANSWERS.get(question_type, set())
 
 def resolve_answers(element: str, power: str, color: str) -> Dict[str, Any]:
     combo = combination_manager.find(element, power, color)

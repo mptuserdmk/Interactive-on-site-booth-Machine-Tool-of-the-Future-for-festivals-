@@ -1,0 +1,9 @@
+﻿
+[H13] max event-loop lag во время генерации+композиции: 69 мс
+[H13] max lag при загрузке 12 МП: 49 мс
+[H13] max lag при capture (mock-кадр): 26 мс
+[H14] read_frame() без камеры: 0.00 мс/кадр → 3 клиента × 20 FPS = 0% одного ядра только на генерацию кадра
+[SLO] выбор цвета → COMPLETED: 4.37 с
+5 passed, 437 deselected, 1 warning in 8.80s
+
+

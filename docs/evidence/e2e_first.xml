@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="1" tests="20" time="341.204" timestamp="2026-09-28T18:08:44.096990+03:00" hostname="DESKTOP-TAF7O8F"><testcase classname="tests.e2e.test_kiosk_ui" name="test_full_visitor_journey[chromium]" time="29.907" /><testcase classname="tests.e2e.test_kiosk_ui" name="test_double_tap_color_prints_once[chromium]" time="31.031"><failure message="playwright._impl._errors.TimeoutError: Page.goto: Timeout 30000ms exceeded.&#10;Call log:&#10;  - navigating to &quot;http://127.0.0.1:51347/kiosk&quot;, waiting until &quot;load&quot;">kiosk_page = &lt;Page url='http://127.0.0.1:51347/kiosk'&gt;
+live_server = &lt;e2e.conftest.LiveServer object at 0x000002256A1F8590&gt;
+
+    def test_double_tap_color_prints_once(kiosk_page, live_server):
+        page = kiosk_page
+&gt;       open_kiosk(page, live_server)
+
+tests\e2e\test_kiosk_ui.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\e2e\test_kiosk_ui.py:19: in open_kiosk
+    page.goto(live_server.url + "/kiosk")
+.venv\Lib\site-packages\playwright\sync_api\_generated.py:9903: in goto
+    self._sync(
+.venv\Lib\site-packages\playwright\_impl\_page.py:562: in goto
+    return await self._main_frame.goto(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\playwright\_impl\_frame.py:157: in goto
+    await self._channel.send(
+.venv\Lib\site-packages\playwright\_impl\_connection.py:76: in send
+    return await self._connection.wrap_api_call(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;playwright._impl._connection.Connection object at 0x0000022568FE23C0&gt;
+cb = &lt;function Channel.send.&lt;locals&gt;.&lt;lambda&gt; at 0x000002256AD16CA0&gt;
+is_internal = False, title = None
+
+    async def wrap_api_call(
+        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None
+    ) -&gt; Any:
+        if self._api_zone.get():
+            return await cb()
+        task = asyncio.current_task(self._loop)
+        parsed_st = _attach_api_call_information(
+            getattr(task, "__pw_stack__", None) or _capture_stack_trace(),
+            is_internal,
+            title,
+        )
+        self._api_zone.set(parsed_st)
+        try:
+            return await cb()
+        except Exception as error:
+&gt;           raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E           playwright._impl._errors.TimeoutError: Page.goto: Timeout 30000ms exceeded.
+E           Call log:
+E             - navigating to "http://127.0.0.1:51347/kiosk", waiting until "load"
+
+.venv\Lib\site-packages\playwright\_impl\_connection.py:632: TimeoutError</failure></testcase><testcase classname="tests.e2e.test_kiosk_ui" name="test_idle_modal_stay_and_auto_reset[chromium]" time="60.872"><failure message="AssertionError: Locator expected to be visible&#10;Actual value: None&#10;Error: element(s) not found &#10;Call log:&#10;  - Expect &quot;to_be_visible&quot; get_by_text(&quot;КЕМ ТЫ СТАНЕШЬ В&quot;) with timeout 25000ms&#10;  - waiting for get_by_text(&quot;КЕМ ТЫ СТАНЕШЬ В&quot;)&#10;&#10;Aria snapshot:&#10;- navigation &quot;Прогресс создания образа&quot;: 📸 Фото 🚀 Стихия ⚡ Суперсила 🎨 Цвет 🎁 Результат&#10;- region &quot;Зона фотографирования&quot;:&#10;  - heading &quot;УЛЫБНИСЬ В КАМЕРУ! 📸&quot; [level=2]&#10;  - paragraph: Встань по центру экрана и нажми большую красную кнопку.&#10;  - text: КАМЕРА ОНЛАЙН&#10;  - img &quot;Видеопоток камеры&quot;&#10;  - text: ЛИЦО ЗДЕСЬ 😊&#10;  - heading &quot;💡 Совет для классного кадра&quot; [level=3]&#10;  - paragraph: Смотри прямо в объектив и покажи свою самую яркую улыбку!&#10;  - text: 🎯 Автофокус и свет настроены автоматически&#10;  - button &quot;Сделать фотографию&quot;:&#10;    - img&#10;  - text: НАЖМИ ДЛЯ СНИМКА&#10;- contentinfo: ТЕРМИНАЛ ГОТОВ К РАБОТЕ СТАНОК БУДУЩЕГО 2026&#10;- text: &quot;5&quot;&#10;- heading &quot;ТЫ ЕЩЁ ЗДЕСЬ? 😊&quot; [level=3]&#10;- paragraph: Если не продолжить, через несколько секунд терминал вернется на начальный экран.&#10;- button &quot;Продолжить работу с киоском&quot;: ПРОДОЛЖИТЬ&#10;- button &quot;Вернуться на главный экран&quot;: В НАЧАЛО">kiosk_page = &lt;Page url='http://127.0.0.1:51347/kiosk'&gt;
+live_server = &lt;e2e.conftest.LiveServer object at 0x000002256A1F8590&gt;
+
+    def test_idle_modal_stay_and_auto_reset(kiosk_page, live_server):
+        page = kiosk_page
+        open_kiosk(page, live_server)
+        page.get_by_role("button", name="Начать создание своего образа").click()
+        expect(page.get_by_text("УЛЫБНИСЬ В КАМЕРУ")).to_be_visible(timeout=T)
+        expect(page.get_by_text("ТЫ ЕЩЁ ЗДЕСЬ?")).to_be_visible(timeout=17_000)
+        shot(page, "06_idle_modal")
+        page.get_by_role("button", name="Продолжить работу с киоском").click()
+        expect(page.get_by_text("ТЫ ЕЩЁ ЗДЕСЬ?")).to_be_hidden()
+        expect(page.get_by_text("УЛЫБНИСЬ В КАМЕРУ")).to_be_visible()
+        # без касаний: 15 с + 5 с отсчёт → приветствие
+&gt;       expect(page.get_by_text("КЕМ ТЫ СТАНЕШЬ В")).to_be_visible(timeout=25_000)
+E       AssertionError: Locator expected to be visible
+E       Actual value: None
+E       Error: element(s) not found 
+E       Call log:
+E         - Expect "to_be_visible" get_by_text("КЕМ ТЫ СТАНЕШЬ В") with timeout 25000ms
+E         - waiting for get_by_text("КЕМ ТЫ СТАНЕШЬ В")
+E       
+E       Aria snapshot:
+E       - navigation "Прогресс создания образа": 📸 Фото 🚀 Стихия ⚡ Суперсила 🎨 Цвет 🎁 Результат
+E       - region "Зона фотографирования":
+E         - heading "УЛЫБНИСЬ В КАМЕРУ! 📸" [level=2]
+E         - paragraph: Встань по центру экрана и нажми большую красную кнопку.
+E         - text: КАМЕРА ОНЛАЙН
+E         - img "Видеопоток камеры"
+E         - text: ЛИЦО ЗДЕСЬ 😊
+E         - heading "💡 Совет для классного кадра" [level=3]
+E         - paragraph: Смотри прямо в объектив и покажи свою самую яркую улыбку!
+E         - text: 🎯 Автофокус и свет настроены автоматически
+E         - button "Сделать фотографию":
+E           - img
+E         - text: НАЖМИ ДЛЯ СНИМКА
+E       - contentinfo: ТЕРМИНАЛ ГОТОВ К РАБОТЕ СТАНОК БУДУЩЕГО 2026
+E       - text: "5"
+E       - heading "ТЫ ЕЩЁ ЗДЕСЬ? 😊" [level=3]
+E       - paragraph: Если не продолжить, через несколько секунд терминал вернется на начальный экран.
+E       - button "Продолжить работу с киоском": ПРОДОЛЖИТЬ
+E       - button "Вернуться на главный экран": В НАЧАЛО
+
+tests\e2e\test_kiosk_ui.py:94: AssertionError</failure></testcase><testcase classname="tests.e2e.test_kiosk_ui" name="test_error_state_is_not_shown_as_success[chromium]" time="3.046" /><testcase classname="tests.e2e.test_kiosk_ui" name="test_action_error_is_visible_to_visitor[chromium]" time="3.094" /><testcase classname="tests.e2e.test_kiosk_ui" name="test_server_restart_kiosk_reconnects[chromium]" time="9.447" /><testcase classname="tests.e2e.test_kiosk_ui" name="test_kiosk_works_fully_offline[chromium]" time="16.195"><skipped type="pytest.xfail" message="S10: без scripts/vendor_frontend.py киоск офлайн — белый экран" /></testcase><testcase classname="tests.e2e.test_kiosk_ui" name="test_resolutions_no_horizontal_scroll[chromium-1080x1920]" time="2.643" /><testcase classname="tests.e2e.test_kiosk_ui" name="test_touch_targets_at_least_64px[chromium]" time="3.929" /><testcase classname="tests.e2e.test_operator_mobile_ui" name="test_operator_panel_health_qr_history_reprint[chromium]" time="16.457" /><testcase classname="tests.e2e.test_operator_mobile_ui" name="test_mobile_camera_gallery_upload_reaches_kiosk[chromium-iPhone 13]" time="34.430"><failure message="AssertionError: Locator expected to contain text 'Ошибка отправки'&#10;Actual value: Камера заблокирована браузером. Используйте кнопку &quot;Из галереи&quot; &#10;Call log:&#10;  - Expect &quot;to_contain_text&quot; locator(&quot;#toast&quot;) with timeout 20000ms&#10;  - waiting for locator(&quot;#toast&quot;)&#10;    3 × locator resolved to &lt;div id=&quot;toast&quot; class=&quot;status-toast&quot;&gt;⏳ Отправляем снимок на стенд...&lt;/div&gt;&#10;      - unexpected value &quot;⏳ Отправляем снимок на стенд...&quot;&#10;    40 × locator resolved to &lt;div id=&quot;toast&quot; class=&quot;status-toast&quot;&gt;Камера заблокирована браузером. Используйте кнопк…&lt;/div&gt;&#10;       - unexpected value &quot;Камера заблокирована браузером. Используйте кнопку &quot;Из галереи&quot;&quot;&#10;&#10;Aria snapshot:&#10;- text: Камера заблокирована браузером. Используйте кнопку &quot;Из галереи&quot;">browser = &lt;Browser type=&lt;BrowserType name=chromium executable_path=C:\Users\Гусь\AppData\Local\ms-playwright\chromium-1243\chrome-win64\chrome.exe&gt; version=153.0.8010.12&gt;
+playwright = &lt;playwright._impl._playwright.Playwright object at 0x0000022568FE3A10&gt;
+live_server = &lt;e2e.conftest.LiveServer object at 0x000002256A1F8590&gt;
+tmp_path = WindowsPath('C:/Users/Гусь/AppData/Local/Temp/pytest-of-Гусь/pytest-19/test_mobile_camera_gallery_upl0')
+device = 'iPhone 13'
+
+    @pytest.mark.parametrize("device", ["iPhone 13", "Pixel 7"])
+    def test_mobile_camera_gallery_upload_reaches_kiosk(browser, playwright, live_server, tmp_path, device):
+        photo = tmp_path / "IMG_0001.jpg"
+        photo.write_bytes(make_photo_bytes(size=(1200, 1600)))
+        dev = dict(playwright.devices[device])
+        dev.pop("default_browser_type", None)
+        mctx = browser.new_context(**dev)
+        kctx = browser.new_context(viewport={"width": 1920, "height": 1080})
+        for c in (mctx, kctx):
+            c.route("**/*", allow_only_local_and_cdn)
+        try:
+            kiosk = kctx.new_page()
+            kiosk.goto(live_server.url + "/kiosk")
+            expect(kiosk.get_by_text("КЕМ ТЫ СТАНЕШЬ В")).to_be_visible(timeout=T)
+    
+            phone = mctx.new_page()
+            phone.goto(live_server.url + "/mobile-camera")
+            phone.set_input_files("#file-input", str(photo))
+            expect(phone.locator("#toast")).to_contain_text("передано", timeout=T)
+            shot(phone, f"21_mobile_{device.replace(' ', '_')}")
+            # фото появляется на киоске через WebSocket, без перезагрузки
+            expect(kiosk.get_by_text("ТВОЙ КАДР ОТЛИЧНЫЙ")).to_be_visible(timeout=T)
+    
+            # файл не-изображение → понятная ошибка, а не «undefined»
+            bad = tmp_path / "doc.jpg"
+            bad.write_bytes(b"not an image at all")
+            phone.set_input_files("#file-input", str(bad))
+&gt;           expect(phone.locator("#toast")).to_contain_text("Ошибка отправки", timeout=T)
+E           AssertionError: Locator expected to contain text 'Ошибка отправки'
+E           Actual value: Камера заблокирована браузером. Используйте кнопку "Из галереи" 
+E           Call log:
+E             - Expect "to_contain_text" locator("#toast") with timeout 20000ms
+E             - waiting for locator("#toast")
+E               3 × locator resolved to &lt;div id="toast" class="status-toast"&gt;⏳ Отправляем снимок на стенд...&lt;/div&gt;
+E                 - unexpected value "⏳ Отправляем снимок на стенд..."
+E               40 × locator resolved to &lt;div id="toast" class="status-toast"&gt;Камера заблокирована браузером. Используйте кнопк…&lt;/div&gt;
+E                  - unexpected value "Камера заблокирована браузером. Используйте кнопку "Из галереи""
+E           
+E           Aria snapshot:
+E           - text: Камера заблокирована браузером. Используйте кнопку "Из галереи"
+
+tests\e2e\test_operator_mobile_ui.py:84: AssertionError</failure></testcase><testcase classname="tests.e2e.test_operator_mobile_ui" name="test_mobile_camera_network_error_message[chromium]" time="1.170" /><testcase classname="tests.e2e.test_operator_mobile_ui" name="test_digital_card_pages[chromium]" time="11.593" /><testcase classname="tests.e2e.test_kiosk_ui" name="test_resolutions_no_horizontal_scroll[chromium-1920x1080]" time="23.423" /><testcase classname="tests.e2e.test_operator_mobile_ui" name="test_mobile_camera_gallery_upload_reaches_kiosk[chromium-Pixel 7]" time="15.470" /><testcase classname="tests.e2e.test_kiosk_ui" name="test_resolutions_no_horizontal_scroll[chromium-2560x1440]" time="21.894" /><testcase classname="tests.e2e.test_kiosk_ui" name="test_resolutions_no_horizontal_scroll[chromium-3840x2160]" time="10.611" /><testcase classname="tests.e2e.test_kiosk_ui" name="test_resolutions_no_horizontal_scroll[chromium-1024x768]" time="31.282"><failure message="playwright._impl._errors.TimeoutError: Page.goto: Timeout 30000ms exceeded.&#10;Call log:&#10;  - navigating to &quot;http://127.0.0.1:51347/kiosk&quot;, waiting until &quot;load&quot;">browser = &lt;Browser type=&lt;BrowserType name=chromium executable_path=C:\Users\Гусь\AppData\Local\ms-playwright\chromium-1243\chrome-win64\chrome.exe&gt; version=153.0.8010.12&gt;
+live_server = &lt;e2e.conftest.LiveServer object at 0x000002256A1F8590&gt;, w = 1024
+h = 768
+
+    @pytest.mark.parametrize("w,h", RESOLUTIONS, ids=[f"{w}x{h}" for w, h in RESOLUTIONS])
+    def test_resolutions_no_horizontal_scroll(browser, live_server, w, h):
+        from .conftest import allow_only_local_and_cdn
+        ctx = browser.new_context(viewport={"width": w, "height": h}, has_touch=True)
+        ctx.route("**/*", allow_only_local_and_cdn)
+        page = ctx.new_page()
+        try:
+&gt;           page.goto(live_server.url + "/kiosk")
+
+tests\e2e\test_kiosk_ui.py:173: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\playwright\sync_api\_generated.py:9903: in goto
+    self._sync(
+.venv\Lib\site-packages\playwright\_impl\_page.py:562: in goto
+    return await self._main_frame.goto(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv\Lib\site-packages\playwright\_impl\_frame.py:157: in goto
+    await self._channel.send(
+.venv\Lib\site-packages\playwright\_impl\_connection.py:76: in send
+    return await self._connection.wrap_api_call(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;playwright._impl._connection.Connection object at 0x0000022568FE23C0&gt;
+cb = &lt;function Channel.send.&lt;locals&gt;.&lt;lambda&gt; at 0x000002256AD16660&gt;
+is_internal = False, title = None
+
+    async def wrap_api_call(
+        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None
+    ) -&gt; Any:
+        if self._api_zone.get():
+            return await cb()
+        task = asyncio.current_task(self._loop)
+        parsed_st = _attach_api_call_information(
+            getattr(task, "__pw_stack__", None) or _capture_stack_trace(),
+            is_internal,
+            title,
+        )
+        self._api_zone.set(parsed_st)
+        try:
+            return await cb()
+        except Exception as error:
+&gt;           raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E           playwright._impl._errors.TimeoutError: Page.goto: Timeout 30000ms exceeded.
+E           Call log:
+E             - navigating to "http://127.0.0.1:51347/kiosk", waiting until "load"
+
+.venv\Lib\site-packages\playwright\_impl\_connection.py:632: TimeoutError</failure></testcase><testcase classname="tests.e2e.test_kiosk_ui" name="test_resolutions_no_horizontal_scroll[chromium-1366x1024]" time="12.107" /><testcase classname="tests.e2e.test_print_to_pdf" name="test_gdi_print_to_virtual_pdf_printer" time="1.673" /></testsuite></testsuites>

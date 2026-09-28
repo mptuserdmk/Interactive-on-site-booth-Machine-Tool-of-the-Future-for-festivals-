@@ -1,0 +1,141 @@
+﻿diff --git a/app/api/routes_camera.py b/app/api/routes_camera.py
+index 434e974..55184bb 100644
+--- a/app/api/routes_camera.py
++++ b/app/api/routes_camera.py
+@@ -27,7 +27,7 @@ async def capture_usb_snapshot():
+     try:
+         await asyncio.to_thread(camera_manager.capture_usb_snapshot, out_path)
+     except CameraUnavailable as e:
+-        raise HTTPException(status_code=503, detail=str(e))
++        raise HTTPException(status_code=503, detail=str(e)) from e
+     await session_manager.attach_photo(sess.id, out_path)
+     return {
+         "status": "ok",
+@@ -42,7 +42,7 @@ async def upload_ota_photo(file: UploadFile = File(...)):
+     try:
+         jpeg, _size = await asyncio.to_thread(normalize_photo, contents)
+     except UploadRejected as e:
+-        raise HTTPException(status_code=e.status_code, detail=str(e))
++        raise HTTPException(status_code=e.status_code, detail=str(e)) from e
+     sess = session_manager.begin_photo()
+     out_path = settings.PHOTOS_DIR / f"{sess.id}_raw.jpg"
+     await asyncio.to_thread(camera_manager.save_mobile_ota_photo, jpeg, out_path)
+diff --git a/app/camera/image_io.py b/app/camera/image_io.py
+index 90ade08..6a8c193 100644
+--- a/app/camera/image_io.py
++++ b/app/camera/image_io.py
+@@ -75,10 +75,10 @@ def normalize_photo(data: bytes) -> Tuple[bytes, Tuple[int, int]]:
+                 return out.getvalue(), img.size
+         except UploadRejected:
+             raise
+-        except Image.DecompressionBombError:
+-            raise UploadRejected(413, "Слишком большое разрешение изображения")
+-        except (UnidentifiedImageError, OSError, SyntaxError, ValueError):
+-            raise UploadRejected(415, "Файл не является изображением JPEG/PNG")
++        except Image.DecompressionBombError as e:
++            raise UploadRejected(413, "Слишком большое разрешение изображения") from e
++        except (UnidentifiedImageError, OSError, SyntaxError, ValueError) as e:
++            raise UploadRejected(415, "Файл не является изображением JPEG/PNG") from e
+ 
+ 
+ class UploadSizeLimitMiddleware:
+diff --git a/app/composition/composer.py b/app/composition/composer.py
+index 6b7ae45..8fc1748 100644
+--- a/app/composition/composer.py
++++ b/app/composition/composer.py
+@@ -1,5 +1,4 @@
+ import os
+-from functools import lru_cache
+ from pathlib import Path
+ from typing import Dict, Any, List, Tuple
+ from PIL import Image, ImageDraw, ImageFont, ImageOps
+@@ -14,6 +13,7 @@ class CardComposer:
+         self.dpi = 300
+         # Колонка QR справа снизу: текст левее этой границы (иначе адрес наезжает на QR)
+         self.text_right_limit_near_qr = self.width - 70 - 220 - 20
++        self._font_cache: Dict[Tuple[bool, int], ImageFont.FreeTypeFont] = {}
+         self._load_fonts()
+ 
+     def _load_fonts(self):
+@@ -69,9 +69,11 @@ class CardComposer:
+             self.font_small = ImageFont.load_default()
+             self.scalable = False
+ 
+-    @lru_cache(maxsize=64)
+     def _font(self, bold: bool, size: int) -> ImageFont.FreeTypeFont:
+-        return ImageFont.truetype(self.bold_path if bold else self.regular_path, size)
++        key = (bold, size)
++        if key not in self._font_cache:
++            self._font_cache[key] = ImageFont.truetype(self.bold_path if bold else self.regular_path, size)
++        return self._font_cache[key]
+ 
+     def create_gradient_bg(self, accent_hex: str) -> Image.Image:
+         base = Image.new("RGBA", (self.width, self.height), "#080c14")
+diff --git a/app/storage/database.py b/app/storage/database.py
+index faa7a54..c8067ef 100644
+--- a/app/storage/database.py
++++ b/app/storage/database.py
+@@ -12,8 +12,20 @@ from app.config.settings import settings
+ logger = logging.getLogger("stanok.db")
+ 
+ MAX_HISTORY_LIMIT = 200
+-PIPELINE_STATES = ("GENERATING", "GENERATED", "COMPOSING", "READY_TO_PRINT", "PRINTING")
+-INTERACTIVE_STATES = ("PHOTO_PENDING", "PHOTO_TAKEN", "PHOTO_CONFIRMED", "QUIZ_ELEMENT", "QUIZ_POWER", "QUIZ_COLOR")
++# Статусы, в которых сессия не может пережить рестарт процесса (константы, без пользовательского ввода)
++SELECT_INTERRUPTED = """
++    SELECT * FROM sessions WHERE status IN (
++        'GENERATING', 'GENERATED', 'COMPOSING', 'READY_TO_PRINT', 'PRINTING',
++        'PHOTO_PENDING', 'PHOTO_TAKEN', 'PHOTO_CONFIRMED', 'QUIZ_ELEMENT', 'QUIZ_POWER', 'QUIZ_COLOR')
++"""
++MARK_PIPELINE_ERROR = """
++    UPDATE sessions SET status = 'ERROR', error_message = 'Прервано перезапуском стенда', updated_at = ?
++    WHERE status IN ('GENERATING', 'GENERATED', 'COMPOSING', 'READY_TO_PRINT', 'PRINTING')
++"""
++MARK_INTERACTIVE_IDLE = """
++    UPDATE sessions SET status = 'IDLE', updated_at = ?
++    WHERE status IN ('PHOTO_PENDING', 'PHOTO_TAKEN', 'PHOTO_CONFIRMED', 'QUIZ_ELEMENT', 'QUIZ_POWER', 'QUIZ_COLOR')
++"""
+ 
+ SCHEMA = """
+     CREATE TABLE IF NOT EXISTS sessions (
+@@ -147,20 +159,12 @@ class Database:
+     def mark_interrupted_sessions(self) -> List[Dict[str, Any]]:
+         """После падения/kill процесса сессии навсегда оставались в GENERATING/PRINTING.
+         На старте: конвейер → ERROR, брошенные в фото/квизе → IDLE. Возвращает затронутые строки."""
+-        marks = ",".join("?" * len(PIPELINE_STATES + INTERACTIVE_STATES))
+-        rows = self._execute(f"SELECT * FROM sessions WHERE status IN ({marks})",
+-                             PIPELINE_STATES + INTERACTIVE_STATES, fetch="all")
++        rows = self._execute(SELECT_INTERRUPTED, fetch="all")
+         affected = [dict(r) for r in rows]
+         if affected:
+             now = datetime.now(timezone.utc).isoformat()
+-            self._execute(
+-                f"UPDATE sessions SET status = 'ERROR', error_message = 'Прервано перезапуском стенда', "
+-                f"updated_at = ? WHERE status IN ({','.join('?' * len(PIPELINE_STATES))})",
+-                (now, *PIPELINE_STATES))
+-            self._execute(
+-                f"UPDATE sessions SET status = 'IDLE', updated_at = ? "
+-                f"WHERE status IN ({','.join('?' * len(INTERACTIVE_STATES))})",
+-                (now, *INTERACTIVE_STATES))
++            self._execute(MARK_PIPELINE_ERROR, (now,))
++            self._execute(MARK_INTERACTIVE_IDLE, (now,))
+         return affected
+ 
+     def delete_sessions(self, session_ids: List[str]):
+diff --git a/scripts/vendor_frontend.py b/scripts/vendor_frontend.py
+index 1645a87..7f157cf 100644
+--- a/scripts/vendor_frontend.py
++++ b/scripts/vendor_frontend.py
+@@ -31,8 +31,10 @@ def download():
+     VENDOR.mkdir(parents=True, exist_ok=True)
+     lines = []
+     for name, url in FILES.items():
+-        req = urllib.request.Request(url, headers={"User-Agent": "stanok-vendor/1.0"})
+-        with urllib.request.urlopen(req, timeout=60) as resp:
++        if not url.startswith("https://"):
++            raise SystemExit(f"только https: {url}")
++        req = urllib.request.Request(url, headers={"User-Agent": "stanok-vendor/1.0"})  # noqa: S310
++        with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310  # nosec B310 — только https-URL из FILES
+             data = resp.read()
+         if len(data) < 10_000 or data.lstrip()[:1] == b"<":
+             raise SystemExit(f"{url}: подозрительный ответ ({len(data)} байт)")

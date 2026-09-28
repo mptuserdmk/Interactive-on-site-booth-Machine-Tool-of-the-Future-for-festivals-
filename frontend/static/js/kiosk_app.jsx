@@ -11,6 +11,26 @@
 
 const { useState, useEffect, useRef, useCallback } = React;
 
+// --- API helper: раньше ошибки fetch уходили только в console.error, ребёнок не видел реакции (H19) ---
+async function api(url, options = {}) {
+  const res = await fetch(url, options);
+  let body = null;
+  try { body = await res.json(); } catch (e) { /* пустой ответ */ }
+  if (!res.ok) {
+    const err = new Error((body && body.detail) || `Ошибка ${res.status}`);
+    err.status = res.status;
+    throw err;
+  }
+  return body;
+}
+
+function friendlyError(e) {
+  if (e && e.status === 409) return "Секунду… экран обновляется";
+  if (e && e.status === 503) return "Камера не отвечает — позови оператора 📷";
+  if (e instanceof TypeError) return "Нет связи со стендом — позови оператора";
+  return (e && e.message) || "Что-то пошло не так — попробуй ещё раз";
+}
+
 // --- ICONS (Playful Geometric Inline SVGs) ---
 const ICONS = {
   // Elements
@@ -282,7 +302,7 @@ function WelcomeScreen({ onStart }) {
 }
 
 // --- SCREEN 2: CAMERA CAPTURE (3/5 Viewport, 2/5 Actions) ---
-function CameraScreen({ isReview, photoPath, onCapture, onConfirm, onRetake }) {
+function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, busy }) {
   const [streamKey, setStreamKey] = useState(Date.now());
   const [isCapturing, setIsCapturing] = useState(false);
   const [flash, setFlash] = useState(false);
@@ -326,7 +346,7 @@ function CameraScreen({ isReview, photoPath, onCapture, onConfirm, onRetake }) {
 
           {isReview ? (
             <img 
-              src={`/storage/photos/${photoPath?.split(/[\\/]/).pop()}?t=${Date.now()}`} 
+              src={`/media/photos/${sessionId}.jpg?t=${Date.now()}`} 
               alt="Сделанный снимок" 
               className="w-full h-full object-cover"
             />
@@ -373,7 +393,7 @@ function CameraScreen({ isReview, photoPath, onCapture, onConfirm, onRetake }) {
                 <button
                   type="button"
                   aria-label="Сделать фотографию"
-                  disabled={isCapturing}
+                  disabled={isCapturing || busy}
                   onClick={handleShutter}
                   className="w-28 h-28 rounded-full bg-coral hover:bg-coral-light active:scale-95 border-b-8 border-coral-dark text-white flex items-center justify-center shadow-tactile transition-all cursor-pointer focus-visible:ring-4 focus-visible:ring-coral/40"
                 >
@@ -385,10 +405,11 @@ function CameraScreen({ isReview, photoPath, onCapture, onConfirm, onRetake }) {
               </div>
             ) : (
               <div className="flex flex-col gap-4">
-                <TactileButton 
-                  variant="primary" 
-                  size="lg" 
+                <TactileButton
+                  variant="primary"
+                  size="lg"
                   onClick={onConfirm}
+                  loading={busy}
                   ariaLabel="Подтвердить фотографию и перейти к выбору"
                   className="w-full"
                 >
@@ -396,10 +417,11 @@ function CameraScreen({ isReview, photoPath, onCapture, onConfirm, onRetake }) {
                   {ICONS.arrowRight}
                 </TactileButton>
 
-                <TactileButton 
-                  variant="secondary" 
-                  size="md" 
+                <TactileButton
+                  variant="secondary"
+                  size="md"
                   onClick={onRetake}
+                  disabled={busy}
                   ariaLabel="Переснять фотографию"
                   className="w-full"
                 >
@@ -416,7 +438,7 @@ function CameraScreen({ isReview, photoPath, onCapture, onConfirm, onRetake }) {
 }
 
 // --- SCREEN 3, 4, 5: SELECTION SCREENS (Elements, Superpowers, Colors) ---
-function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type }) {
+function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type, busy }) {
   return (
     <section className="flex-1 w-full max-w-6xl mx-auto flex flex-col gap-6 animate-fade-in" aria-label={title}>
       {/* Header */}
@@ -439,6 +461,8 @@ function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type 
               <button
                 key={opt.id}
                 type="button"
+                disabled={busy}
+                aria-pressed={isSelected}
                 onClick={() => onSelect(opt.id)}
                 aria-label={`Выбрать цвет ${opt.name}`}
                 className={`
@@ -461,6 +485,8 @@ function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type 
             <button
               key={opt.id}
               type="button"
+              disabled={busy}
+              aria-pressed={isSelected}
               onClick={() => onSelect(opt.id)}
               aria-label={`Выбрать вариант ${opt.name}`}
               className={`
@@ -530,8 +556,8 @@ function GeneratingScreen({ session }) {
 
 // --- SCREEN 7: FINAL RESULT BADGE & PRINT STATUS ---
 function ResultScreen({ session, onFinish }) {
-  const cardUrl = session?.final_card_path 
-    ? `/storage/cards/${session.final_card_path.split(/[\\/]/).pop()}?t=${Date.now()}`
+  const cardUrl = session?.final_card_path
+    ? `/media/cards/${session.id}.jpg?t=${Date.now()}`
     : null;
 
   return (
@@ -607,6 +633,28 @@ function ResultScreen({ session, onFinish }) {
   );
 }
 
+// --- SCREEN 8: ERROR (раньше ERROR показывался как «🎉 ОБРАЗ УСПЕШНО СОЗДАН!») ---
+function ErrorScreen({ session, onFinish, busy }) {
+  const hasCard = Boolean(session?.final_card_path);
+  return (
+    <main className="flex-1 flex flex-col items-center justify-center text-center px-6 max-w-3xl mx-auto animate-fade-in" role="alert">
+      <div className="w-28 h-28 rounded-full bg-amber/20 border-4 border-amber flex items-center justify-center text-5xl mb-6">🛠️</div>
+      <h2 className="font-display font-black text-4xl sm:text-5xl text-ink mb-3">
+        {hasCard ? "КАРТОЧКА ГОТОВА, НО НЕ НАПЕЧАТАЛАСЬ" : "УПС! ЧТО-ТО ПОШЛО НЕ ТАК"}
+      </h2>
+      <p className="font-sans text-xl text-ink-muted mb-8 max-w-xl">
+        {hasCard ? "Позови оператора — он допечатает твой паспорт за минуту." : "Позови оператора или попробуй ещё раз с начала."}
+      </p>
+      {hasCard && (
+        <img src={`/media/cards/${session.id}.jpg?t=${Date.now()}`} alt="Твой паспорт инженера" className="w-64 rounded-2xl shadow-tactile mb-8" />
+      )}
+      <TactileButton variant="primary" size="xl" onClick={onFinish} disabled={busy} ariaLabel="Вернуться на главный экран">
+        <span>НАЧАТЬ ЗАНОВО</span>
+      </TactileButton>
+    </main>
+  );
+}
+
 // --- IDLE INACTIVITY MODAL (KFC-Style 15s Timer -> 5s Modal) ---
 function IdleModal({ isOpen, countdown, onStay, onLeave }) {
   if (!isOpen) return null;
@@ -666,47 +714,92 @@ function KioskRoot() {
   const idleTimerRef = useRef(null);
   const countdownIntervalRef = useRef(null);
 
-  // Load Quiz Schema
-  useEffect(() => {
-    fetch('/api/quiz/schema')
-      .then(res => res.json())
-      .then(data => setQuizSchema(data))
-      .catch(err => console.error("Error loading quiz schema", err));
+  // Состояние связи и обратная связь на действия (H18, H19)
+  const [connected, setConnected] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState(null);
+  const busyRef = useRef(false);
+  const noticeTimerRef = useRef(null);
+
+  const showNotice = useCallback((text) => {
+    setNotice(text);
+    clearTimeout(noticeTimerRef.current);
+    noticeTimerRef.current = setTimeout(() => setNotice(null), 4000);
   }, []);
 
-  // WebSocket for Live State Synchronisation
+  const syncActiveSession = useCallback(async () => {
+    try {
+      const data = await api('/api/session/active');
+      setSession(data && data.status !== 'IDLE' ? data : null);
+    } catch (e) { /* покажет баннер связи */ }
+  }, []);
+
+  // Одно действие за раз: двойной тап не шлёт второй запрос (H2 на клиенте)
+  const runAction = useCallback(async (fn) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    try {
+      await fn();
+    } catch (e) {
+      showNotice(friendlyError(e));
+      if (e && e.status === 409) syncActiveSession();
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
+  }, [showNotice, syncActiveSession]);
+
+  // Load Quiz Schema (повтор при ошибке, чтобы киоск не остался без вариантов ответа)
+  useEffect(() => {
+    let timer;
+    const load = () => api('/api/quiz/schema').then(setQuizSchema).catch(() => { timer = setTimeout(load, 3000); });
+    load();
+    return () => clearTimeout(timer);
+  }, []);
+
+  // WebSocket с переподключением и ресинхронизацией: раньше после обрыва киоск «замерзал» до F5 (H18)
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws`;
-    const ws = new WebSocket(wsUrl);
+    let ws = null;
+    let timer = null;
+    let attempt = 0;
+    let stopped = false;
 
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'SESSION_UPDATE') {
-          setSession(msg.data);
+    const connect = () => {
+      ws = new WebSocket(wsUrl);
+      ws.onopen = () => {
+        attempt = 0;
+        setConnected(true);
+        syncActiveSession();
+      };
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'SESSION_UPDATE') {
+            setSession(msg.data && msg.data.status !== 'IDLE' ? msg.data : null);
+          }
+        } catch (e) {
+          console.error("WS parse error", e);
         }
-      } catch (e) {
-        console.error("WS parse error", e);
-      }
+      };
+      ws.onclose = () => {
+        setConnected(false);
+        if (!stopped) timer = setTimeout(connect, Math.min(10000, 1000 * 2 ** attempt++));
+      };
+      ws.onerror = () => ws.close();
     };
+    connect();
 
-    return () => ws.close();
-  }, []);
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+      if (ws) ws.close();
+    };
+  }, [syncActiveSession]);
 
-  // Initial Session Check
-  useEffect(() => {
-    fetch('/api/session/active')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status !== 'IDLE') {
-          setSession(data);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  // 15s Inactivity Watcher
+  // 15s Inactivity Watcher: таймер бездействия только открывает модалку
   const resetIdleTimer = useCallback(() => {
     if (isIdleModalOpen) return;
     clearTimeout(idleTimerRef.current);
@@ -717,21 +810,8 @@ function KioskRoot() {
     }
 
     idleTimerRef.current = setTimeout(() => {
-      setIsIdleModalOpen(true);
       setIdleCountdown(5);
-
-      clearInterval(countdownIntervalRef.current);
-      countdownIntervalRef.current = setInterval(() => {
-        setIdleCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(countdownIntervalRef.current);
-            setIsIdleModalOpen(false);
-            handleReset();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      setIsIdleModalOpen(true);
     }, 15000);
   }, [session, isIdleModalOpen]);
 
@@ -748,71 +828,55 @@ function KioskRoot() {
       window.removeEventListener('pointerdown', handleActivity);
       window.removeEventListener('click', handleActivity);
       clearTimeout(idleTimerRef.current);
-      clearInterval(countdownIntervalRef.current);
     };
   }, [resetIdleTimer]);
 
-  // Actions
-  const handleStartSession = async () => {
-    try {
-      const res = await fetch('/api/session/new', { method: 'POST' });
-      const sess = await res.json();
-      setSession(sess);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  // Отсчёт 5…0 живёт в собственном эффекте. Раньше интервал запускался внутри таймера и тут же
+  // очищался cleanup-ом эффекта выше (смена isIdleModalOpen → новый resetIdleTimer) — отсчёт
+  // навсегда застывал на «5», автосброс не происходил никогда.
+  useEffect(() => {
+    if (!isIdleModalOpen) return;
+    countdownIntervalRef.current = setInterval(() => setIdleCountdown(prev => Math.max(0, prev - 1)), 1000);
+    return () => clearInterval(countdownIntervalRef.current);
+  }, [isIdleModalOpen]);
 
-  const handleCapturePhoto = async () => {
-    try {
-      await fetch('/api/camera/capture', { method: 'POST' });
-    } catch (e) {
-      console.error(e);
+  useEffect(() => {
+    if (isIdleModalOpen && idleCountdown <= 0) {
+      handleReset();
     }
-  };
+  }, [isIdleModalOpen, idleCountdown]);
+  // Actions: одно действие за раз, ошибки видны на экране (H19)
+  const handleStartSession = () => runAction(async () => {
+    const sess = await api('/api/session/new', { method: 'POST' });
+    setSession(sess);
+  });
 
-  const handleConfirmPhoto = async () => {
-    try {
-      await fetch('/api/session/photo/confirm', { method: 'POST' });
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const handleCapturePhoto = () => runAction(() => api('/api/camera/capture', { method: 'POST' }));
 
-  const handleRetakePhoto = async () => {
-    try {
-      await fetch('/api/session/photo/retake', { method: 'POST' });
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const handleConfirmPhoto = () => runAction(() => api('/api/session/photo/confirm', { method: 'POST' }));
 
-  const handleSelectChoice = async (questionType, choiceId) => {
-    try {
-      await fetch('/api/session/answer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question_type: questionType, answer_id: choiceId })
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const handleRetakePhoto = () => runAction(() => api('/api/session/photo/retake', { method: 'POST' }));
+
+  const handleSelectChoice = (questionType, choiceId) => runAction(() => api('/api/session/answer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question_type: questionType, answer_id: choiceId })
+  }));
 
   const handleReset = async () => {
+    setIsIdleModalOpen(false);
+    clearInterval(countdownIntervalRef.current);
     try {
-      await fetch('/api/session/reset', { method: 'POST' });
-      setSession(null);
-      setSelectedElement(null);
-      setSelectedPower(null);
-      setSelectedColor(null);
-      setIsIdleModalOpen(false);
-      clearInterval(countdownIntervalRef.current);
+      await api('/api/session/reset', { method: 'POST' });
     } catch (e) {
-      console.error(e);
+      showNotice(friendlyError(e));
     }
+    // Экран возвращается к приветствию даже без связи с сервером
+    setSession(null);
+    setSelectedElement(null);
+    setSelectedPower(null);
+    setSelectedColor(null);
   };
-
   // Determine current step index for the tracker
   const getStepIndex = () => {
     if (!session || session.status === 'IDLE') return 0;
@@ -833,6 +897,7 @@ function KioskRoot() {
       return (
         <CameraScreen 
           isReview={false} 
+          busy={busy}
           onCapture={handleCapturePhoto} 
           onConfirm={handleConfirmPhoto} 
           onRetake={handleRetakePhoto} 
@@ -844,7 +909,8 @@ function KioskRoot() {
       return (
         <CameraScreen 
           isReview={true} 
-          photoPath={session.photo_path} 
+          busy={busy}
+          sessionId={session.id} 
           onCapture={handleCapturePhoto} 
           onConfirm={handleConfirmPhoto} 
           onRetake={handleRetakePhoto} 
@@ -858,7 +924,8 @@ function KioskRoot() {
           title="ВЫБЕРИ СВОЙ ВАЙБ 🚀" 
           subtitle="Какая стихия и отрасль будущего тебе ближе всего?" 
           options={quizSchema[0]?.options || []} 
-          selectedId={session.element_id} 
+          selectedId={session.element} 
+          busy={busy}
           onSelect={(id) => handleSelectChoice('element', id)} 
           type="element" 
         />
@@ -871,7 +938,8 @@ function KioskRoot() {
           title="ВЫБЕРИ СУПЕРСИЛУ ⚡" 
           subtitle="Что поможет тебе совершать инженерные открытия?" 
           options={quizSchema[1]?.options || []} 
-          selectedId={session.power_id} 
+          selectedId={session.power} 
+          busy={busy}
           onSelect={(id) => handleSelectChoice('power', id)} 
           type="power" 
         />
@@ -884,7 +952,8 @@ function KioskRoot() {
           title="ВЫБЕРИ ЦВЕТ ОБРАЗА 🎨" 
           subtitle="Какой цвет подчеркнет твой стиль и оборудование?" 
           options={quizSchema[2]?.options || []} 
-          selectedId={session.color_id} 
+          selectedId={session.color} 
+          busy={busy}
           onSelect={(id) => handleSelectChoice('color', id)} 
           type="color" 
         />
@@ -895,11 +964,29 @@ function KioskRoot() {
       return <GeneratingScreen session={session} />;
     }
 
+    if (session.status === 'ERROR') {
+      return <ErrorScreen session={session} onFinish={handleReset} busy={busy} />;
+    }
+
     return <ResultScreen session={session} onFinish={handleReset} />;
   };
 
   return (
     <div className="w-full max-w-[1280px] mx-auto min-h-screen flex flex-col justify-between p-6 sm:p-8 select-none">
+      {/* Потеря связи со стендом (H18) */}
+      {!connected && (
+        <div role="status" className="fixed top-0 inset-x-0 z-40 bg-coral text-white text-center font-display font-black text-xl py-3">
+          НЕТ СВЯЗИ СО СТЕНДОМ — ПЕРЕПОДКЛЮЧАЕМСЯ…
+        </div>
+      )}
+
+      {/* Сообщение об ошибке действия (H19) */}
+      {notice && (
+        <div role="alert" className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-ink text-white font-display font-bold text-xl px-8 py-4 rounded-2xl shadow-tactile">
+          {notice}
+        </div>
+      )}
+
       {/* Step Tracker (visible when session is active) */}
       {session && session.status !== 'IDLE' && (
         <StepTracker currentStep={getStepIndex()} />
@@ -913,8 +1000,8 @@ function KioskRoot() {
       {/* Minimal Bottom Bar */}
       <footer className="mt-8 pt-4 border-t-2 border-border-line flex items-center justify-between text-ink-muted text-sm font-sans">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-teal"></span>
-          <span className="font-bold">ТЕРМИНАЛ ГОТОВ К РАБОТЕ</span>
+          <span className={`w-2.5 h-2.5 rounded-full ${connected ? 'bg-teal' : 'bg-coral'}`}></span>
+          <span className="font-bold">{connected ? 'ТЕРМИНАЛ ГОТОВ К РАБОТЕ' : 'НЕТ СВЯЗИ СО СТЕНДОМ'}</span>
         </div>
         <div>
           <span>СТАНОК БУДУЩЕГО 2026</span>

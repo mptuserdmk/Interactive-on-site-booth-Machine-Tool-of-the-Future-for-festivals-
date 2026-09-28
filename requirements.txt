@@ -10,3 +10,4 @@ httpx>=0.27.0
 qrcode[pil]>=7.4.2
 python-dotenv>=1.0.1
 websockets>=12.0
+pywin32>=306; sys_platform == "win32"

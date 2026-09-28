@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="19" skipped="0" tests="38" time="53.771" timestamp="2026-09-28T17:24:18.391746+03:00" hostname="DESKTOP-TAF7O8F"><testcase classname="tests.integration.test_races" name="test_double_tap_color_starts_exactly_one_pipeline[2]" time="1.940"><failure message="AssertionError: AI вызван 2 раз(а) на 2 тапов; коды ответов [200, 200]&#10;assert 2 == 1&#10; +  where 2 = len(['sess_20260928172419_6506', 'sess_20260928172419_6506'])">client = &lt;httpx.AsyncClient object at 0x000001B08877F770&gt;, fast_pipeline = True
+ai_calls = ['sess_20260928172419_6506', 'sess_20260928172419_6506'], taps = 2
+
+    @pytest.mark.parametrize("taps", [2, 5, 10])
+    async def test_double_tap_color_starts_exactly_one_pipeline(client, fast_pipeline, ai_calls, taps):
+        """H2: двойной/многократный тап по цвету → ровно 1 генерация AI и 1 печать."""
+        sid = await drive_to(client, "QUIZ_COLOR")
+        responses = await asyncio.gather(*[do(client, "color") for _ in range(taps)])
+        codes = sorted(r.status_code for r in responses)
+        await wait_for_status(db_state(sid), {"COMPLETED", "ERROR"}, timeout=20)
+        await asyncio.sleep(0.2)  # дать «лишним» пайплайнам, если они есть, дойти до печати
+&gt;       assert len(ai_calls) == 1, f"AI вызван {len(ai_calls)} раз(а) на {taps} тапов; коды ответов {codes}"
+E       AssertionError: AI вызван 2 раз(а) на 2 тапов; коды ответов [200, 200]
+E       assert 2 == 1
+E        +  where 2 = len(['sess_20260928172419_6506', 'sess_20260928172419_6506'])
+
+tests\integration\test_races.py:24: AssertionError</failure></testcase><testcase classname="tests.integration.test_races" name="test_double_tap_color_starts_exactly_one_pipeline[5]" time="2.210"><failure message="AssertionError: AI вызван 5 раз(а) на 5 тапов; коды ответов [200, 200, 200, 200, 200]&#10;assert 5 == 1&#10; +  where 5 = len(['sess_20260928172420_d980', 'sess_20260928172420_d980', 'sess_20260928172420_d980', 'sess_20260928172420_d980', 'sess_20260928172420_d980'])">client = &lt;httpx.AsyncClient object at 0x000001B08898D950&gt;, fast_pipeline = True
+ai_calls = ['sess_20260928172420_d980', 'sess_20260928172420_d980', 'sess_20260928172420_d980', 'sess_20260928172420_d980', 'sess_20260928172420_d980']
+taps = 5
+
+    @pytest.mark.parametrize("taps", [2, 5, 10])
+    async def test_double_tap_color_starts_exactly_one_pipeline(client, fast_pipeline, ai_calls, taps):
+        """H2: двойной/многократный тап по цвету → ровно 1 генерация AI и 1 печать."""
+        sid = await drive_to(client, "QUIZ_COLOR")
+        responses = await asyncio.gather(*[do(client, "color") for _ in range(taps)])
+        codes = sorted(r.status_code for r in responses)
+        await wait_for_status(db_state(sid), {"COMPLETED", "ERROR"}, timeout=20)
+        await asyncio.sleep(0.2)  # дать «лишним» пайплайнам, если они есть, дойти до печати
+&gt;       assert len(ai_calls) == 1, f"AI вызван {len(ai_calls)} раз(а) на {taps} тапов; коды ответов {codes}"
+E       AssertionError: AI вызван 5 раз(а) на 5 тапов; коды ответов [200, 200, 200, 200, 200]
+E       assert 5 == 1
+E        +  where 5 = len(['sess_20260928172420_d980', 'sess_20260928172420_d980', 'sess_20260928172420_d980', 'sess_20260928172420_d980', 'sess_20260928172420_d980'])
+
+tests\integration\test_races.py:24: AssertionError</failure></testcase><testcase classname="tests.integration.test_races" name="test_double_tap_color_starts_exactly_one_pipeline[10]" time="3.988"><failure message="AssertionError: AI вызван 10 раз(а) на 10 тапов; коды ответов [200, 200, 200, 200, 200, 200, 200, 200, 200, 200]&#10;assert 10 == 1&#10; +  where 10 = len(['sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', ...])">client = &lt;httpx.AsyncClient object at 0x000001B08898EFD0&gt;, fast_pipeline = True
+ai_calls = ['sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', ...]
+taps = 10
+
+    @pytest.mark.parametrize("taps", [2, 5, 10])
+    async def test_double_tap_color_starts_exactly_one_pipeline(client, fast_pipeline, ai_calls, taps):
+        """H2: двойной/многократный тап по цвету → ровно 1 генерация AI и 1 печать."""
+        sid = await drive_to(client, "QUIZ_COLOR")
+        responses = await asyncio.gather(*[do(client, "color") for _ in range(taps)])
+        codes = sorted(r.status_code for r in responses)
+        await wait_for_status(db_state(sid), {"COMPLETED", "ERROR"}, timeout=20)
+        await asyncio.sleep(0.2)  # дать «лишним» пайплайнам, если они есть, дойти до печати
+&gt;       assert len(ai_calls) == 1, f"AI вызван {len(ai_calls)} раз(а) на {taps} тапов; коды ответов {codes}"
+E       AssertionError: AI вызван 10 раз(а) на 10 тапов; коды ответов [200, 200, 200, 200, 200, 200, 200, 200, 200, 200]
+E       assert 10 == 1
+E        +  where 10 = len(['sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', 'sess_20260928172423_4d8d', ...])
+
+tests\integration\test_races.py:24: AssertionError</failure></testcase><testcase classname="tests.integration.test_races" name="test_sequential_double_color_is_rejected" time="1.076"><failure message="assert 200 == 409&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x000001B088953BB0&gt;, fast_pipeline = True
+ai_calls = ['sess_20260928172427_fe50', 'sess_20260928172427_fe50']
+
+    async def test_sequential_double_color_is_rejected(client, fast_pipeline, ai_calls):
+        """H2: второй тап после того, как первый уже отработал (не параллельно)."""
+        sid = await drive_to(client, "QUIZ_COLOR")
+        r1 = await do(client, "color")
+        r2 = await do(client, "color")
+        await wait_for_status(db_state(sid), {"COMPLETED", "ERROR"}, timeout=20)
+        await asyncio.sleep(0.2)
+        assert r1.status_code == 200
+&gt;       assert r2.status_code == 409
+E       assert 200 == 409
+E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
+
+tests\integration\test_races.py:37: AssertionError</failure></testcase><testcase classname="tests.integration.test_races" name="test_new_session_during_generation_does_not_print_foreign_card" time="10.670"><failure message="AssertionError: За 10 с статус не стал ['COMPLETED', 'ERROR', 'IDLE']; последний: READY_TO_PRINT">client = &lt;httpx.AsyncClient object at 0x000001B08C0D9220&gt;, fast_pipeline = True
+ai_gate = namespace(gate=&lt;asyncio.locks.Event object at 0x000001B08C0D7710 [set]&gt;, calls=['sess_20260928172428_6a94', 'sess_20260928172428_c6dc'], hold=1)
+
+    async def test_new_session_during_generation_does_not_print_foreign_card(client, fast_pipeline, ai_gate):
+        """H3: сессия A генерируется, оператор жмёт «Новая сессия» (B), затем B проходит весь цикл,
+        и только потом A «досчитывается». Печать не должна уйти не туда, ни одна карточка — дважды."""
+        ai_gate.hold = 1  # «висит» только первая генерация (A)
+        sid_a = await drive_to(client, "GENERATING")
+        await wait_until(lambda: sid_a in ai_gate.calls, what="пайплайн A вошёл в AI")
+        sid_b = await drive_to(client, "COMPLETED")
+        assert sid_b != sid_a
+        ai_gate.gate.set()
+        # ждём, пока A выйдет из промежуточных статусов
+&gt;       final_a = await wait_for_status(db_state(sid_a), {"COMPLETED", "ERROR", "IDLE"}, timeout=10)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\integration\test_races.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+get_state = &lt;function db_state.&lt;locals&gt;.&lt;lambda&gt; at 0x000001B08C08D6C0&gt;
+statuses = {'COMPLETED', 'ERROR', 'IDLE'}, timeout = 10, interval = 0.02
+
+    async def wait_for_status(get_state, statuses: Iterable[str], timeout: float = 10.0, interval: float = 0.02):
+        """Ждёт, пока get_state() вернёт dict со статусом из statuses. Вместо sleep(2.0) (T2)."""
+        statuses = set(statuses)
+        deadline = time.monotonic() + timeout
+        last = None
+        while time.monotonic() &lt; deadline:
+            last = get_state()
+            if asyncio.iscoroutine(last):
+                last = await last
+            if last and last.get("status") in statuses:
+                return last
+            await asyncio.sleep(interval)
+&gt;       raise AssertionError(f"За {timeout} с статус не стал {sorted(statuses)}; последний: {last and last.get('status')}")
+E       AssertionError: За 10 с статус не стал ['COMPLETED', 'ERROR', 'IDLE']; последний: READY_TO_PRINT
+
+tests\helpers.py:58: AssertionError</failure></testcase><testcase classname="tests.integration.test_races" name="test_new_session_during_generation_old_session_not_left_hanging" time="10.222"><failure message="AssertionError: За 10 с статус не стал ['COMPLETED', 'ERROR', 'IDLE']; последний: READY_TO_PRINT">client = &lt;httpx.AsyncClient object at 0x000001B0888169F0&gt;, fast_pipeline = True
+ai_gate = namespace(gate=&lt;asyncio.locks.Event object at 0x000001B08C0C2CF0 [set]&gt;, calls=['sess_20260928172438_b175'], hold=1000000000)
+
+    async def test_new_session_during_generation_old_session_not_left_hanging(client, fast_pipeline, ai_gate):
+        """H3: после «Новая сессия» старая A не должна навсегда остаться в READY_TO_PRINT/GENERATING."""
+        sid_a = await drive_to(client, "GENERATING")
+        await wait_until(lambda: sid_a in ai_gate.calls, what="пайплайн A вошёл в AI")
+        r = await do(client, "new")
+        assert r.status_code == 200
+        ai_gate.gate.set()
+&gt;       final_a = await wait_for_status(db_state(sid_a), {"COMPLETED", "ERROR", "IDLE"}, timeout=10)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\integration\test_races.py:69: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+get_state = &lt;function db_state.&lt;locals&gt;.&lt;lambda&gt; at 0x000001B088B48680&gt;
+statuses = {'COMPLETED', 'ERROR', 'IDLE'}, timeout = 10, interval = 0.02
+
+    async def wait_for_status(get_state, statuses: Iterable[str], timeout: float = 10.0, interval: float = 0.02):
+        """Ждёт, пока get_state() вернёт dict со статусом из statuses. Вместо sleep(2.0) (T2)."""
+        statuses = set(statuses)
+        deadline = time.monotonic() + timeout
+        last = None
+        while time.monotonic() &lt; deadline:
+            last = get_state()
+            if asyncio.iscoroutine(last):
+                last = await last
+            if last and last.get("status") in statuses:
+                return last
+            await asyncio.sleep(interval)
+&gt;       raise AssertionError(f"За {timeout} с статус не стал {sorted(statuses)}; последний: {last and last.get('status')}")
+E       AssertionError: За 10 с статус не стал ['COMPLETED', 'ERROR', 'IDLE']; последний: READY_TO_PRINT
+
+tests\helpers.py:58: AssertionError</failure></testcase><testcase classname="tests.integration.test_races" name="test_reset_during_generation_kiosk_stays_idle" time="0.562"><failure message="AssertionError: после сброса активна сессия в статусе COMPLETED&#10;assert ({'id': 'sess_20260928172449_574a', 'created_at': '2026-09-28T14:24:49.201883', 'status': 'COMPLETED', 'element': 'space', ...} is None or 'COMPLETED' == 'IDLE'&#10;  &#10;  - IDLE&#10;  + COMPLETED)">client = &lt;httpx.AsyncClient object at 0x000001B08897C6B0&gt;, fast_pipeline = True
+ai_gate = namespace(gate=&lt;asyncio.locks.Event object at 0x000001B088B1CE30 [set]&gt;, calls=['sess_20260928172449_574a'], hold=1000000000)
+broadcast_log = [('sess_20260928172449_574a', &lt;SessionState.PHOTO_TAKEN: 'PHOTO_TAKEN'&gt;), ('sess_20260928172449_574a', &lt;SessionState.Q..., &lt;SessionState.GENERATING: 'GENERATING'&gt;), ('sess_20260928172449_574a', &lt;SessionState.GENERATING: 'GENERATING'&gt;), ...]
+
+    async def test_reset_during_generation_kiosk_stays_idle(client, fast_pipeline, ai_gate, broadcast_log):
+        """H3: «Сброс» во время генерации → киоск остаётся на Welcome, не «прыгает» обратно
+        в COMPOSING/результат, когда старый пайплайн досчитается."""
+        sid_a = await drive_to(client, "GENERATING")
+        await wait_until(lambda: sid_a in ai_gate.calls, what="пайплайн A вошёл в AI")
+        r = await do(client, "reset")
+        assert r.status_code == 200
+        mark = len(broadcast_log)
+        ai_gate.gate.set()
+        await wait_for_status(db_state(sid_a), {"COMPLETED", "ERROR", "IDLE"}, timeout=10)
+        await asyncio.sleep(0.3)
+        st = await active_state(client)
+&gt;       assert st is None or st["status"] == "IDLE", f"после сброса активна сессия в статусе {st and st['status']}"
+E       AssertionError: после сброса активна сессия в статусе COMPLETED
+E       assert ({'id': 'sess_20260928172449_574a', 'created_at': '2026-09-28T14:24:49.201883', 'status': 'COMPLETED', 'element': 'space', ...} is None or 'COMPLETED' == 'IDLE'
+E         
+E         - IDLE
+E         + COMPLETED)
+
+tests\integration\test_races.py:87: AssertionError</failure></testcase><testcase classname="tests.integration.test_races" name="test_reset_during_printing_card_still_printed_once_kiosk_idle" time="0.719"><failure message="AssertionError: assert ({'id': 'sess_20260928172449_19df', 'created_at': '2026-09-28T14:24:49.764137', 'status': 'COMPLETED', 'element': 'space', ...} is None or 'COMPLETED' == 'IDLE'&#10;  &#10;  - IDLE&#10;  + COMPLETED)">client = &lt;httpx.AsyncClient object at 0x000001B08C0FD9D0&gt;, fast_pipeline = True
+print_gate = namespace(gate=&lt;asyncio.locks.Event object at 0x000001B088B1E4B0 [set]&gt;, calls=[('sess_20260928172449_19df', 'C:\\Users\\1358~1\\AppData\\Local\\Temp\\stanok_tests_gljd3f8i\\storage\\cards\\sess_20260928172449_19df_card.jpg')])
+
+    async def test_reset_during_printing_card_still_printed_once_kiosk_idle(client, fast_pipeline, print_gate):
+        """Сброс по idle-таймеру во время печати: карточка A печатается ровно один раз,
+        A в истории COMPLETED, киоск остаётся на Welcome."""
+        sid_a = await drive_to(client, "PRINTING")
+        await wait_until(lambda: any(s == sid_a for s, _ in print_gate.calls), what="печать A началась")
+        r = await do(client, "reset")
+        assert r.status_code == 200
+        print_gate.gate.set()
+        final_a = await wait_for_status(db_state(sid_a), {"COMPLETED", "ERROR"}, timeout=10)
+        await asyncio.sleep(0.2)
+        assert final_a["status"] == "COMPLETED"
+        assert printed_session_ids() == [sid_a]
+        st = await active_state(client)
+&gt;       assert st is None or st["status"] == "IDLE"
+E       AssertionError: assert ({'id': 'sess_20260928172449_19df', 'created_at': '2026-09-28T14:24:49.764137', 'status': 'COMPLETED', 'element': 'space', ...} is None or 'COMPLETED' == 'IDLE'
+E         
+E         - IDLE
+E         + COMPLETED)
+
+tests\integration\test_races.py:106: AssertionError</failure></testcase><testcase classname="tests.integration.test_races" name="test_trigger_print_during_auto_print_does_not_double_print" time="0.939"><failure message="assert 200 == 409&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x000001B08C09DD50&gt;, fast_pipeline = True
+print_gate = namespace(gate=&lt;asyncio.locks.Event object at 0x000001B088B1F470 [set]&gt;, calls=[('sess_20260928172450_2737', 'C:\\User... 'C:\\Users\\1358~1\\AppData\\Local\\Temp\\stanok_tests_gljd3f8i\\storage\\cards\\sess_20260928172450_2737_card.jpg')])
+
+    async def test_trigger_print_during_auto_print_does_not_double_print(client, fast_pipeline, print_gate):
+        """Оператор жмёт «ПЕЧАТАТЬ», пока идёт автопечать → вторая печать не уходит."""
+        sid = await drive_to(client, "PRINTING")
+        await wait_until(lambda: any(s == sid for s, _ in print_gate.calls), what="автопечать началась")
+        # до фикса роут ждёт вторую печать → запрос выполняем задачей, иначе тест сам себя заблокирует
+        task = asyncio.create_task(do(client, "trigger_print"))
+        await asyncio.sleep(0.2)
+        print_gate.gate.set()
+        r = await asyncio.wait_for(task, timeout=10)
+        await wait_for_status(db_state(sid), {"COMPLETED", "ERROR"}, timeout=10)
+        await asyncio.sleep(0.2)
+&gt;       assert r.status_code == 409
+E       assert 200 == 409
+E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
+
+tests\integration\test_races.py:120: AssertionError</failure></testcase><testcase classname="tests.integration.test_races" name="test_photo_upload_during_generation_does_not_hijack_session" time="0.211"><failure message="assert 200 == 409&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x000001B08C09F050&gt;, fast_pipeline = True
+ai_gate = namespace(gate=&lt;asyncio.locks.Event object at 0x000001B088BB4DD0 [unset, waiters:1]&gt;, calls=['sess_20260928172451_597a'], hold=1000000000)
+
+    async def test_photo_upload_during_generation_does_not_hijack_session(client, fast_pipeline, ai_gate):
+        """Ассистент прислал фото с телефона, пока идёт генерация: сессия A не должна вернуться в PHOTO_TAKEN."""
+        from helpers import make_photo_bytes
+        sid_a = await drive_to(client, "GENERATING")
+        await wait_until(lambda: sid_a in ai_gate.calls, what="пайплайн A вошёл в AI")
+        r = await client.post("/api/camera/upload-ota", files={"file": ("p.jpg", make_photo_bytes(), "image/jpeg")})
+&gt;       assert r.status_code == 409
+E       assert 200 == 409
+E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
+
+tests\integration\test_races.py:130: AssertionError</failure></testcase><testcase classname="tests.unit.test_ai_providers" name="test_bothub_success_url" time="1.227" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_success_b64" time="1.107" /><testcase classname="tests.unit.test_ai_providers" name="test_fal_success" time="1.167" /><testcase classname="tests.unit.test_ai_providers" name="test_replicate_success_no_nameerror" time="1.220"><failure message="AssertionError: Replicate упал: name 'asyncio' is not defined&#10;assert False&#10; +  where False = AIGenerationResult(success=False, image_path=None, provider_name='replicate', duration_seconds=1.16, error=&quot;name 'asyncio' is not defined&quot;, is_fallback=False).success">respx_mock = &lt;respx.router.MockRouter object at 0x000001B08C0DAEA0&gt;
+req = AIGenerationRequest(session_id='sess_test', element='space', power='precision', color='azure', prompt='p', negative_pr..._photo_path='C:\\Users\\Гусь\\AppData\\Local\\Temp\\pytest-of-Гусь\\pytest-4\\test_replicate_success_no_name0\\in.jpg')
+combo = {'id': 1, 'element': 'space', 'element_name': 'Космос', 'element_icon': '🚀', ...}
+api_key = None
+tmp_path = WindowsPath('C:/Users/Гусь/AppData/Local/Temp/pytest-of-Гусь/pytest-4/test_replicate_success_no_name0')
+
+    @pytest.mark.regression
+    async def test_replicate_success_no_nameerror(respx_mock, req, combo, api_key, tmp_path):
+        """H7: в cloud_providers.py не импортирован asyncio → NameError → всегда тихий fallback."""
+        respx_mock.post(REPL_URL).respond(201, json={"urls": {"get": "https://api.replicate.com/v1/predictions/p1"}})
+        respx_mock.get("https://api.replicate.com/v1/predictions/p1").respond(
+            200, json={"status": "succeeded", "output": [IMG_URL]})
+        respx_mock.get(IMG_URL).respond(200, content=png_bytes())
+        res = await provider("replicate").generate(req, combo, tmp_path / "out.jpg")
+&gt;       assert res.success, f"Replicate упал: {res.error}"
+E       AssertionError: Replicate упал: name 'asyncio' is not defined
+E       assert False
+E        +  where False = AIGenerationResult(success=False, image_path=None, provider_name='replicate', duration_seconds=1.16, error="name 'asyncio' is not defined", is_fallback=False).success
+
+tests\unit\test_ai_providers.py:97: AssertionError</failure></testcase><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_responses_fail_cleanly[http_401]" time="1.084" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_responses_fail_cleanly[http_429]" time="1.082" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_responses_fail_cleanly[http_500]" time="1.029" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_responses_fail_cleanly[empty_data]" time="1.063" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_responses_fail_cleanly[broken_json]" time="1.094" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_responses_fail_cleanly[no_url_no_b64]" time="1.215" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_timeout_fails_cleanly" time="1.148" /><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_download_is_failure_not_success[404]" time="1.087"><failure message="AssertionError: 404: провайдер вернул success=True для не-изображения&#10;assert True is False&#10; +  where True = AIGenerationResult(success=True, image_path='C:\\Users\\Гусь\\AppData\\Local\\Temp\\pytest-of-Гусь\\pytest-4\\test_bothub_bad_download_is_fa0\\out.jpg', provider_name='bothub', duration_seconds=1.04, error=None, is_fallback=False).success">respx_mock = &lt;respx.router.MockRouter object at 0x000001B088B75FD0&gt;
+req = AIGenerationRequest(session_id='sess_test', element='space', power='precision', color='azure', prompt='p', negative_pr..._photo_path='C:\\Users\\Гусь\\AppData\\Local\\Temp\\pytest-of-Гусь\\pytest-4\\test_bothub_bad_download_is_fa0\\in.jpg')
+combo = {'id': 1, 'element': 'space', 'element_name': 'Космос', 'element_icon': '🚀', ...}
+api_key = None
+tmp_path = WindowsPath('C:/Users/Гусь/AppData/Local/Temp/pytest-of-Гусь/pytest-4/test_bothub_bad_download_is_fa0')
+download = '404'
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("download", ["404", "html", "huge"])
+    async def test_bothub_bad_download_is_failure_not_success(respx_mock, req, combo, api_key, tmp_path, download):
+        """Новая находка: провайдер пишет в *_ai.jpg всё, что вернул URL (404-страницу, HTML, 30 МБ мусора),
+        и возвращает success=True. Тогда fallback НЕ срабатывает, а композиция падает → ERROR."""
+        respx_mock.post(BOTHUB_EDIT).respond(200, json={"data": [{"url": IMG_URL}]})
+        if download == "404":
+            respx_mock.get(IMG_URL).respond(404, text="Not Found")
+        elif download == "html":
+            respx_mock.get(IMG_URL).respond(200, text="&lt;html&gt;&lt;body&gt;Cloudflare&lt;/body&gt;&lt;/html&gt;",
+                                       headers={"content-type": "text/html"})
+        else:
+            respx_mock.get(IMG_URL).respond(200, content=b"\xff" * (30 * 1024 * 1024))
+        res = await provider("bothub").generate(req, combo, tmp_path / "out.jpg")
+&gt;       assert res.success is False, f"{download}: провайдер вернул success=True для не-изображения"
+E       AssertionError: 404: провайдер вернул success=True для не-изображения
+E       assert True is False
+E        +  where True = AIGenerationResult(success=True, image_path='C:\\Users\\Гусь\\AppData\\Local\\Temp\\pytest-of-Гусь\\pytest-4\\test_bothub_bad_download_is_fa0\\out.jpg', provider_name='bothub', duration_seconds=1.04, error=None, is_fallback=False).success
+
+tests\unit\test_ai_providers.py:140: AssertionError</failure></testcase><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_download_is_failure_not_success[html]" time="1.109"><failure message="AssertionError: html: провайдер вернул success=True для не-изображения&#10;assert True is False&#10; +  where True = AIGenerationResult(success=True, image_path='C:\\Users\\Гусь\\AppData\\Local\\Temp\\pytest-of-Гусь\\pytest-4\\test_bothub_bad_download_is_fa1\\out.jpg', provider_name='bothub', duration_seconds=1.07, error=None, is_fallback=False).success">respx_mock = &lt;respx.router.MockRouter object at 0x000001B088B75C50&gt;
+req = AIGenerationRequest(session_id='sess_test', element='space', power='precision', color='azure', prompt='p', negative_pr..._photo_path='C:\\Users\\Гусь\\AppData\\Local\\Temp\\pytest-of-Гусь\\pytest-4\\test_bothub_bad_download_is_fa1\\in.jpg')
+combo = {'id': 1, 'element': 'space', 'element_name': 'Космос', 'element_icon': '🚀', ...}
+api_key = None
+tmp_path = WindowsPath('C:/Users/Гусь/AppData/Local/Temp/pytest-of-Гусь/pytest-4/test_bothub_bad_download_is_fa1')
+download = 'html'
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("download", ["404", "html", "huge"])
+    async def test_bothub_bad_download_is_failure_not_success(respx_mock, req, combo, api_key, tmp_path, download):
+        """Новая находка: провайдер пишет в *_ai.jpg всё, что вернул URL (404-страницу, HTML, 30 МБ мусора),
+        и возвращает success=True. Тогда fallback НЕ срабатывает, а композиция падает → ERROR."""
+        respx_mock.post(BOTHUB_EDIT).respond(200, json={"data": [{"url": IMG_URL}]})
+        if download == "404":
+            respx_mock.get(IMG_URL).respond(404, text="Not Found")
+        elif download == "html":
+            respx_mock.get(IMG_URL).respond(200, text="&lt;html&gt;&lt;body&gt;Cloudflare&lt;/body&gt;&lt;/html&gt;",
+                                       headers={"content-type": "text/html"})
+        else:
+            respx_mock.get(IMG_URL).respond(200, content=b"\xff" * (30 * 1024 * 1024))
+        res = await provider("bothub").generate(req, combo, tmp_path / "out.jpg")
+&gt;       assert res.success is False, f"{download}: провайдер вернул success=True для не-изображения"
+E       AssertionError: html: провайдер вернул success=True для не-изображения
+E       assert True is False
+E        +  where True = AIGenerationResult(success=True, image_path='C:\\Users\\Гусь\\AppData\\Local\\Temp\\pytest-of-Гусь\\pytest-4\\test_bothub_bad_download_is_fa1\\out.jpg', provider_name='bothub', duration_seconds=1.07, error=None, is_fallback=False).success
+
+tests\unit\test_ai_providers.py:140: AssertionError</failure></testcase><testcase classname="tests.unit.test_ai_providers" name="test_bothub_bad_download_is_failure_not_success[huge]" time="1.193"><failure message="AssertionError: huge: провайдер вернул success=True для не-изображения&#10;assert True is False&#10; +  where True = AIGenerationResult(success=True, image_path='C:\\Users\\Гусь\\AppData\\Local\\Temp\\pytest-of-Гусь\\pytest-4\\test_bothub_bad_download_is_fa2\\out.jpg', provider_name='bothub', duration_seconds=1.15, error=None, is_fallback=False).success">respx_mock = &lt;respx.router.MockRouter object at 0x000001B088B0AA90&gt;
+req = AIGenerationRequest(session_id='sess_test', element='space', power='precision', color='azure', prompt='p', negative_pr..._photo_path='C:\\Users\\Гусь\\AppData\\Local\\Temp\\pytest-of-Гусь\\pytest-4\\test_bothub_bad_download_is_fa2\\in.jpg')
+combo = {'id': 1, 'element': 'space', 'element_name': 'Космос', 'element_icon': '🚀', ...}
+api_key = None
+tmp_path = WindowsPath('C:/Users/Гусь/AppData/Local/Temp/pytest-of-Гусь/pytest-4/test_bothub_bad_download_is_fa2')
+download = 'huge'
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("download", ["404", "html", "huge"])
+    async def test_bothub_bad_download_is_failure_not_success(respx_mock, req, combo, api_key, tmp_path, download):
+        """Новая находка: провайдер пишет в *_ai.jpg всё, что вернул URL (404-страницу, HTML, 30 МБ мусора),
+        и возвращает success=True. Тогда fallback НЕ срабатывает, а композиция падает → ERROR."""
+        respx_mock.post(BOTHUB_EDIT).respond(200, json={"data": [{"url": IMG_URL}]})
+        if download == "404":
+            respx_mock.get(IMG_URL).respond(404, text="Not Found")
+        elif download == "html":
+            respx_mock.get(IMG_URL).respond(200, text="&lt;html&gt;&lt;body&gt;Cloudflare&lt;/body&gt;&lt;/html&gt;",
+                                       headers={"content-type": "text/html"})
+        else:
+            respx_mock.get(IMG_URL).respond(200, content=b"\xff" * (30 * 1024 * 1024))
+        res = await provider("bothub").generate(req, combo, tmp_path / "out.jpg")
+&gt;       assert res.success is False, f"{download}: провайдер вернул success=True для не-изображения"
+E       AssertionError: huge: провайдер вернул success=True для не-изображения
+E       assert True is False
+E        +  where True = AIGenerationResult(success=True, image_path='C:\\Users\\Гусь\\AppData\\Local\\Temp\\pytest-of-Гусь\\pytest-4\\test_bothub_bad_download_is_fa2\\out.jpg', provider_name='bothub', duration_seconds=1.15, error=None, is_fallback=False).success
+
+tests\unit\test_ai_providers.py:140: AssertionError</failure></testcase><testcase classname="tests.unit.test_ai_providers" name="test_fallback_to_mock_is_flagged" time="1.162" /><testcase classname="tests.unit.test_ai_providers" name="test_fallback_visible_in_session_and_health" time="1.580"><failure message="AssertionError: в сессии нет признака fallback: meta={}&#10;assert None is True&#10; +  where None = &lt;built-in method get of dict object at 0x000001B088BF28C0&gt;('ai_fallback')&#10; +    where &lt;built-in method get of dict object at 0x000001B088BF28C0&gt; = {}.get">respx_mock = &lt;respx.router.MockRouter object at 0x000001B08C04F650&gt;
+client = &lt;httpx.AsyncClient object at 0x000001B08C04F050&gt;, fast_pipeline = True
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001B088B84B40&gt;
+
+    @pytest.mark.regression
+    async def test_fallback_visible_in_session_and_health(respx_mock, client, fast_pipeline, monkeypatch):
+        """H8: fallback на mock не виден ни в сессии, ни в /api/health — весь день печатаются «фейки»."""
+        from app.config.settings import settings
+        from helpers import db_state, drive_to, wait_for_status
+        monkeypatch.setattr(settings, "AI_PROVIDER", "bothub")
+        monkeypatch.setattr(settings, "AI_API_KEY", "sk-test-0123456789abcdef")
+        respx_mock.post(BOTHUB_EDIT).respond(503, text="upstream down")
+        respx_mock.post(BOTHUB_GEN).respond(503, text="upstream down")
+        sid = await drive_to(client, "COMPLETED")
+        sess = db_state(sid)()
+        meta = json.loads(sess.get("meta_json") or "{}")
+&gt;       assert meta.get("ai_fallback") is True, f"в сессии нет признака fallback: meta={meta}"
+E       AssertionError: в сессии нет признака fallback: meta={}
+E       assert None is True
+E        +  where None = &lt;built-in method get of dict object at 0x000001B088BF28C0&gt;('ai_fallback')
+E        +    where &lt;built-in method get of dict object at 0x000001B088BF28C0&gt; = {}.get
+
+tests\unit\test_ai_providers.py:168: AssertionError</failure></testcase><testcase classname="tests.unit.test_ai_providers" name="test_placeholder_or_invalid_key_is_not_healthy[\u0432\u0430\u0448_bothub_api_\u043a\u043b\u044e\u0447]" time="0.017"><failure message="AssertionError: bothub: ключ 'ваш_bothub_api_ключ' считается рабочим&#10;assert True is False">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001B088B84F30&gt;
+key = 'ваш_bothub_api_ключ'
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("key", ["ваш_bothub_api_ключ", "your_api_key_here", "   ", "sk-abc\n"])
+    async def test_placeholder_or_invalid_key_is_not_healthy(monkeypatch, key):
+        """H9: плейсхолдер из .env.example даёт health OK."""
+        from app.config.settings import settings
+        monkeypatch.setattr(settings, "AI_API_KEY", key)
+        for name in ("bothub", "fal", "replicate"):
+&gt;           assert await provider(name).health_check() is False, f"{name}: ключ {key!r} считается рабочим"
+E           AssertionError: bothub: ключ 'ваш_bothub_api_ключ' считается рабочим
+E           assert True is False
+
+tests\unit\test_ai_providers.py:184: AssertionError</failure></testcase><testcase classname="tests.unit.test_ai_providers" name="test_placeholder_or_invalid_key_is_not_healthy[your_api_key_here]" time="0.018"><failure message="AssertionError: bothub: ключ 'your_api_key_here' считается рабочим&#10;assert True is False">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001B08C0BC980&gt;
+key = 'your_api_key_here'
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("key", ["ваш_bothub_api_ключ", "your_api_key_here", "   ", "sk-abc\n"])
+    async def test_placeholder_or_invalid_key_is_not_healthy(monkeypatch, key):
+        """H9: плейсхолдер из .env.example даёт health OK."""
+        from app.config.settings import settings
+        monkeypatch.setattr(settings, "AI_API_KEY", key)
+        for name in ("bothub", "fal", "replicate"):
+&gt;           assert await provider(name).health_check() is False, f"{name}: ключ {key!r} считается рабочим"
+E           AssertionError: bothub: ключ 'your_api_key_here' считается рабочим
+E           assert True is False
+
+tests\unit\test_ai_providers.py:184: AssertionError</failure></testcase><testcase classname="tests.unit.test_ai_providers" name="test_placeholder_or_invalid_key_is_not_healthy[   ]" time="0.021"><failure message="AssertionError: bothub: ключ '   ' считается рабочим&#10;assert True is False">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001B08C0BD940&gt;
+key = '   '
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("key", ["ваш_bothub_api_ключ", "your_api_key_here", "   ", "sk-abc\n"])
+    async def test_placeholder_or_invalid_key_is_not_healthy(monkeypatch, key):
+        """H9: плейсхолдер из .env.example даёт health OK."""
+        from app.config.settings import settings
+        monkeypatch.setattr(settings, "AI_API_KEY", key)
+        for name in ("bothub", "fal", "replicate"):
+&gt;           assert await provider(name).health_check() is False, f"{name}: ключ {key!r} считается рабочим"
+E           AssertionError: bothub: ключ '   ' считается рабочим
+E           assert True is False
+
+tests\unit\test_ai_providers.py:184: AssertionError</failure></testcase><testcase classname="tests.unit.test_ai_providers" name="test_placeholder_or_invalid_key_is_not_healthy[sk-abc\n]" time="0.019"><failure message="AssertionError: bothub: ключ 'sk-abc\n' считается рабочим&#10;assert True is False">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001B08C0BDE80&gt;
+key = 'sk-abc\n'
+
+    @pytest.mark.regression
+    @pytest.mark.parametrize("key", ["ваш_bothub_api_ключ", "your_api_key_here", "   ", "sk-abc\n"])
+    async def test_placeholder_or_invalid_key_is_not_healthy(monkeypatch, key):
+        """H9: плейсхолдер из .env.example даёт health OK."""
+        from app.config.settings import settings
+        monkeypatch.setattr(settings, "AI_API_KEY", key)
+        for name in ("bothub", "fal", "replicate"):
+&gt;           assert await provider(name).health_check() is False, f"{name}: ключ {key!r} считается рабочим"
+E           AssertionError: bothub: ключ 'sk-abc\n' считается рабочим
+E           assert True is False
+
+tests\unit\test_ai_providers.py:184: AssertionError</failure></testcase><testcase classname="tests.unit.test_ai_providers" name="test_valid_looking_key_is_healthy" time="0.019" /><testcase classname="tests.unit.test_ai_providers" name="test_placeholder_key_never_reaches_provider" time="1.074" /><testcase classname="tests.unit.test_ai_providers" name="test_unknown_provider_uses_mock" time="0.039" /><testcase classname="tests.unit.test_ai_providers" name="test_mock_provider_inputs[missing]" time="0.132" /><testcase classname="tests.unit.test_ai_providers" name="test_mock_provider_inputs[cmyk]" time="0.147" /><testcase classname="tests.unit.test_ai_providers" name="test_mock_provider_inputs[rgba_png]" time="0.113" /><testcase classname="tests.unit.test_ai_providers" name="test_mock_provider_inputs[tiny]" time="0.047" /><testcase classname="tests.unit.test_ai_providers" name="test_mock_provider_inputs[not_image]" time="0.115" /></testsuite></testsuites>

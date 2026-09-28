@@ -1,0 +1,117 @@
+﻿Run started:2026-09-28 15:59:15.999709+00:00
+
+Test results:
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: app\api\routes_ws.py:60:12
+59	                    await websocket.send_text(json.dumps({"type": "PONG"}))
+60	            except Exception:
+61	                pass
+62	    except WebSocketDisconnect:
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: app\camera\manager.py:70:12
+69	                old.release()
+70	            except Exception:
+71	                pass
+72	        try:
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: app\config\settings.py:26:4
+25	            return ip
+26	    except Exception:
+27	        pass
+28	    try:
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: app\config\settings.py:34:4
+33	            return lan[0]
+34	    except Exception:
+35	        pass
+36	    return "127.0.0.1"
+
+--------------------------------------------------
+>> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b104_hardcoded_bind_all_interfaces.html
+   Location: app\config\settings.py:42:16
+41	    APP_VERSION: str = "1.0.0"
+42	    HOST: str = "0.0.0.0"
+43	    PORT: int = 8000
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: app\storage\database.py:151:31
+150	        marks = ",".join("?" * len(PIPELINE_STATES + INTERACTIVE_STATES))
+151	        rows = self._execute(f"SELECT * FROM sessions WHERE status IN ({marks})",
+152	                             PIPELINE_STATES + INTERACTIVE_STATES, fetch="all")
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: app\storage\database.py:157:18
+156	            self._execute(
+157	                f"UPDATE sessions SET status = 'ERROR', error_message = 'Прервано перезапуском стенда', "
+158	                f"updated_at = ? WHERE status IN ({','.join('?' * len(PIPELINE_STATES))})",
+159	                (now, *PIPELINE_STATES))
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html
+   Location: app\storage\database.py:161:18
+160	            self._execute(
+161	                f"UPDATE sessions SET status = 'IDLE', updated_at = ? "
+162	                f"WHERE status IN ({','.join('?' * len(INTERACTIVE_STATES))})",
+163	                (now, *INTERACTIVE_STATES))
+
+--------------------------------------------------
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen
+   Location: scripts\vendor_frontend.py:35:13
+34	        req = urllib.request.Request(url, headers={"User-Agent": "stanok-vendor/1.0"})
+35	        with urllib.request.urlopen(req, timeout=60) as resp:
+36	            data = resp.read()
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 2415
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 4
+		Medium: 5
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 3
+		Medium: 1
+		High: 5
+Files skipped (0):

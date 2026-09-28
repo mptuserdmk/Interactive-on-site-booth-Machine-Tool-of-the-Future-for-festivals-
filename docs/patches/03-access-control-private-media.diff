@@ -1,0 +1,423 @@
+﻿diff --git a/app/api/routes_camera.py b/app/api/routes_camera.py
+index a7ee01e..1a3db10 100644
+--- a/app/api/routes_camera.py
++++ b/app/api/routes_camera.py
+@@ -28,7 +28,7 @@ async def capture_usb_snapshot():
+     return {
+         "status": "ok",
+         "session_id": sess.id,
+-        "photo_url": f"/storage/photos/{out_path.name}"
++        "photo_url": f"/media/photos/{sess.id}.jpg"
+     }
+ 
+ @router.post("/upload-ota", summary="Over-the-air photo upload from iPhone/Android")
+@@ -41,6 +41,6 @@ async def upload_ota_photo(file: UploadFile = File(...)):
+     return {
+         "status": "ok",
+         "session_id": sess.id,
+-        "photo_url": f"/storage/photos/{out_path.name}",
++        "photo_url": f"/media/photos/{sess.id}.jpg",
+         "message": "Photo uploaded from mobile camera successfully"
+     }
+diff --git a/app/api/routes_health.py b/app/api/routes_health.py
+index fd9b3ab..25e7d55 100644
+--- a/app/api/routes_health.py
++++ b/app/api/routes_health.py
+@@ -44,7 +44,7 @@ async def get_system_health():
+         "version": settings.APP_VERSION,
+         "local_ip": settings.LOCAL_IP,
+         "base_url": settings.BASE_URL,
+-        "mobile_camera_url": f"{settings.BASE_URL}/mobile-camera",
++        "mobile_camera_url": f"{settings.BASE_URL}/mobile-camera?token={settings.CAMERA_TOKEN}",
+         "operator_url": f"{settings.BASE_URL}/operator",
+         "kiosk_url": f"{settings.BASE_URL}/kiosk",
+         "diagnostics": {
+diff --git a/app/api/routes_media.py b/app/api/routes_media.py
+new file mode 100644
+index 0000000..ced8b20
+--- /dev/null
++++ b/app/api/routes_media.py
+@@ -0,0 +1,46 @@
++"""
++Раздача изображений вместо публичного StaticFiles на /storage (S2):
++  /media/cards/{id}.jpg  — готовая карточка, публично (id сессии неугадываемый — 128 бит);
++  /media/photos/{id}.jpg — сырое фото ребёнка, только для активной сессии и только доверенному
++                           клиенту (киоск/оператор; проверка в AccessControlMiddleware).
++"""
++import re
++from pathlib import Path
++from fastapi import APIRouter, HTTPException
++from fastapi.responses import FileResponse
++from app.config.settings import settings
++from app.storage.database import db
++from app.session.manager import session_manager
++
++router = APIRouter(tags=["Media"])
++
++SESSION_ID_RE = re.compile(r"^sess_[A-Za-z0-9_]{1,64}$")
++NO_CACHE = {"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"}
++
++
++def _safe_file(path_str, base_dir) -> Path:
++    if not path_str:
++        raise HTTPException(status_code=404)
++    p = Path(path_str).resolve()
++    if not p.is_file() or not p.is_relative_to(Path(base_dir).resolve()):
++        raise HTTPException(status_code=404)
++    return p
++
++
++@router.get("/media/cards/{session_id}.jpg", summary="Card image (public, by unguessable session id)")
++async def card_image(session_id: str):
++    if not SESSION_ID_RE.match(session_id):
++        raise HTTPException(status_code=404)
++    sess = db.get_session(session_id)
++    path = _safe_file(sess and sess.get("final_card_path"), settings.CARDS_DIR)
++    return FileResponse(path, media_type="image/jpeg",
++                        headers={"Cache-Control": "private, max-age=600", "X-Content-Type-Options": "nosniff"})
++
++
++@router.get("/media/photos/{session_id}.jpg", summary="Raw photo of the active session (kiosk review only)")
++async def raw_photo(session_id: str):
++    sess = session_manager.get_active_session()
++    if not sess or sess.id != session_id:
++        raise HTTPException(status_code=404)
++    path = _safe_file(sess.photo_path, settings.PHOTOS_DIR)
++    return FileResponse(path, media_type="image/jpeg", headers=NO_CACHE)
+diff --git a/app/config/settings.py b/app/config/settings.py
+index 3404e86..915fdc1 100644
+--- a/app/config/settings.py
++++ b/app/config/settings.py
+@@ -1,6 +1,7 @@
+-import os
++import secrets
+ import socket
+ from pathlib import Path
++from pydantic import model_validator
+ from pydantic_settings import BaseSettings
+ 
+ BASE_DIR = Path(__file__).resolve().parent.parent.parent
+@@ -66,10 +67,24 @@ class Settings(BaseSettings):
+     FESTIVAL_NAME: str = "FUTURE INDUSTRY 2026"
+     FESTIVAL_HASHTAG: str = "#ФЕСТИВАЛЬ2026"
+ 
++    # Access control (S1): пустой токен → случайный при каждом старте (печатается в консоли)
++    ACCESS_TOKEN: str = ""
++    CAMERA_TOKEN: str = ""
++    TRUST_LOOPBACK: bool = True
++    ENABLE_API_DOCS: bool = False  # /docs, /redoc, /openapi.json (S9)
++
+     class Config:
+         env_file = ".env"
+         extra = "allow"
+ 
++    @model_validator(mode="after")
++    def _fill_tokens(self):
++        if not self.ACCESS_TOKEN:
++            self.ACCESS_TOKEN = secrets.token_urlsafe(12)
++        if not self.CAMERA_TOKEN or self.CAMERA_TOKEN == self.ACCESS_TOKEN:
++            self.CAMERA_TOKEN = secrets.token_urlsafe(9)
++        return self
++
+ settings = Settings()
+ 
+ # Ensure directories exist
+diff --git a/app/main.py b/app/main.py
+index 6c02901..7008a52 100644
+--- a/app/main.py
++++ b/app/main.py
+@@ -1,16 +1,16 @@
+-import os
+-from pathlib import Path
++from urllib.parse import urlencode
+ from fastapi import FastAPI, Request
+ from fastapi.responses import JSONResponse
+ from fastapi.staticfiles import StaticFiles
+ from fastapi.templating import Jinja2Templates
+-from fastapi.middleware.cors import CORSMiddleware
+ from app.config.settings import settings
+ from app.api.routes_session import router as session_router
+ from app.api.routes_camera import router as camera_router
+ from app.api.routes_print import router as print_router
+ from app.api.routes_health import router as health_router
+ from app.api.routes_ws import router as ws_router
++from app.api.routes_media import router as media_router, SESSION_ID_RE
++from app.security import AccessControlMiddleware
+ from app.storage.database import db
+ from app.session.manager import SessionError
+ 
+@@ -18,27 +18,22 @@ app = FastAPI(
+     title=settings.APP_NAME,
+     version=settings.APP_VERSION,
+     description="Интерактивная AI-фотолокация для фестивалей: USB/Mobile съемка, 100 комбинаций, Pillow композиция и печать.",
+-    docs_url="/docs",
+-    redoc_url="/redoc",
+-    openapi_url="/openapi.json"
++    # Документация API в проде закрыта (S9); включается ENABLE_API_DOCS=true
++    docs_url="/docs" if settings.ENABLE_API_DOCS else None,
++    redoc_url="/redoc" if settings.ENABLE_API_DOCS else None,
++    openapi_url="/openapi.json" if settings.ENABLE_API_DOCS else None
+ )
+ 
+-# CORS Middleware
+-app.add_middleware(
+-    CORSMiddleware,
+-    allow_origins=["*"],
+-    allow_credentials=True,
+-    allow_methods=["*"],
+-    allow_headers=["*"],
+-)
++# Фронт и API на одном origin — CORS не нужен (раньше allow_origins=["*"] + credentials, S6).
++# Доступ: loopback доверенный, остальные устройства — по токену; чужой Origin → 403 (S1, S6)
++app.add_middleware(AccessControlMiddleware)
+ 
+-# Static and Storage Mounts
++# Static mount. /storage больше НЕ раздаётся как статика: фото детей были публичны (S2)
+ frontend_dir = settings.BASE_DIR / "frontend"
+ static_dir = frontend_dir / "static"
+ templates_dir = frontend_dir / "templates"
+ 
+ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+-app.mount("/storage", StaticFiles(directory=str(settings.STORAGE_DIR)), name="storage")
+ 
+ templates = Jinja2Templates(directory=str(templates_dir))
+ 
+@@ -53,6 +48,7 @@ app.include_router(camera_router)
+ app.include_router(print_router)
+ app.include_router(health_router)
+ app.include_router(ws_router)
++app.include_router(media_router)
+ 
+ # UI Routes
+ @app.get("/", summary="Root redirect to Kiosk")
+@@ -89,20 +85,27 @@ async def mobile_camera_page(request: Request):
+ 
+ @app.get("/card/{session_id}", summary="Digital Badge Landing Page (QR Destination)")
+ async def digital_card_page(request: Request, session_id: str):
+-    sess = db.get_session(session_id)
++    sess = db.get_session(session_id) if SESSION_ID_RE.match(session_id) else None
++    # Ссылка «Поделиться» собирается на сервере из канонического URL, а не из request.url (S13)
++    share_url = "https://t.me/share/url?" + urlencode({
++        "url": f"{settings.BASE_URL}/card/{session_id}",
++        "text": "Моя профессия будущего на фестивале Станок Будущего!"
++    })
+     return templates.TemplateResponse(
+         request=request,
+         name="digital_card.html",
+         context={
+             "session": sess,
+-            "settings": settings
+-        }
++            "settings": settings,
++            "share_url": share_url
++        },
++        status_code=200 if sess else 404
+     )
+ 
+ if __name__ == "__main__":
+     import uvicorn
+     print("=" * 60)
+-    print(f"🚀 AI FESTIVAL KIOSK STARTED")
++    print("🚀 AI FESTIVAL KIOSK STARTED")
+     print(f"🖥️  Kiosk Display:         http://localhost:{settings.PORT}/kiosk")
+     print(f"🎛️  Operator Dashboard:    http://localhost:{settings.PORT}/operator")
+     print(f"📱  iPhone Mobile Camera:  http://{settings.LOCAL_IP}:{settings.PORT}/mobile-camera")
+diff --git a/app/security.py b/app/security.py
+new file mode 100644
+index 0000000..e973e8c
+--- /dev/null
++++ b/app/security.py
+@@ -0,0 +1,120 @@
++"""
++Контроль доступа к стенду (S1, S6).
++
++Модель доверия:
++  - loopback (127.0.0.1 / ::1) — сам ПК стенда: браузер киоска и оператор на этом же ПК;
++  - остальные устройства в Wi-Fi площадки — только с токеном:
++      ACCESS_TOKEN — полный доступ (ноутбук оператора, планшет-киоск),
++      CAMERA_TOKEN — только /mobile-camera и загрузка фото (QR на панели оператора);
++    токен передаётся один раз в ?token=..., дальше живёт в HttpOnly SameSite=Strict cookie,
++    либо заголовком X-Access-Token (скрипты, мониторинг);
++  - публично: страница карточки /card/{id} и её изображение /media/cards/{id}.jpg (id неугадываемый),
++    статика /static/*;
++  - CSRF / Cross-Site WebSocket Hijacking: небезопасные методы и WebSocket с Origin другого хоста → 403,
++    даже с loopback (вредный сайт, открытый в браузере на ПК стенда).
++"""
++import secrets
++from urllib.parse import urlencode, urlparse, parse_qsl
++
++from starlette.datastructures import Headers
++from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse
++
++from app.config.settings import settings
++
++COOKIE_FULL = "stanok_access"
++COOKIE_CAMERA = "stanok_camera"
++SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
++PUBLIC_PREFIXES = ("/static/", "/card/", "/media/cards/")
++PUBLIC_PATHS = {"/favicon.ico"}
++CAMERA_PATHS = {"/mobile-camera", "/api/camera/upload-ota"}
++LOOPBACK = {"127.0.0.1", "::1"}
++COOKIE_MAX_AGE = 3 * 24 * 3600
++
++
++def _same_origin(origin: str, host: str | None) -> bool:
++    if not host or origin == "null":
++        return False
++    return urlparse(origin).netloc.lower() == host.lower()
++
++
++def _match(value: str | None, expected: str) -> bool:
++    return bool(value) and bool(expected) and secrets.compare_digest(value, expected)
++
++
++def access_level(client_host: str | None, headers: Headers, cookies: dict) -> str | None:
++    if settings.TRUST_LOOPBACK and client_host in LOOPBACK:
++        return "full"
++    header_token = headers.get("x-access-token")
++    if _match(header_token, settings.ACCESS_TOKEN) or _match(cookies.get(COOKIE_FULL), settings.ACCESS_TOKEN):
++        return "full"
++    if _match(header_token, settings.CAMERA_TOKEN) or _match(cookies.get(COOKIE_CAMERA), settings.CAMERA_TOKEN):
++        return "camera"
++    return None
++
++
++def _cookies(headers: Headers) -> dict:
++    out = {}
++    for part in headers.get("cookie", "").split(";"):
++        if "=" in part:
++            k, v = part.strip().split("=", 1)
++            out[k] = v
++    return out
++
++
++class AccessControlMiddleware:
++    def __init__(self, app):
++        self.app = app
++
++    async def __call__(self, scope, receive, send):
++        if scope["type"] not in ("http", "websocket"):
++            return await self.app(scope, receive, send)
++
++        headers = Headers(scope=scope)
++        path = scope["path"]
++        is_ws = scope["type"] == "websocket"
++        method = scope.get("method", "GET")
++
++        origin = headers.get("origin")
++        if origin and (is_ws or method not in SAFE_METHODS) and not _same_origin(origin, headers.get("host")):
++            return await self._deny(scope, receive, send, 403, "Запрос с чужого сайта отклонён")
++
++        if not is_ws and (path.startswith(PUBLIC_PREFIXES) or path in PUBLIC_PATHS):
++            return await self.app(scope, receive, send)
++
++        # Одноразовая передача токена в ссылке/QR → cookie и редирект на чистый URL
++        if not is_ws and method == "GET":
++            query = dict(parse_qsl(scope.get("query_string", b"").decode("latin-1")))
++            token = query.pop("token", None)
++            if token:
++                if _match(token, settings.ACCESS_TOKEN):
++                    cookie = COOKIE_FULL
++                elif _match(token, settings.CAMERA_TOKEN):
++                    cookie = COOKIE_CAMERA
++                else:
++                    cookie = None
++                if cookie:
++                    target = path + ("?" + urlencode(query) if query else "")
++                    resp = RedirectResponse(target, status_code=303)
++                    resp.set_cookie(cookie, token, max_age=COOKIE_MAX_AGE, httponly=True, samesite="strict")
++                    return await resp(scope, receive, send)
++
++        level = access_level(scope.get("client", (None,))[0], headers, _cookies(headers))
++        if level == "full" or (level == "camera" and path in CAMERA_PATHS):
++            return await self.app(scope, receive, send)
++        return await self._deny(scope, receive, send, 401, "Нужен код доступа стенда")
++
++    @staticmethod
++    async def _deny(scope, receive, send, status: int, message: str):
++        if scope["type"] == "websocket":
++            await send({"type": "websocket.close", "code": 4403 if status == 403 else 4401})
++            return
++        if scope["path"].startswith("/api/"):
++            resp = JSONResponse({"detail": message}, status_code=status)
++        else:
++            resp = HTMLResponse(
++                f"<!doctype html><meta charset='utf-8'><title>Доступ</title>"
++                f"<body style='font-family:sans-serif;padding:40px'><h2>{message}</h2>"
++                f"<p>Откройте ссылку с кодом доступа (он печатается в консоли стенда при запуске) "
++                f"или отсканируйте QR на панели оператора.</p></body>",
++                status_code=status)
++        await resp(scope, receive, send)
+diff --git a/frontend/static/js/kiosk_app.jsx b/frontend/static/js/kiosk_app.jsx
+index a37fce0..8c01895 100644
+--- a/frontend/static/js/kiosk_app.jsx
++++ b/frontend/static/js/kiosk_app.jsx
+@@ -282,7 +282,7 @@ function WelcomeScreen({ onStart }) {
+ }
+ 
+ // --- SCREEN 2: CAMERA CAPTURE (3/5 Viewport, 2/5 Actions) ---
+-function CameraScreen({ isReview, photoPath, onCapture, onConfirm, onRetake }) {
++function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake }) {
+   const [streamKey, setStreamKey] = useState(Date.now());
+   const [isCapturing, setIsCapturing] = useState(false);
+   const [flash, setFlash] = useState(false);
+@@ -326,7 +326,7 @@ function CameraScreen({ isReview, photoPath, onCapture, onConfirm, onRetake }) {
+ 
+           {isReview ? (
+             <img 
+-              src={`/storage/photos/${photoPath?.split(/[\\/]/).pop()}?t=${Date.now()}`} 
++              src={`/media/photos/${sessionId}.jpg?t=${Date.now()}`} 
+               alt="Сделанный снимок" 
+               className="w-full h-full object-cover"
+             />
+@@ -530,8 +530,8 @@ function GeneratingScreen({ session }) {
+ 
+ // --- SCREEN 7: FINAL RESULT BADGE & PRINT STATUS ---
+ function ResultScreen({ session, onFinish }) {
+-  const cardUrl = session?.final_card_path 
+-    ? `/storage/cards/${session.final_card_path.split(/[\\/]/).pop()}?t=${Date.now()}`
++  const cardUrl = session?.final_card_path
++    ? `/media/cards/${session.id}.jpg?t=${Date.now()}`
+     : null;
+ 
+   return (
+@@ -844,7 +844,7 @@ function KioskRoot() {
+       return (
+         <CameraScreen 
+           isReview={true} 
+-          photoPath={session.photo_path} 
++          sessionId={session.id} 
+           onCapture={handleCapturePhoto} 
+           onConfirm={handleConfirmPhoto} 
+           onRetake={handleRetakePhoto} 
+diff --git a/frontend/templates/digital_card.html b/frontend/templates/digital_card.html
+index c646552..5d39d9a 100644
+--- a/frontend/templates/digital_card.html
++++ b/frontend/templates/digital_card.html
+@@ -59,9 +59,9 @@
+ 
+     <div class="card-preview-box">
+       {% if session and session.final_card_path %}
+-        <img src="/storage/cards/{{ session.id }}_card.jpg" alt="Digital Card">
++        <img src="/media/cards/{{ session.id }}.jpg" alt="Digital Card">
+       {% else %}
+-        <p style="padding: 40px; color: var(--text-muted);">Изображение формируется...</p>
++        <p style="padding: 40px; color: var(--text-muted);">{{ "Изображение формируется..." if session else "Карточка не найдена или уже удалена" }}</p>
+       {% endif %}
+     </div>
+ 
+@@ -71,12 +71,12 @@
+ 
+     <div class="action-group">
+       {% if session and session.final_card_path %}
+-        <a href="/storage/cards/{{ session.id }}_card.jpg" download="stanok_budushego_{{ session.id }}.jpg" class="btn-cyber" style="text-decoration: none; justify-content: center; font-size: 18px; padding: 18px;">
++        <a href="/media/cards/{{ session.id }}.jpg" download="stanok_budushego.jpg" class="btn-cyber" style="text-decoration: none; justify-content: center; font-size: 18px; padding: 18px;">
+           📥 СКАЧАТЬ КАРТОЧКУ (HD)
+         </a>
+       {% endif %}
+       
+-      <a href="https://t.me/share/url?url={{ request.url }}&text=Моя%20профессия%20будущего%20на%20фестивале%20Станок%20Будущего!" target="_blank" class="btn-tg">
++      <a href="{{ share_url }}" target="_blank" rel="noopener noreferrer" class="btn-tg">
+         ✈️ ПОДЕЛИТЬСЯ В TELEGRAM
+       </a>
+     </div>

@@ -1,19 +1,19 @@
-from fastapi import APIRouter, HTTPException, Body
-from pydantic import BaseModel
-from typing import Optional, Dict, Any, List
+from fastapi import APIRouter, Query
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
 from app.session.manager import session_manager
-from app.session.models import SessionData, SessionState
+from app.session.models import SessionData
 from app.storage.database import db
 
 router = APIRouter(prefix="/api/session", tags=["Session"])
 
 class AnswerRequest(BaseModel):
-    question_type: str  # 'element', 'power', 'color'
-    answer_id: str
+    question_type: Literal["element", "power", "color"]
+    answer_id: str = Field(min_length=1, max_length=32)
 
 @router.post("/new", response_model=SessionData, summary="Create a new participant session")
 async def create_new_session():
-    return session_manager.create_session()
+    return await session_manager.new_session()
 
 @router.get("/active", response_model=Optional[SessionData], summary="Get current active session")
 async def get_active_session():
@@ -36,9 +36,9 @@ async def submit_answer(payload: AnswerRequest):
 
 @router.post("/reset", summary="Reset kiosk to IDLE state")
 async def reset_session():
-    await session_manager.update_status(SessionState.IDLE)
+    await session_manager.reset()
     return {"status": "ok"}
 
 @router.get("/history", summary="Get recent session history for operator")
-async def get_history(limit: int = 30):
+async def get_history(limit: int = Query(30, ge=1, le=200)):
     return db.get_recent_sessions(limit=limit)

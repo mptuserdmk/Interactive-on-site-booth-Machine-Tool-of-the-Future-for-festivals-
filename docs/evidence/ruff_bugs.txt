@@ -1,0 +1,17 @@
+﻿app\ai\cloud_providers.py:35:18: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:74:22: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:114:18: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:152:27: F821 Undefined name `asyncio`
+app\ai\cloud_providers.py:160:30: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:225:49: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+app\ai\cloud_providers.py:226:26: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:282:26: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:286:26: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\mock_provider.py:29:16: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+app\api\routes_ws.py:60:13: S110 `try`-`except`-`pass` detected, consider logging the exception
+app\camera\manager.py:36:29: F841 [*] Local variable `e` is assigned to but never used
+app\config\settings.py:25:17: S104 Possible binding to all interfaces
+app\printing\manager.py:37:16: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+app\printing\manager.py:57:13: S606 Starting a process without a shell
+Found 15 errors.
+[*] 1 fixable with the `--fix` option.

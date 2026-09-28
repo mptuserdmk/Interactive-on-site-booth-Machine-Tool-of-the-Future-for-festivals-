@@ -1,0 +1,169 @@
+﻿diff --git a/app/api/routes_camera.py b/app/api/routes_camera.py
+index 1a3db10..716aa6a 100644
+--- a/app/api/routes_camera.py
++++ b/app/api/routes_camera.py
+@@ -1,7 +1,8 @@
+ import asyncio
+-from fastapi import APIRouter, UploadFile, File
++from fastapi import APIRouter, UploadFile, File, HTTPException
+ from fastapi.responses import StreamingResponse
+ from app.config.settings import settings
++from app.camera.image_io import normalize_photo, max_upload_bytes, UploadRejected
+ from app.camera.manager import camera_manager
+ from app.session.manager import session_manager
+ 
+@@ -33,10 +34,15 @@ async def capture_usb_snapshot():
+ 
+ @router.post("/upload-ota", summary="Over-the-air photo upload from iPhone/Android")
+ async def upload_ota_photo(file: UploadFile = File(...)):
++    # Сначала проверка и нормализация (S4, H16), потом сессия: мусор не создаёт PHOTO_TAKEN
++    contents = await file.read(max_upload_bytes() + 1)
++    try:
++        jpeg, _size = await asyncio.to_thread(normalize_photo, contents)
++    except UploadRejected as e:
++        raise HTTPException(status_code=e.status_code, detail=str(e))
+     sess = session_manager.begin_photo()
+     out_path = settings.PHOTOS_DIR / f"{sess.id}_raw.jpg"
+-    contents = await file.read()
+-    await asyncio.to_thread(camera_manager.save_mobile_ota_photo, contents, out_path)
++    await asyncio.to_thread(camera_manager.save_mobile_ota_photo, jpeg, out_path)
+     await session_manager.attach_photo(sess.id, out_path)
+     return {
+         "status": "ok",
+diff --git a/app/camera/image_io.py b/app/camera/image_io.py
+new file mode 100644
+index 0000000..90ade08
+--- /dev/null
++++ b/app/camera/image_io.py
+@@ -0,0 +1,97 @@
++"""
++Приём фото с телефона ассистента (S4, H16).
++
++- лимит размера (settings.MAX_UPLOAD_MB) — плюс UploadSizeLimitMiddleware режет запрос по Content-Length
++  ещё до разбора multipart;
++- формат определяется по содержимому, а не по имени/Content-Type; SVG/HTML/EXE → 415;
++- HEIC (галерея iPhone) → 415 с понятной подсказкой вместо ERROR посреди пайплайна;
++- decompression bomb: проверка числа пикселей ДО декодирования;
++- EXIF Orientation применяется (портреты с iPhone больше не «боком»);
++- перекодирование в чистый JPEG: отрезает полиглоты (JPEG+HTML/ZIP) и метаданные с GPS;
++- одновременно декодируется не более 2 фото — 100 параллельных загрузок не съедают память.
++"""
++import io
++import threading
++from typing import Tuple
++
++from PIL import Image, ImageOps, UnidentifiedImageError
++from starlette.datastructures import Headers
++from starlette.responses import JSONResponse
++
++from app.config.settings import settings
++
++ALLOWED_FORMATS = {"JPEG", "MPO", "PNG", "WEBP"}
++HEIF_BRANDS = {b"heic", b"heix", b"hevc", b"hevx", b"heim", b"heis", b"mif1", b"msf1", b"avif"}
++MAX_PIXELS = 40_000_000
++MIN_SIDE = 32
++MAX_SIDE = 2560
++_decode_slots = threading.BoundedSemaphore(2)
++
++
++class UploadRejected(Exception):
++    def __init__(self, status_code: int, message: str):
++        super().__init__(message)
++        self.status_code = status_code
++
++
++def max_upload_bytes() -> int:
++    return settings.MAX_UPLOAD_MB * 1024 * 1024
++
++
++def _is_heif(data: bytes) -> bool:
++    return len(data) >= 12 and data[4:8] == b"ftyp" and data[8:12] in HEIF_BRANDS
++
++
++def normalize_photo(data: bytes) -> Tuple[bytes, Tuple[int, int]]:
++    """Проверяет загруженные байты и возвращает чистый JPEG (RGB, без EXIF) и его размер."""
++    if not data:
++        raise UploadRejected(400, "Пустой файл")
++    if len(data) > max_upload_bytes():
++        raise UploadRejected(413, f"Файл больше {settings.MAX_UPLOAD_MB} МБ")
++    if _is_heif(data):
++        raise UploadRejected(415, "Формат HEIC/HEIF не поддерживается. На iPhone: Настройки → Камера → "
++                                  "Форматы → «Наиболее совместимый», или снимайте кнопкой 📸 на странице")
++    with _decode_slots:
++        try:
++            with Image.open(io.BytesIO(data)) as im:
++                if im.format not in ALLOWED_FORMATS:
++                    raise UploadRejected(415, f"Формат {im.format} не поддерживается: нужен JPEG или PNG")
++                w, h = im.size
++                if w * h > MAX_PIXELS:
++                    raise UploadRejected(413, f"Слишком большое разрешение: {w}×{h}")
++                if min(w, h) < MIN_SIDE:
++                    raise UploadRejected(422, f"Слишком маленькое изображение: {w}×{h}")
++                img = ImageOps.exif_transpose(im)
++                img.thumbnail((MAX_SIDE, MAX_SIDE), Image.Resampling.LANCZOS)
++                if img.mode in ("RGBA", "LA", "P"):
++                    rgba = img.convert("RGBA")
++                    bg = Image.new("RGB", rgba.size, (255, 255, 255))
++                    bg.paste(rgba, mask=rgba.getchannel("A"))
++                    img = bg
++                else:
++                    img = img.convert("RGB")
++                out = io.BytesIO()
++                img.save(out, "JPEG", quality=92)
++                return out.getvalue(), img.size
++        except UploadRejected:
++            raise
++        except Image.DecompressionBombError:
++            raise UploadRejected(413, "Слишком большое разрешение изображения")
++        except (UnidentifiedImageError, OSError, SyntaxError, ValueError):
++            raise UploadRejected(415, "Файл не является изображением JPEG/PNG")
++
++
++class UploadSizeLimitMiddleware:
++    """413 по заголовку Content-Length до того, как multipart-парсер запишет тело во временный файл."""
++
++    def __init__(self, app, paths):
++        self.app = app
++        self.paths = set(paths)
++
++    async def __call__(self, scope, receive, send):
++        if scope["type"] == "http" and scope["path"] in self.paths:
++            length = Headers(scope=scope).get("content-length")
++            if length and length.isdigit() and int(length) > max_upload_bytes() + 64 * 1024:
++                resp = JSONResponse({"detail": f"Файл больше {settings.MAX_UPLOAD_MB} МБ"}, status_code=413)
++                return await resp(scope, receive, send)
++        await self.app(scope, receive, send)
+diff --git a/app/config/settings.py b/app/config/settings.py
+index 915fdc1..c3edcfd 100644
+--- a/app/config/settings.py
++++ b/app/config/settings.py
+@@ -44,7 +44,8 @@ class Settings(BaseSettings):
+     CAMERA_HEIGHT: int = 1080
+     CAMERA_FPS: int = 30
+     CAMERA_MIRROR: bool = True
+-    
++    MAX_UPLOAD_MB: int = 15  # лимит фото с телефона (S4)
++
+     # AI Provider: 'mock', 'bothub', 'fal', 'replicate', 'openai', 'stability'
+     AI_PROVIDER: str = "mock"
+     AI_API_KEY: str = ""
+diff --git a/app/main.py b/app/main.py
+index 7008a52..e7e409c 100644
+--- a/app/main.py
++++ b/app/main.py
+@@ -11,6 +11,7 @@ from app.api.routes_health import router as health_router
+ from app.api.routes_ws import router as ws_router
+ from app.api.routes_media import router as media_router, SESSION_ID_RE
+ from app.security import AccessControlMiddleware
++from app.camera.image_io import UploadSizeLimitMiddleware
+ from app.storage.database import db
+ from app.session.manager import SessionError
+ 
+@@ -26,6 +27,7 @@ app = FastAPI(
+ 
+ # Фронт и API на одном origin — CORS не нужен (раньше allow_origins=["*"] + credentials, S6).
+ # Доступ: loopback доверенный, остальные устройства — по токену; чужой Origin → 403 (S1, S6)
++app.add_middleware(UploadSizeLimitMiddleware, paths=["/api/camera/upload-ota"])  # S4
+ app.add_middleware(AccessControlMiddleware)
+ 
+ # Static mount. /storage больше НЕ раздаётся как статика: фото детей были публичны (S2)

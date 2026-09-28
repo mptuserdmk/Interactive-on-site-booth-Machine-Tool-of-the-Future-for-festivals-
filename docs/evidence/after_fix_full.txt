@@ -1,0 +1,88 @@
+﻿bringing up nodes...
+bringing up nodes...
+
+........................................................................ [ 17%]
+........................................................................ [ 34%]
+........................................................................ [ 51%]
+........F...........ssss................................................ [ 68%]
+........................................................................ [ 85%]
+..............................................................           [100%]
+================================== FAILURES ===================================
+____________________ test_full_cycle_with_real_mock_delays ____________________
+[gw3] win32 -- Python 3.13.7 C:\Users\Гусь\Desktop\Practika\.venv\Scripts\python.exe
+
+client = <httpx.AsyncClient object at 0x000001E2ACF43B90>
+
+    async def test_full_cycle_with_real_mock_delays(client):
+        """Без ускорения: реальные задержки mock AI (1.5 с) + печать (2.5 с). SLO: ≤ 5 с до COMPLETED."""
+        import time
+        sid = await run_kiosk_flow(client)
+        t0 = time.monotonic()
+        done = await wait_for_status(db_state(sid), {"COMPLETED", "ERROR"}, timeout=20)
+        elapsed = time.monotonic() - t0
+        assert done["status"] == "COMPLETED"
+        print(f"\n[SLO] выбор цвета → COMPLETED: {elapsed:.2f} с")
+>       assert elapsed <= 5.0
+E       assert 5.156723199994303 <= 5.0
+
+tests\test_full_lifecycle.py:87: AssertionError
+---------------------------- Captured stdout call -----------------------------
+
+[SLO] выбор цвета → COMPLETED: 5.16 с
+============================== warnings summary ===============================
+app\config\settings.py:38
+app\config\settings.py:38
+app\config\settings.py:38
+app\config\settings.py:38
+app\config\settings.py:38
+  C:\Users\Гусь\Desktop\Practika\app\config\settings.py:38: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class Settings(BaseSettings):
+
+tests/security/test_access_control.py::test_websocket_rejects_remote_without_token
+tests/security/test_access_control.py::test_websocket_rejects_foreign_origin
+tests/integration/test_state_machine_property.py::TestKioskStateMachine::runTest
+tests/unit/test_database.py::test_interrupted_sessions_marked_on_startup
+  C:\Users\Гусь\Desktop\Practika\tests\helpers.py:96: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient
+
+tests/security/test_upload.py::test_huge_resolution_12000px_rejected_or_downscaled
+  C:\Users\Гусь\Desktop\Practika\.venv\Lib\site-packages\PIL\Image.py:3578: DecompressionBombWarning: Image size (144000000 pixels) exceeds limit of 89478485 pixels, could be decompression bomb DOS attack.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.13.7-final-0 _______________
+
+Name                          Stmts   Miss Branch BrPart  Cover
+---------------------------------------------------------------
+app\ai\cloud_providers.py       152     17     40      9    84%
+app\ai\manager.py                38      0      6      0   100%
+app\ai\mock_provider.py          48      0      6      0   100%
+app\ai\models.py                 17      0      0      0   100%
+app\ai\prompts.py                11      0      0      0   100%
+app\ai\provider.py               15      3      0      0    80%
+app\api\routes_camera.py         36      2      0      0    94%
+app\api\routes_health.py         40      2      0      0    95%
+app\api\routes_media.py          39      8      8      4    74%
+app\api\routes_print.py          18      1      0      0    94%
+app\api\routes_session.py        35      0      0      0   100%
+app\api\routes_ws.py             45      8     10      5    76%
+app\camera\image_io.py           66      3     18      3    93%
+app\camera\manager.py           142     32     36      4    74%
+app\camera\models.py              9      0      0      0   100%
+app\composition\composer.py     188     23     48      9    85%
+app\composition\qr.py            13      0      0      0   100%
+app\config\settings.py           88      3     12      4    93%
+app\main.py                      78      9      6      1    88%
+app\printing\manager.py         112     31     26      3    72%
+app\quiz\combinations.py         29      2      8      2    89%
+app\quiz\engine.py               13      4      2      0    60%
+app\security.py                  77      2     34      3    95%
+app\session\manager.py          254     18     54      5    91%
+app\session\models.py            39      0      0      0   100%
+app\storage\database.py          90      3     14      3    94%
+app\storage\files.py             24      9      6      1    60%
+---------------------------------------------------------------
+TOTAL                          1716    180    334     56    87%
+Coverage HTML written to dir docs\evidence\coverage_html
+1 failed, 417 passed, 4 skipped, 10 warnings in 140.87s (0:02:20)

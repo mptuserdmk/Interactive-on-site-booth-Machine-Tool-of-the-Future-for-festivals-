@@ -1,0 +1,163 @@
+﻿diff --git a/.env.example b/.env.example
+index c1ca3e1..8dad0b4 100644
+--- a/.env.example
++++ b/.env.example
+@@ -6,24 +6,43 @@
+ # - mock: офлайн генерация/заглушки для локальных тестов
+ # - fal: Fal.ai Flux/SDXL
+ # - replicate: Replicate FaceID
++# Ключ оставлен ПУСТЫМ намеренно: раньше здесь стоял плейсхолдер, который health считал рабочим ключом,
++# а все генерации молча уходили в mock. Пока ключа нет, панель оператора показывает «КЛЮЧ НЕ НАСТРОЕН».
+ AI_PROVIDER=bothub
+-AI_API_KEY=ваш_bothub_api_ключ
++AI_API_KEY=
+ BOTHUB_MODEL=gemini-2.5-flash-image
+ 
++# Доступ к стенду с других устройств (ноутбук оператора, планшет-киоск).
++# Задайте длинный случайный код (например, результат: python -c "import secrets;print(secrets.token_urlsafe(12))").
++# Пусто → новый код при каждом запуске (печатается в консоли). Сам ПК стенда (localhost) доступен без кода.
++ACCESS_TOKEN=
++# Документация API (/docs) в проде выключена
++ENABLE_API_DOCS=false
++
++# Адрес, который печатается в QR на карточках. Пусто → http://<IP этого ПК>:<PORT>.
++# Если у площадки есть домен/HTTPS-прокси — укажите его здесь.
++BASE_URL=
++PORT=8000
++
+ # Настройки камеры
+ CAMERA_INDEX=0
+ CAMERA_WIDTH=1920
+ CAMERA_HEIGHT=1080
+ CAMERA_FPS=30
+ CAMERA_MIRROR=true
++# false: если USB-камера не отвечает, стенд просит снять телефоном, а не печатает заглушку вместо ребёнка
++CAMERA_MOCK_FALLBACK=false
++MAX_UPLOAD_MB=15
+ 
+ # Настройки фотопринтера
+-# Оставьте пустым для использования принтера по умолчанию в Windows
++# Имя принтера точно как в «Принтеры и сканеры» Windows. Пусто → принтер по умолчанию (проверьте, что это фотопринтер!)
+ PRINTER_NAME=
+ ENABLE_AUTO_PRINT=true
+ PRINT_SIMULATION_MODE=false
++REPRINT_COOLDOWN_SECONDS=10
+ 
+-# Политика приватности (удаление исходных фото детей после печати)
++# Политика приватности: исходное фото и AI-портрет удаляются сразу после сборки карточки
++# (и при ошибке/брошенной сессии). Карточки удаляет scripts\cleanup_storage.py в конце дня.
+ DELETE_SOURCE_PHOTOS_AFTER_PRINT=true
+ 
+ # Брендинг фестиваля
+diff --git a/README.md b/README.md
+index 1d7e997..82cfa33 100644
+--- a/README.md
++++ b/README.md
+@@ -65,8 +65,10 @@ python run.py
+ | :--- | :--- | :--- |
+ | 🖥️ **Киоск посетителя** | `http://localhost:8000/kiosk` | Сенсорный интерфейс для участников фестиваля |
+ | 🎛️ **Панель оператора** | `http://localhost:8000/operator` | Мониторинг оборудования, история и кнопка `REPRINT` |
+-| 📱 **Камера iPhone (OTA)** | `http://<IP-ПК>:8000/mobile-camera` | Беспроводная съемка со смартфона по Wi-Fi |
+-| 📚 **OpenAPI Swagger** | `http://localhost:8000/docs` | Интерактивная документация REST API |
++| 📱 **Камера iPhone (OTA)** | QR на панели оператора (`/mobile-camera?token=…`) | Беспроводная съемка со смартфона по Wi-Fi |
++| 📚 **OpenAPI Swagger** | `http://localhost:8000/docs` | Только при `ENABLE_API_DOCS=true` (в проде выключено) |
++
++> 🔐 **Доступ.** С самого ПК стенда (localhost) киоск и панель оператора открываются без кода. С других устройств — по ссылке с `?token=<ACCESS_TOKEN>` (код печатается в консоли при запуске; задайте постоянный в `.env`). Телефон ассистента получает отдельный токен камеры через QR на панели оператора. Гости видят только свою карточку по ссылке из QR.
+ 
+ ---
+ 
+@@ -129,7 +131,12 @@ ai-festival-kiosk/
+ 
+ ## 🧪 Запуск тестов
+ 
+-Для проверки работоспособности всех эндпоинтов, камеры, генератора и базы:
++Тесты работают во временной папке и никогда не печатают на реальный принтер (`os.startfile` заблокирован, без `PRINT_SIMULATION_MODE` прогон останавливается). Подробности, результаты и runbook — `docs/prod-readiness-report.md`.
++
+ ```bash
+-python tests/test_full_lifecycle.py
++pip install -r requirements-dev.txt
++playwright install chromium
++pytest -m "not e2e and not slow"
++pytest --cov=app --cov-branch
++pytest -m e2e
+ ```
+diff --git a/requirements.lock b/requirements.lock
+new file mode 100644
+index 0000000..79f47ea
+--- /dev/null
++++ b/requirements.lock
+@@ -0,0 +1,34 @@
++# Закреплённые версии прод-зависимостей (Windows, Python 3.13), проверенные тестами 2026-09-28.
++# Обновление: python -m uv pip compile requirements.txt --python-version 3.13 --python-platform windows -o requirements.lock
++# затем полный прогон тестов и pip-audit -r requirements.lock
++annotated-doc==0.0.5
++annotated-types==0.8.0
++anyio==4.15.1
++certifi==2026.7.22
++click==8.5.0
++colorama==0.4.6
++fastapi==0.141.1
++h11==0.16.0
++httpcore==1.0.9
++httptools==0.8.0
++httpx==0.28.1
++idna==3.20
++jinja2==3.1.6
++markupsafe==3.0.3
++numpy==2.5.3
++opencv-python==5.0.0.93
++pillow==12.3.0
++pydantic==2.13.5
++pydantic-core==2.46.5
++pydantic-settings==2.15.0
++python-dotenv==1.2.3
++python-multipart==0.0.32
++pywin32==312
++pyyaml==6.0.3
++qrcode==8.2
++starlette==1.7.0
++typing-extensions==4.16.0
++typing-inspection==0.4.4
++uvicorn==0.54.0
++watchfiles==1.3.0
++websockets==17.1
+diff --git a/start.bat b/start.bat
+index 363aef1..e13aa74 100644
+--- a/start.bat
++++ b/start.bat
+@@ -1,6 +1,7 @@
+ @echo off
+ chcp 65001 > nul
+ title AI-Фотолокация "Станок Будущего"
++cd /d "%~dp0"
+ 
+ echo ======================================================
+ echo    AI-ФОТОЛОКАЦИЯ «СТАНОК БУДУЩЕГО» (EVENT KIOSK)
+@@ -8,14 +9,24 @@ echo ======================================================
+ echo.
+ 
+ if not exist .env (
+-    echo [INFO] Создаем базовый .env файл...
++    echo [INFO] Создаем базовый .env файл из .env.example...
+     copy .env.example .env > nul
++    echo [ВНИМАНИЕ] Впишите AI_API_KEY, PRINTER_NAME и ACCESS_TOKEN в .env перед фестивалем!
+ )
+ 
+-echo [1/2] Проверка зависимостей Python...
+-python -m pip install --quiet -r requirements.txt
++echo [1/2] Проверка зависимостей Python (закреплённые версии из requirements.lock)...
++python -m pip install --quiet -r requirements.lock
++if errorlevel 1 (
++    echo [WARN] Не удалось установить зависимости ^(нет интернета?^). Пробуем запустить с уже установленными.
++)
+ 
+ echo [2/2] Запуск сервера и интерфейса...
+ python run.py
++if errorlevel 1 (
++    echo.
++    echo [ОШИБКА] Сервер остановился с ошибкой. Частые причины:
++    echo   - порт 8000 занят другой программой ^(закройте её или задайте PORT в .env^);
++    echo   - ошибка в .env ^(строка с именем параметра выше в сообщении^).
++)
+ 
+ pause

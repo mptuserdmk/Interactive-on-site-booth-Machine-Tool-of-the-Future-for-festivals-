@@ -1,106 +1,179 @@
 import sqlite3
 import json
-from datetime import datetime
+import logging
+import threading
+import time
+from contextlib import closing
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional, Dict, Any, List
 from app.config.settings import settings
+
+logger = logging.getLogger("stanok.db")
+
+MAX_HISTORY_LIMIT = 200
+# Статусы, в которых сессия не может пережить рестарт процесса (константы, без пользовательского ввода)
+SELECT_INTERRUPTED = """
+    SELECT * FROM sessions WHERE status IN (
+        'GENERATING', 'GENERATED', 'COMPOSING', 'READY_TO_PRINT', 'PRINTING',
+        'PHOTO_PENDING', 'PHOTO_TAKEN', 'PHOTO_CONFIRMED', 'QUIZ_ELEMENT', 'QUIZ_POWER', 'QUIZ_COLOR')
+"""
+MARK_PIPELINE_ERROR = """
+    UPDATE sessions SET status = 'ERROR', error_message = 'Прервано перезапуском стенда', updated_at = ?
+    WHERE status IN ('GENERATING', 'GENERATED', 'COMPOSING', 'READY_TO_PRINT', 'PRINTING')
+"""
+MARK_INTERACTIVE_IDLE = """
+    UPDATE sessions SET status = 'IDLE', updated_at = ?
+    WHERE status IN ('PHOTO_PENDING', 'PHOTO_TAKEN', 'PHOTO_CONFIRMED', 'QUIZ_ELEMENT', 'QUIZ_POWER', 'QUIZ_COLOR')
+"""
+
+SCHEMA = """
+    CREATE TABLE IF NOT EXISTS sessions (
+        id TEXT PRIMARY KEY,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        status TEXT NOT NULL,
+        element TEXT,
+        element_name TEXT,
+        power TEXT,
+        power_name TEXT,
+        color TEXT,
+        color_name TEXT,
+        combination_id INTEGER,
+        machine_name TEXT,
+        machine_desc TEXT,
+        location TEXT,
+        photo_path TEXT,
+        generated_image_path TEXT,
+        final_card_path TEXT,
+        print_status TEXT DEFAULT 'pending',
+        error_message TEXT,
+        duration_seconds REAL,
+        meta_json TEXT
+    )
+"""
+
 
 class Database:
     def __init__(self, db_path=None):
         self.db_path = str(db_path or settings.DB_PATH)
+        self._init_lock = threading.Lock()
         self.init_db()
 
     def get_connection(self):
-        conn = sqlite3.connect(self.db_path)
+        """Новое соединение на вызов; вызывающий обязан закрыть его (раньше `with conn:` лишь
+        коммитил, а соединение оставалось открытым до сборки мусора — H12)."""
+        conn = sqlite3.connect(self.db_path, timeout=15)
         conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA busy_timeout = 15000")
         return conn
 
     def init_db(self):
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS sessions (
-                    id TEXT PRIMARY KEY,
-                    created_at TEXT NOT NULL,
-                    updated_at TEXT NOT NULL,
-                    status TEXT NOT NULL,
-                    element TEXT,
-                    element_name TEXT,
-                    power TEXT,
-                    power_name TEXT,
-                    color TEXT,
-                    color_name TEXT,
-                    combination_id INTEGER,
-                    machine_name TEXT,
-                    machine_desc TEXT,
-                    location TEXT,
-                    photo_path TEXT,
-                    generated_image_path TEXT,
-                    final_card_path TEXT,
-                    print_status TEXT DEFAULT 'pending',
-                    error_message TEXT,
-                    duration_seconds REAL,
-                    meta_json TEXT
-                )
-            """)
+        with self._init_lock:
+            try:
+                self._create_schema()
+            except sqlite3.DatabaseError as e:
+                # Повреждённый файл (выдернули питание) раньше ронял импорт приложения → белый экран
+                backup = f"{self.db_path}.corrupt-{int(time.time())}"
+                logger.error("Database file is corrupted (%s); moving it to %s", e, backup)
+                Path(self.db_path).replace(backup)
+                for suffix in ("-wal", "-shm"):
+                    Path(self.db_path + suffix).unlink(missing_ok=True)
+                self._create_schema()
+
+    def _create_schema(self):
+        with closing(self.get_connection()) as conn:
+            conn.execute("PRAGMA journal_mode = WAL")
+            conn.execute("PRAGMA synchronous = NORMAL")
+            conn.execute(SCHEMA)
             conn.commit()
+
+    def _execute(self, sql: str, params=(), fetch: str = ""):
+        for attempt in (1, 2):
+            try:
+                with closing(self.get_connection()) as conn:
+                    cur = conn.execute(sql, params)
+                    rows = cur.fetchall() if fetch == "all" else cur.fetchone() if fetch == "one" else None
+                    conn.commit()
+                    return rows
+            except sqlite3.OperationalError as e:
+                # kiosk.db удалили во время работы → sqlite создаёт пустой файл без таблицы
+                if attempt == 1 and "no such table" in str(e):
+                    logger.error("Table missing (%s) — recreating schema", e)
+                    self.init_db()
+                    continue
+                raise
 
     def save_session(self, data: Dict[str, Any]):
-        now = datetime.utcnow().isoformat()
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                INSERT OR REPLACE INTO sessions (
-                    id, created_at, updated_at, status, element, element_name,
-                    power, power_name, color, color_name, combination_id,
-                    machine_name, machine_desc, location, photo_path,
-                    generated_image_path, final_card_path, print_status,
-                    error_message, duration_seconds, meta_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                data.get("id"),
-                data.get("created_at", now),
-                now,
-                data.get("status", "IDLE"),
-                data.get("element"),
-                data.get("element_name"),
-                data.get("power"),
-                data.get("power_name"),
-                data.get("color"),
-                data.get("color_name"),
-                data.get("combination_id"),
-                data.get("machine_name"),
-                data.get("machine_desc"),
-                data.get("location"),
-                data.get("photo_path"),
-                data.get("generated_image_path"),
-                data.get("final_card_path"),
-                data.get("print_status", "pending"),
-                data.get("error_message"),
-                data.get("duration_seconds"),
-                json.dumps(data.get("meta", {}))
-            ))
-            conn.commit()
+        now = datetime.now(timezone.utc).isoformat()
+        self._execute("""
+            INSERT OR REPLACE INTO sessions (
+                id, created_at, updated_at, status, element, element_name,
+                power, power_name, color, color_name, combination_id,
+                machine_name, machine_desc, location, photo_path,
+                generated_image_path, final_card_path, print_status,
+                error_message, duration_seconds, meta_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            data.get("id"),
+            data.get("created_at", now),
+            now,
+            data.get("status", "IDLE"),
+            data.get("element"),
+            data.get("element_name"),
+            data.get("power"),
+            data.get("power_name"),
+            data.get("color"),
+            data.get("color_name"),
+            data.get("combination_id"),
+            data.get("machine_name"),
+            data.get("machine_desc"),
+            data.get("location"),
+            data.get("photo_path"),
+            data.get("generated_image_path"),
+            data.get("final_card_path"),
+            data.get("print_status", "pending"),
+            data.get("error_message"),
+            data.get("duration_seconds"),
+            json.dumps(data.get("meta", {}))
+        ))
 
     def get_session(self, session_id: str) -> Optional[Dict[str, Any]]:
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM sessions WHERE id = ?", (session_id,))
-            row = cursor.fetchone()
-            if row:
-                d = dict(row)
-                if d.get("meta_json"):
-                    try:
-                        d["meta"] = json.loads(d["meta_json"])
-                    except Exception:
-                        d["meta"] = {}
-                return d
-            return None
+        row = self._execute("SELECT * FROM sessions WHERE id = ?", (session_id,), fetch="one")
+        if row:
+            d = dict(row)
+            if d.get("meta_json"):
+                try:
+                    d["meta"] = json.loads(d["meta_json"])
+                except Exception:
+                    d["meta"] = {}
+            return d
+        return None
 
     def get_recent_sessions(self, limit: int = 30) -> List[Dict[str, Any]]:
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM sessions ORDER BY created_at DESC LIMIT ?", (limit,))
-            rows = cursor.fetchall()
-            return [dict(r) for r in rows]
+        # LIMIT -1 в SQLite означает «без лимита», 10**21 — OverflowError → 500 (S5)
+        limit = max(1, min(int(limit), MAX_HISTORY_LIMIT))
+        rows = self._execute("SELECT * FROM sessions ORDER BY created_at DESC LIMIT ?", (limit,), fetch="all")
+        return [dict(r) for r in rows]
+
+    def mark_interrupted_sessions(self) -> List[Dict[str, Any]]:
+        """После падения/kill процесса сессии навсегда оставались в GENERATING/PRINTING.
+        На старте: конвейер → ERROR, брошенные в фото/квизе → IDLE. Возвращает затронутые строки."""
+        rows = self._execute(SELECT_INTERRUPTED, fetch="all")
+        affected = [dict(r) for r in rows]
+        if affected:
+            now = datetime.now(timezone.utc).isoformat()
+            self._execute(MARK_PIPELINE_ERROR, (now,))
+            self._execute(MARK_INTERACTIVE_IDLE, (now,))
+        return affected
+
+    def delete_sessions(self, session_ids: List[str]):
+        for sid in session_ids:
+            self._execute("DELETE FROM sessions WHERE id = ?", (sid,))
+
+    def sessions_older_than(self, cutoff_iso: str) -> List[Dict[str, Any]]:
+        rows = self._execute("SELECT * FROM sessions WHERE created_at < ?", (cutoff_iso,), fetch="all")
+        return [dict(r) for r in rows]
+
 
 db = Database()

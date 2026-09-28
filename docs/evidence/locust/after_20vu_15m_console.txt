@@ -1,0 +1,141 @@
+﻿.\.venv\Scripts\python.exe : [2026-09-28 18:34:35,517] DESKTOP-TAF7O8F/INFO/locust.main: Starting Locust 2.46.6
+At line:1 char:380
++ ... NG="utf-8"; .\.venv\Scripts\python.exe -m locust -f tests\load\locust ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2026-09-28 18:...g Locust 2.46.6:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2026-09-28 18:34:35,522] DESKTOP-TAF7O8F/INFO/locust.main: Run time limit set to 900 seconds
+[2026-09-28 18:34:35,530] DESKTOP-TAF7O8F/INFO/locust.runners: Ramping to 20 users at a rate of 2.00 per second
+[2026-09-28 18:34:44,605] DESKTOP-TAF7O8F/INFO/locust.runners: All users spawned: {"GuestUser": 11, "KioskUser": 1, "Op
+eratorUser": 3, "StreamUser": 3, "WsUser": 2} (20 total users)
+Traceback (most recent call last):
+  File "src/gevent/greenlet.py", line 912, in gevent._gevent_cgreenlet.Greenlet.run
+  File "C:\Users\Гусь\Desktop\Practika\.venv\Lib\site-packages\locust\stats.py", line 1167, in stats_writer
+    self._requests_data_rows(self.requests_csv_writer)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Гусь\Desktop\Practika\.venv\Lib\site-packages\locust\stats.py", line 1046, in _requests_data_rows
+    csv_writer.writerow(
+    ~~~~~~~~~~~~~~~~~~~^
+        chain(
+        ^^^^^^
+    ...<14 lines>...
+        )
+        ^
+    )
+    ^
+  File "C:\Users\Гусь\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1251.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 11: character maps to <undefined>
+2026-09-28T15:34:47Z <Greenlet at 0x2a35a30a340: <bound method StatsCSVFileWriter.stats_writer of <locust.stats.StatsCS
+VFileWriter object at 0x000002A35A237E00>>> failed with UnicodeEncodeError
+
+[2026-09-28 18:34:47,660] DESKTOP-TAF7O8F/CRITICAL/locust.main: Unhandled exception in greenlet: <Greenlet at 0x2a35a30
+a340: <bound method StatsCSVFileWriter.stats_writer of <locust.stats.StatsCSVFileWriter object at 0x000002A35A237E00>>>
+Traceback (most recent call last):
+  File "src/gevent/greenlet.py", line 912, in gevent._gevent_cgreenlet.Greenlet.run
+  File "C:\Users\Гусь\Desktop\Practika\.venv\Lib\site-packages\locust\stats.py", line 1167, in stats_writer
+    self._requests_data_rows(self.requests_csv_writer)
+    ^^^^^^^
+  File "C:\Users\Гусь\Desktop\Practika\.venv\Lib\site-packages\locust\stats.py", line 1046, in _requests_data_rows
+    csv_writer.writerow(
+    ^^^^^^^^^^^
+  File "C:\Users\Гусь\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1251.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+    ^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 11: character maps to <undefined>
+[2026-09-28 18:49:34,533] DESKTOP-TAF7O8F/INFO/locust.main: --run-time limit reached, shutting down
+[2026-09-28 18:49:34,728] DESKTOP-TAF7O8F/INFO/locust.main: Shutting down (exit code 2)
+Type     Name                                                                          # reqs      # fails |    Avg    
+ Min     Max    Med |   req/s  failures/s
+--------|----------------------------------------------------------------------------|-------|-------------|-------|---
+----|-------|-------|--------|-----------
+GET      GET /api/camera/stream (10s)                                                     267     0(0.00%) |      6    
+   2      41      5 |    0.30        0.00
+GET      GET /api/health                                                                  122     0(0.00%) |     43    
+  21     206     40 |    0.14        0.00
+GET      GET /api/print/status                                                             45     0(0.00%) |      8    
+   3      34      8 |    0.05        0.00
+GET      GET /api/quiz/schema                                                              29     0(0.00%) |      6    
+   2      38      5 |    0.03        0.00
+GET      GET /api/session/active (poll)                                                   865     0(0.00%) |      4    
+   1      35      4 |    0.96        0.00
+GET      GET /api/session/history                                                         102     0(0.00%) |     14    
+   6      30     14 |    0.11        0.00
+GET      GET /card/{id}                                                                  3827     0(0.00%) |     11    
+   4      78     10 |    4.26        0.00
+GET      GET card image                                                                  3827     0(0.00%) |     19    
+   8     102     16 |    4.26        0.00
+POST     POST /api/camera/capture                                                          49     0(0.00%) |     42    
+  22      64     43 |    0.05        0.00
+POST     POST /api/session/answer [color]                                                  49     0(0.00%) |     35    
+  13      59     36 |    0.05        0.00
+POST     POST /api/session/answer [element]                                                49     0(0.00%) |     32    
+  11      56     34 |    0.05        0.00
+POST     POST /api/session/answer [power]                                                  49     0(0.00%) |     32    
+  13      50     35 |    0.05        0.00
+POST     POST /api/session/new                                                             49     0(0.00%) |     31    
+  12      52     33 |    0.05        0.00
+POST     POST /api/session/photo/confirm                                                   49     0(0.00%) |     34    
+  11      64     34 |    0.05        0.00
+POST     POST /api/session/reset                                                           48     0(0.00%) |      4    
+   1      10      4 |    0.05        0.00
+CYCLE    color→COMPLETED                                                                   48     0(0.00%) |   4446    
+4401    4498   4401 |    0.05        0.00
+WS       connect /ws                                                                        2     0(0.00%) |      4    
+   3       6      6 |    0.00        0.00
+WS       recv SESSION_UPDATE                                                             1062     0(0.00%) |      0    
+   0       0      0 |    1.18        0.00
+--------|----------------------------------------------------------------------------|-------|-------------|-------|---
+----|-------|-------|--------|-----------
+         Aggregated                                                                     10538     0(0.00%) |     33    
+   0    4498     12 |   11.72        0.00
+
+Response time percentiles (approximated)
+Type     Name                                                                                  50%    66%    75%    80%
+    90%    95%    98%    99%  99.9% 99.99%   100% # reqs
+--------|--------------------------------------------------------------------------------|--------|------|------|------
+|------|------|------|------|------|------|------|------
+GET      GET /api/camera/stream (10s)                                                            5      6      7      8
+     10     11     15     19     42     42     42    267
+GET      GET /api/health                                                                        40     50     51     52
+     60     69     87     89    210    210    210    122
+GET      GET /api/print/status                                                                   8      9     10     11
+     12     14     35     35     35     35     35     45
+GET      GET /api/quiz/schema                                                                    5      6      7      8
+     13     15     38     38     38     38     38     29
+GET      GET /api/session/active (poll)                                                          4      5      6      7
+      9     12     18     21     35     35     35    865
+GET      GET /api/session/history                                                               14     16     19     19
+     22     24     29     30     31     31     31    102
+GET      GET /card/{id}                                                                         10     12     13     14
+     16     19     24     30     67     78     78   3827
+GET      GET card image                                                                         16     19     23     25
+     32     41     52     59     85    100    100   3827
+POST     POST /api/camera/capture                                                               43     45     48     50
+     54     56     65     65     65     65     65     49
+POST     POST /api/session/answer [color]                                                       36     37     39     41
+     44     49     60     60     60     60     60     49
+POST     POST /api/session/answer [element]                                                     34     36     38     39
+     44     46     57     57     57     57     57     49
+POST     POST /api/session/answer [power]                                                       35     36     38     40
+     41     43     50     50     50     50     50     49
+POST     POST /api/session/new                                                                  33     36     37     38
+     40     41     53     53     53     53     53     49
+POST     POST /api/session/photo/confirm                                                        34     37     38     39
+     41     55     65     65     65     65     65     49
+POST     POST /api/session/reset                                                                 4      5      6      6
+      8      9     11     11     11     11     11     48
+CYCLE    color→COMPLETED                                                                      4400   4500   4500   4500
+   4500   4500   4500   4500   4500   4500   4500     48
+WS       connect /ws                                                                             7      7      7      7
+      7      7      7      7      7      7      7      2
+WS       recv SESSION_UPDATE                                                                     0      0      0      0
+      0      0      0      0      0      0      0   1062
+--------|--------------------------------------------------------------------------------|--------|------|------|------
+|------|------|------|------|------|------|------|------
+         Aggregated                                                                             12     15     17     19
+     28     37     50     60   4500   4500   4500  10538
+
+[MJPEG] окон=267 FPS min=20.0 median=20.1 max=20.1

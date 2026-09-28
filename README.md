@@ -65,8 +65,10 @@ python run.py
 | :--- | :--- | :--- |
 | 🖥️ **Киоск посетителя** | `http://localhost:8000/kiosk` | Сенсорный интерфейс для участников фестиваля |
 | 🎛️ **Панель оператора** | `http://localhost:8000/operator` | Мониторинг оборудования, история и кнопка `REPRINT` |
-| 📱 **Камера iPhone (OTA)** | `http://<IP-ПК>:8000/mobile-camera` | Беспроводная съемка со смартфона по Wi-Fi |
-| 📚 **OpenAPI Swagger** | `http://localhost:8000/docs` | Интерактивная документация REST API |
+| 📱 **Камера iPhone (OTA)** | QR на панели оператора (`/mobile-camera?token=…`) | Беспроводная съемка со смартфона по Wi-Fi |
+| 📚 **OpenAPI Swagger** | `http://localhost:8000/docs` | Только при `ENABLE_API_DOCS=true` (в проде выключено) |
+
+> 🔐 **Доступ.** С самого ПК стенда (localhost) киоск и панель оператора открываются без кода. С других устройств — по ссылке с `?token=<ACCESS_TOKEN>` (код печатается в консоли при запуске; задайте постоянный в `.env`). Телефон ассистента получает отдельный токен камеры через QR на панели оператора. Гости видят только свою карточку по ссылке из QR.
 
 ---
 
@@ -129,7 +131,12 @@ ai-festival-kiosk/
 
 ## 🧪 Запуск тестов
 
-Для проверки работоспособности всех эндпоинтов, камеры, генератора и базы:
+Тесты работают во временной папке и никогда не печатают на реальный принтер (`os.startfile` заблокирован, без `PRINT_SIMULATION_MODE` прогон останавливается). Подробности, результаты и runbook — `docs/prod-readiness-report.md`.
+
 ```bash
-python tests/test_full_lifecycle.py
+pip install -r requirements-dev.txt
+playwright install chromium
+pytest -m "not e2e and not slow"
+pytest --cov=app --cov-branch
+pytest -m e2e
 ```

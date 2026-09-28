@@ -1,0 +1,2 @@
+# Вендоренные библиотеки хранятся байт-в-байт: SHA256SUMS должен совпадать после checkout на Windows
+frontend/static/vendor/** -text

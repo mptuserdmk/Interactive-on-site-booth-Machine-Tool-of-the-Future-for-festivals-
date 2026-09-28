@@ -1,0 +1,30 @@
+﻿app\ai\cloud_providers.py:8:31: F401 [*] `typing.Optional` imported but unused
+app\ai\cloud_providers.py:88:18: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:164:18: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\cloud_providers.py:274:49: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+app\ai\cloud_providers.py:275:26: ASYNC230 Async functions should not open files with blocking methods like `open`
+app\ai\models.py:2:30: F401 [*] `typing.Dict` imported but unused
+app\ai\models.py:2:36: F401 [*] `typing.Any` imported but unused
+app\ai\provider.py:3:31: F401 [*] `typing.Optional` imported but unused
+app\api\routes_camera.py:30:9: B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+app\api\routes_camera.py:39:47: B008 Do not perform function call `File` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+app\api\routes_camera.py:45:9: B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+app\api\routes_ws.py:60:13: S110 `try`-`except`-`pass` detected, consider logging the exception
+app\camera\image_io.py:79:13: B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+app\camera\image_io.py:81:13: B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+app\camera\manager.py:70:13: S110 `try`-`except`-`pass` detected, consider logging the exception
+app\composition\composer.py:72:5: B019 Use of `functools.lru_cache` or `functools.cache` on methods can lead to memory leaks
+app\composition\qr.py:3:21: F401 [*] `pathlib.Path` imported but unused
+app\config\settings.py:26:5: S110 `try`-`except`-`pass` detected, consider logging the exception
+app\config\settings.py:34:5: S110 `try`-`except`-`pass` detected, consider logging the exception
+app\config\settings.py:42:17: S104 Possible binding to all interfaces
+app\printing\manager.py:132:16: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+app\storage\database.py:151:30: S608 Possible SQL injection vector through string-based query construction
+app\storage\database.py:157:17: S608 Possible SQL injection vector through string-based query construction
+app\storage\database.py:161:17: S608 Possible SQL injection vector through string-based query construction
+app\storage\files.py:1:8: F401 [*] `os` imported but unused
+app\storage\files.py:2:8: F401 [*] `shutil` imported but unused
+scripts\vendor_frontend.py:34:15: S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
+scripts\vendor_frontend.py:35:14: S310 Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
+Found 28 errors.
+[*] 7 fixable with the `--fix` option.

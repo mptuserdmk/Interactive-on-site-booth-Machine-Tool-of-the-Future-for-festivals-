@@ -1,0 +1,128 @@
+﻿.\.venv\Scripts\python.exe : [2026-09-28 18:51:00,367] DESKTOP-TAF7O8F/INFO/locust.main: Starting Locust 2.46.6
+At line:1 char:401
++ ... ONUTF8="1"; .\.venv\Scripts\python.exe -m locust -f tests\load\locust ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2026-09-28 18:...g Locust 2.46.6:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2026-09-28 18:51:00,371] DESKTOP-TAF7O8F/INFO/locust.runners: Shape test starting.
+[2026-09-28 18:51:00,373] DESKTOP-TAF7O8F/INFO/locust.runners: Shape worker starting
+[2026-09-28 18:51:00,373] DESKTOP-TAF7O8F/INFO/locust.runners: Shape test updating to 10 users at 5.00 spawn rate
+[2026-09-28 18:51:00,374] DESKTOP-TAF7O8F/INFO/locust.runners: Ramping to 10 users at a rate of 5.00 per second
+[2026-09-28 18:51:01,392] DESKTOP-TAF7O8F/INFO/locust.runners: All users spawned: {"GuestUser": 4, "KioskUser": 1, "Ope
+ratorUser": 1, "StreamUser": 3, "WsUser": 1} (10 total users)
+[2026-09-28 18:52:00,757] DESKTOP-TAF7O8F/INFO/locust.runners: Shape test updating to 25 users at 5.00 spawn rate
+[2026-09-28 18:52:00,757] DESKTOP-TAF7O8F/INFO/locust.runners: Ramping to 25 users at a rate of 5.00 per second
+[2026-09-28 18:52:02,770] DESKTOP-TAF7O8F/INFO/locust.runners: All users spawned: {"GuestUser": 14, "KioskUser": 1, "Op
+eratorUser": 4, "StreamUser": 3, "WsUser": 3} (25 total users)
+[2026-09-28 18:53:01,089] DESKTOP-TAF7O8F/INFO/locust.runners: Shape test updating to 50 users at 10.00 spawn rate
+[2026-09-28 18:53:01,091] DESKTOP-TAF7O8F/INFO/locust.runners: Ramping to 50 users at a rate of 10.00 per second
+[2026-09-28 18:53:03,096] DESKTOP-TAF7O8F/INFO/locust.runners: All users spawned: {"GuestUser": 31, "KioskUser": 1, "Op
+eratorUser": 9, "StreamUser": 3, "WsUser": 6} (50 total users)
+[2026-09-28 18:54:00,376] DESKTOP-TAF7O8F/INFO/locust.runners: Shape test updating to 100 users at 20.00 spawn rate
+[2026-09-28 18:54:00,379] DESKTOP-TAF7O8F/INFO/locust.runners: Ramping to 100 users at a rate of 20.00 per second
+[2026-09-28 18:54:02,391] DESKTOP-TAF7O8F/INFO/locust.runners: All users spawned: {"GuestUser": 64, "KioskUser": 1, "Op
+eratorUser": 19, "StreamUser": 3, "WsUser": 13} (100 total users)
+[2026-09-28 18:55:00,592] DESKTOP-TAF7O8F/INFO/locust.runners: Shape test updating to 150 users at 30.00 spawn rate
+[2026-09-28 18:55:00,593] DESKTOP-TAF7O8F/INFO/locust.runners: Ramping to 150 users at a rate of 30.00 per second
+[2026-09-28 18:55:01,617] DESKTOP-TAF7O8F/INFO/locust.runners: All users spawned: {"GuestUser": 97, "KioskUser": 1, "Op
+eratorUser": 29, "StreamUser": 3, "WsUser": 20} (150 total users)
+[2026-09-28 18:56:00,860] DESKTOP-TAF7O8F/INFO/locust.runners: Shape test updating to 200 users at 40.00 spawn rate
+[2026-09-28 18:56:00,862] DESKTOP-TAF7O8F/INFO/locust.runners: Ramping to 200 users at a rate of 40.00 per second
+[2026-09-28 18:56:01,866] DESKTOP-TAF7O8F/INFO/locust.runners: All users spawned: {"GuestUser": 131, "KioskUser": 1, "O
+peratorUser": 39, "StreamUser": 3, "WsUser": 26} (200 total users)
+[2026-09-28 18:57:01,273] DESKTOP-TAF7O8F/INFO/locust.runners: Shape test stopping
+[2026-09-28 18:57:01,867] DESKTOP-TAF7O8F/INFO/locust.main: Shape test completed, shutting down
+[2026-09-28 18:57:01,868] DESKTOP-TAF7O8F/INFO/locust.main: Shutting down (exit code 0)
+Type     Name                                                                          # reqs      # fails |    Avg    
+ Min     Max    Med |   req/s  failures/s
+--------|----------------------------------------------------------------------------|-------|-------------|-------|---
+----|-------|-------|--------|-----------
+GET      GET /api/camera/stream (10s)                                                     108     0(0.00%) |     48    
+   2     804     10 |    0.30        0.00
+GET      GET /api/health                                                                  281     0(0.00%) |    160    
+  24    1267     67 |    0.78        0.00
+GET      GET /api/print/status                                                            109     0(0.00%) |    119    
+   3     803     40 |    0.30        0.00
+GET      GET /api/quiz/schema                                                              22     0(0.00%) |      7    
+   1      23      5 |    0.06        0.00
+GET      GET /api/session/active (poll)                                                   350     0(0.00%) |     18    
+   1     423      6 |    0.97        0.00
+GET      GET /api/session/history                                                         216     0(0.00%) |    106    
+   8     951     40 |    0.60        0.00
+GET      GET /card/{id}                                                                  7198     0(0.00%) |     42    
+   4     872     16 |   19.92        0.00
+GET      GET card image                                                                  7191     0(0.00%) |    338    
+   8    3196     66 |   19.90        0.00
+POST     POST /api/camera/capture                                                          20     0(0.00%) |    102    
+  25     504     51 |    0.06        0.00
+POST     POST /api/session/answer [color]                                                  20     0(0.00%) |     56    
+  16     139     47 |    0.06        0.00
+POST     POST /api/session/answer [element]                                                20     0(0.00%) |     37    
+  15      61     37 |    0.06        0.00
+POST     POST /api/session/answer [power]                                                  20     0(0.00%) |     39    
+  18      92     36 |    0.06        0.00
+POST     POST /api/session/new                                                             20     0(0.00%) |     55    
+  14     268     35 |    0.06        0.00
+POST     POST /api/session/photo/confirm                                                   20     0(0.00%) |     36    
+  13      88     35 |    0.06        0.00
+POST     POST /api/session/reset                                                           19     0(0.00%) |      6    
+   1      30      5 |    0.05        0.00
+WS       connect /ws                                                                       26     0(0.00%) |    327    
+  15     985    180 |    0.07        0.00
+CYCLE    cycle color->COMPLETED                                                            20     0(0.00%) |   4551    
+4423    5208   4500 |    0.06        0.00
+WS       recv SESSION_UPDATE                                                             2516     0(0.00%) |      0    
+   0       0      0 |    6.96        0.00
+--------|----------------------------------------------------------------------------|-------|-------------|-------|---
+----|-------|-------|--------|-----------
+         Aggregated                                                                     18176     0(0.00%) |    161    
+   0    5208     23 |   50.29        0.00
+
+Response time percentiles (approximated)
+Type     Name                                                                                  50%    66%    75%    80%
+    90%    95%    98%    99%  99.9% 99.99%   100% # reqs
+--------|--------------------------------------------------------------------------------|--------|------|------|------
+|------|------|------|------|------|------|------|------
+GET      GET /api/camera/stream (10s)                                                           10     15     26     45
+     93    150    790    800    800    800    800    108
+GET      GET /api/health                                                                        67     98    150    190
+    410    720   1000   1200   1300   1300   1300    281
+GET      GET /api/print/status                                                                  40     77    120    190
+    400    650    730    760    800    800    800    109
+GET      GET /api/quiz/schema                                                                    5      7      8     12
+     15     21     24     24     24     24     24     22
+GET      GET /api/session/active (poll)                                                          6     10     16     20
+     44     77    130    220    420    420    420    350
+GET      GET /api/session/history                                                               40     68    110    170
+    310    440    680    750    950    950    950    216
+GET      GET /card/{id}                                                                         16     27     41     52
+     98    180    290    400    620    870    870   7198
+GET      GET card image                                                                         66    170    380    540
+   1200   1600   2400   2800   3100   3200   3200   7191
+POST     POST /api/camera/capture                                                               51     72     82    190
+    350    500    500    500    500    500    500     20
+POST     POST /api/session/answer [color]                                                       47     54     74     81
+    110    140    140    140    140    140    140     20
+POST     POST /api/session/answer [element]                                                     37     45     47     47
+     61     62     62     62     62     62     62     20
+POST     POST /api/session/answer [power]                                                       36     41     43     43
+     74     93     93     93     93     93     93     20
+POST     POST /api/session/new                                                                  35     50     71     76
+    100    270    270    270    270    270    270     20
+POST     POST /api/session/photo/confirm                                                        35     38     40     42
+     67     89     89     89     89     89     89     20
+POST     POST /api/session/reset                                                                 5      6      8      8
+      9     30     30     30     30     30     30     19
+WS       connect /ws                                                                           180    400    400    450
+    950    970    990    990    990    990    990     26
+CYCLE    cycle color->COMPLETED                                                               4500   4500   4600   4600
+   4800   5200   5200   5200   5200   5200   5200     20
+WS       recv SESSION_UPDATE                                                                     0      0      0      0
+      0      0      0      0      0      0      0   2516
+--------|--------------------------------------------------------------------------------|--------|------|------|------
+|------|------|------|------|------|------|------|------
+         Aggregated                                                                             23     48     79    120
+    410    940   1600   2300   4400   4800   5200  18176
+
+[MJPEG] окон=108 FPS min=16.8 median=20.0 max=20.1

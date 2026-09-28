@@ -198,18 +198,20 @@
         </div>
 
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button class="op-action-btn primary" onclick="fetch('/api/session/new', {method:'POST'})">➕ НОВАЯ СЕССИЯ</button>
-          <button class="op-action-btn" onclick="fetch('/api/camera/capture', {method:'POST'})">📸 СДЕЛАТЬ ФОТО</button>
-          <button class="op-action-btn" onclick="fetch('/api/session/photo/retake', {method:'POST'})">🔄 ПЕРЕСНЯТЬ</button>
-          <button class="op-action-btn" onclick="fetch('/api/session/photo/confirm', {method:'POST'})">✅ ПОДТВЕРДИТЬ</button>
-          <button class="op-action-btn" onclick="fetch('/api/print/trigger-active', {method:'POST'})">🖨️ ПЕЧАТАТЬ</button>
-          <button class="op-action-btn" style="color: var(--accent-error);" onclick="fetch('/api/session/reset', {method:'POST'})">⏹️ СБРОС</button>
+          <button class="op-action-btn primary" onclick="act('/api/session/new')">➕ НОВАЯ СЕССИЯ</button>
+          <button class="op-action-btn" onclick="act('/api/camera/capture')">📸 СДЕЛАТЬ ФОТО</button>
+          <button class="op-action-btn" onclick="act('/api/session/photo/retake')">🔄 ПЕРЕСНЯТЬ</button>
+          <button class="op-action-btn" onclick="act('/api/session/photo/confirm')">✅ ПОДТВЕРДИТЬ</button>
+          <button class="op-action-btn" onclick="act('/api/print/trigger-active')">🖨️ ПЕЧАТАТЬ</button>
+          <button class="op-action-btn" style="color: var(--accent-error);" onclick="act('/api/session/reset')">⏹️ СБРОС</button>
         </div>
 
         <div style="margin-top: 18px; font-family: var(--font-mono); font-size: 12px; background: #06090f; padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
           <div><span style="color: var(--text-muted);">ПАРАМЕТРЫ:</span> <span id="op-sess-elem">-</span> / <span id="op-sess-pwr">-</span> / <span id="op-sess-col">-</span></div>
           <div style="margin-top: 4px;"><span style="color: var(--text-muted);">ПРОФЕССИЯ:</span> <span id="op-sess-title" style="color: var(--accent-cyan); font-weight: 700;">-</span></div>
+          <div style="margin-top: 4px;"><span style="color: var(--text-muted);">ОШИБКА:</span> <span id="op-sess-error" style="color: var(--accent-error);">-</span></div>
         </div>
+        <div id="op-alerts" style="margin-top: 12px; font-family: var(--font-mono); font-size: 12px; color: var(--accent-error);"></div>
       </div>
 
       <!-- Right Column: Reprint Spooler -->
@@ -238,28 +240,77 @@
   </div>
 
   <script>
+    // Экранирование всего, что попадает в innerHTML (защита на будущее, S7)
+    function esc(v) {
+      return String(v ?? '').replace(/[&<>"']/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch]));
+    }
+
+    // Кнопки оператора: раньше fetch без проверки ответа — ошибки (409/429/503) не было видно
+    async function act(url, body) {
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: body ? { 'Content-Type': 'application/json' } : {},
+          body: body ? JSON.stringify(body) : undefined
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          alert('Не выполнено: ' + (data.detail || ('HTTP ' + res.status)));
+          return null;
+        }
+        return data;
+      } catch (e) {
+        alert('Нет связи со стендом');
+        return null;
+      }
+    }
+
+    function setStat(id, ok, text) {
+      const el = document.getElementById(id);
+      el.innerText = text;
+      el.style.color = ok ? 'var(--accent-emerald)' : 'var(--accent-error)';
+    }
+
     async function loadHealth() {
       try {
         const res = await fetch('/api/health');
         const data = await res.json();
-        
-        document.getElementById('stat-cam').innerText = data.diagnostics.camera.ok ? `OK (${data.diagnostics.camera.source})` : 'ОШИБКА';
-        document.getElementById('stat-cam').style.color = data.diagnostics.camera.ok ? 'var(--accent-emerald)' : 'var(--accent-error)';
+        const d = data.diagnostics;
+        const alerts = [];
 
-        document.getElementById('stat-ai').innerText = data.diagnostics.ai.ok ? `OK (${data.diagnostics.ai.provider})` : 'ОШИБКА';
-        document.getElementById('stat-ai').style.color = data.diagnostics.ai.ok ? 'var(--accent-emerald)' : 'var(--accent-error)';
+        setStat('stat-cam', d.camera.ok, d.camera.ok ? `OK (${d.camera.source})` : 'НЕТ USB-КАМЕРЫ');
 
-        document.getElementById('stat-pr').innerText = data.diagnostics.printer.ok ? `OK (${data.diagnostics.printer.active_printer})` : 'ОШИБКА';
-        document.getElementById('stat-pr').style.color = data.diagnostics.printer.ok ? 'var(--accent-emerald)' : 'var(--accent-error)';
+        const ai = d.ai;
+        let aiText = ai.ok ? `OK (${ai.provider})` : (ai.key_ok ? 'FALLBACK → MOCK' : 'КЛЮЧ НЕ НАСТРОЕН');
+        if (ai.is_mock) aiText = 'MOCK (офлайн-заглушка)';
+        setStat('stat-ai', ai.ok && !ai.is_mock, aiText + (ai.fallback_count ? ` · fallback: ${ai.fallback_count}` : ''));
+        if (ai.last_fallback) alerts.push('AI недоступен: последние карточки сделаны заглушкой (mock). ' + (ai.last_error || ''));
 
-        document.getElementById('stat-net').innerText = data.diagnostics.network.ok ? 'ONLINE' : 'OFFLINE';
-        document.getElementById('stat-disk').innerText = `${data.diagnostics.disk.free_gb} GB`;
+        setStat('stat-pr', d.printer.ok, d.printer.ok ? `OK (${d.printer.active_printer})` : ('ОШИБКА: ' + (d.printer.problem || 'принтер не готов')));
+        if (d.printer.queue_jobs > 3) alerts.push(`Очередь печати: ${d.printer.queue_jobs} заданий`);
+
+        setStat('stat-net', d.network.qr_url_ok, (d.network.ok ? 'ONLINE' : 'OFFLINE') + ' · QR: ' + d.network.qr_base_url);
+        if (!d.network.qr_url_ok) alerts.push(d.network.ip_changed
+          ? `IP стенда сменился (${d.network.current_ip}) — перезапустите стенд, иначе QR на карточках ведёт на старый адрес`
+          : 'QR на карточках ведёт на 127.0.0.1 — телефоны гостей их не откроют. Задайте BASE_URL в .env');
+
+        setStat('stat-disk', d.disk.ok, `${d.disk.free_gb} GB`);
+        if (!d.disk.ok) alerts.push('Мало места на диске — запустите scripts\\cleanup_storage.py');
+
+        document.getElementById('op-alerts').innerHTML = alerts.map(a => `<div>⚠️ ${esc(a)}</div>`).join('');
+        const allOk = d.camera.ok && ai.ok && d.printer.ok && d.network.qr_url_ok && d.disk.ok;
+        const pill = document.getElementById('hw-status-pill');
+        pill.innerText = allOk ? 'ONLINE' : 'ВНИМАНИЕ';
+        pill.className = 'status-pill' + (allOk ? '' : ' error');
 
         const otaUrl = data.mobile_camera_url;
         document.getElementById('ota-url-text').innerText = otaUrl;
-        document.getElementById('ota-qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(otaUrl)}`;
+        // QR генерируется на стенде: URL с токеном камеры не уходит стороннему сервису
+        document.getElementById('ota-qr-image').src = `/api/qr.png?data=${encodeURIComponent(otaUrl)}`;
       } catch (e) {
-        console.error(e);
+        const pill = document.getElementById('hw-status-pill');
+        pill.innerText = 'НЕТ СВЯЗИ';
+        pill.className = 'status-pill error';
       }
     }
 
@@ -275,11 +326,11 @@
         tbody.innerHTML = list.map(item => `
           <tr>
             <td>
-              <div style="font-weight: 700; color: #fff;">${item.machine_name || 'Инженер'}</div>
-              <div style="font-size: 10px; color: var(--text-muted);">${item.id}</div>
+              <div style="font-weight: 700; color: #fff;">${esc(item.machine_name || 'Инженер')}</div>
+              <div style="font-size: 10px; color: var(--text-muted);">${esc(item.status)} · код ${esc(String(item.id).split('_').pop().slice(-6).toUpperCase())}</div>
             </td>
             <td style="text-align: right;">
-              <button class="op-action-btn" style="padding: 4px 8px; font-size: 10px;" onclick="reprintCard('${item.id}')">🖨️ REPRINT</button>
+              ${item.final_card_path ? `<button class="op-action-btn" style="padding: 4px 8px; font-size: 10px;" data-sid="${esc(item.id)}" onclick="reprintCard(this.dataset.sid)">🖨️ REPRINT</button>` : ''}
             </td>
           </tr>
         `).join('');
@@ -289,38 +340,36 @@
     }
 
     async function reprintCard(sessionId) {
-      try {
-        const res = await fetch('/api/print/reprint', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session_id: sessionId })
-        });
-        const d = await res.json();
-        alert(d.success ? 'Карточка отправлена в очередь печати!' : ('Ошибка печати: ' + d.error));
-      } catch (e) {
-        alert('Ошибка связи с сервером');
-      }
+      const d = await act('/api/print/reprint', { session_id: sessionId });
+      if (d) alert(d.success ? 'Карточка отправлена в очередь печати!' : ('Ошибка печати: ' + d.error));
     }
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
-    ws.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
-      if (msg.type === 'SESSION_UPDATE' && msg.data) {
-        const sess = msg.data;
-        document.getElementById('active-sess-id').innerText = sess.id || 'НЕТ';
-        document.getElementById('active-sess-status').innerText = sess.status || 'IDLE';
-        document.getElementById('op-sess-elem').innerText = sess.element_name || sess.element || '-';
-        document.getElementById('op-sess-pwr').innerText = sess.power_name || sess.power || '-';
-        document.getElementById('op-sess-col').innerText = sess.color_name || sess.color || '-';
-        document.getElementById('op-sess-title').innerText = sess.machine_name || '-';
-        loadHistory();
-      }
-    };
+    // WebSocket с переподключением
+    function connectWs() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+      ws.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'SESSION_UPDATE' && msg.data) {
+          const sess = msg.data;
+          document.getElementById('active-sess-id').innerText = sess.id ? String(sess.id).slice(-6).toUpperCase() : 'НЕТ';
+          document.getElementById('active-sess-status').innerText = sess.status || 'IDLE';
+          document.getElementById('active-sess-status').className = 'status-pill' + (sess.status === 'ERROR' ? ' error' : '');
+          document.getElementById('op-sess-elem').innerText = sess.element_name || sess.element || '-';
+          document.getElementById('op-sess-pwr').innerText = sess.power_name || sess.power || '-';
+          document.getElementById('op-sess-col').innerText = sess.color_name || sess.color || '-';
+          document.getElementById('op-sess-title').innerText = sess.machine_name || '-';
+          document.getElementById('op-sess-error').innerText = sess.error_message || '-';
+          loadHistory();
+        }
+      };
+      ws.onclose = () => setTimeout(connectWs, 2000);
+    }
 
+    connectWs();
     loadHealth();
     loadHistory();
     setInterval(loadHealth, 10000);
-  </script>
+    setInterval(loadHistory, 15000);  </script>
 </body>
 </html>

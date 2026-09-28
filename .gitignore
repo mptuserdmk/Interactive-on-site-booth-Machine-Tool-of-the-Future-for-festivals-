@@ -62,3 +62,11 @@ desktop.ini
 # Logs & testing
 *.log
 .pytest_cache/
+
+# Test artifacts
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+.venv/
+docs/evidence/coverage_html/

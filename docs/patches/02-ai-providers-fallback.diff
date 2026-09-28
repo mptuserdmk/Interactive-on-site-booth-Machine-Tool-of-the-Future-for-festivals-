@@ -1,0 +1,315 @@
+﻿diff --git a/app/ai/cloud_providers.py b/app/ai/cloud_providers.py
+index 2d73561..efcbf05 100644
+--- a/app/ai/cloud_providers.py
++++ b/app/ai/cloud_providers.py
+@@ -1,20 +1,73 @@
++import asyncio
+ import base64
++import io
++import re
+ import time
+ import httpx
+ from pathlib import Path
+ from typing import Dict, Any, Optional
++from PIL import Image
+ from app.config.settings import settings
+ from app.ai.provider import ImageProvider
+ from app.ai.models import AIGenerationRequest, AIGenerationResult
+ from app.ai.prompts import build_negative_prompt
+ 
++MAX_AI_IMAGE_BYTES = 20 * 1024 * 1024
++_PLACEHOLDER_KEY = re.compile(r"ваш|ключ|your|api[_-]?key|changeme|xxx|<|>|example", re.IGNORECASE)
++
++
++class ProviderError(Exception):
++    pass
++
++
++def api_key_looks_valid(key: str) -> bool:
++    """Плейсхолдер из .env.example («ваш_bothub_api_ключ») раньше считался рабочим ключом (H9)."""
++    if not key or key != key.strip() or len(key) < 16:
++        return False
++    if not key.isascii() or not key.isprintable() or any(ch.isspace() for ch in key):
++        return False
++    return not _PLACEHOLDER_KEY.search(key)
++
++
++def short_error(resp: httpx.Response) -> str:
++    """В ошибку попадает только код и начало тела — не весь ответ провайдера (S8)."""
++    return f"HTTP {resp.status_code}: {resp.text[:120]!r}"
++
++
++def _validate_and_save(content: bytes, output_path: Path):
++    if len(content) > MAX_AI_IMAGE_BYTES:
++        raise ProviderError(f"изображение слишком большое: {len(content)} байт")
++    try:
++        with Image.open(io.BytesIO(content)) as im:
++            im.verify()
++    except Exception as e:
++        raise ProviderError(f"провайдер вернул не изображение: {type(e).__name__}") from e
++    output_path.parent.mkdir(parents=True, exist_ok=True)
++    output_path.write_bytes(content)
++
++
++async def download_image(client: httpx.AsyncClient, url: str, output_path: Path):
++    """Скачивание результата: 404/HTML/«гигабайт» раньше сохранялись как *_ai.jpg с success=True,
++    fallback не срабатывал, а композиция падала → ERROR."""
++    async with client.stream("GET", url) as resp:
++        if resp.status_code != 200:
++            raise ProviderError(f"скачивание результата: HTTP {resp.status_code}")
++        chunks, size = [], 0
++        async for chunk in resp.aiter_bytes():
++            size += len(chunk)
++            if size > MAX_AI_IMAGE_BYTES:
++                raise ProviderError("изображение слишком большое")
++            chunks.append(chunk)
++    await asyncio.to_thread(_validate_and_save, b"".join(chunks), output_path)
++
++
+ class FalAiProvider(ImageProvider):
+     @property
+     def name(self) -> str:
+         return "fal"
+ 
+     async def health_check(self) -> bool:
+-        return bool(settings.AI_API_KEY)
++        return api_key_looks_valid(settings.AI_API_KEY)
+ 
+     async def generate(
+         self,
+@@ -62,17 +115,14 @@ class FalAiProvider(ImageProvider):
+                         success=False,
+                         provider_name=self.name,
+                         duration_seconds=round(time.time() - start_time, 2),
+-                        error=f"Fal.ai error {resp.status_code}: {resp.text}"
++                        error=f"Fal.ai error {short_error(resp)}"
+                     )
+                 
+                 data = resp.json()
+                 image_url = data["images"][0]["url"]
+                 
+                 # Download output image
+-                img_resp = await client.get(image_url)
+-                output_path.parent.mkdir(parents=True, exist_ok=True)
+-                with open(output_path, "wb") as out_f:
+-                    out_f.write(img_resp.content)
++                await download_image(client, image_url, output_path)
+ 
+             return AIGenerationResult(
+                 success=True,
+@@ -85,7 +135,7 @@ class FalAiProvider(ImageProvider):
+                 success=False,
+                 provider_name=self.name,
+                 duration_seconds=round(time.time() - start_time, 2),
+-                error=str(e)
++                error=f"{type(e).__name__}: {str(e)[:200]}"
+             )
+ 
+ class ReplicateProvider(ImageProvider):
+@@ -94,7 +144,7 @@ class ReplicateProvider(ImageProvider):
+         return "replicate"
+ 
+     async def health_check(self) -> bool:
+-        return bool(settings.AI_API_KEY)
++        return api_key_looks_valid(settings.AI_API_KEY)
+ 
+     async def generate(
+         self,
+@@ -141,7 +191,7 @@ class ReplicateProvider(ImageProvider):
+                         success=False,
+                         provider_name=self.name,
+                         duration_seconds=round(time.time() - start_time, 2),
+-                        error=f"Replicate API error: {resp.text}"
++                        error=f"Replicate API error {short_error(resp)}"
+                     )
+                 
+                 pred = resp.json()
+@@ -151,14 +201,13 @@ class ReplicateProvider(ImageProvider):
+                 while True:
+                     await asyncio.sleep(1.0)
+                     poll_resp = await client.get(poll_url, headers=headers)
++                    if poll_resp.status_code != 200:
++                        raise ProviderError(f"Replicate poll {short_error(poll_resp)}")
+                     pred_data = poll_resp.json()
+                     status = pred_data.get("status")
+                     if status == "succeeded":
+                         img_url = pred_data["output"][0]
+-                        img_resp = await client.get(img_url)
+-                        output_path.parent.mkdir(parents=True, exist_ok=True)
+-                        with open(output_path, "wb") as out_f:
+-                            out_f.write(img_resp.content)
++                        await download_image(client, img_url, output_path)
+                         break
+                     elif status in ("failed", "canceled"):
+                         return AIGenerationResult(
+@@ -181,7 +230,7 @@ class ReplicateProvider(ImageProvider):
+                 success=False,
+                 provider_name=self.name,
+                 duration_seconds=round(time.time() - start_time, 2),
+-                error=str(e)
++                error=f"{type(e).__name__}: {str(e)[:200]}"
+             )
+ 
+ class BothubProvider(ImageProvider):
+@@ -196,7 +245,7 @@ class BothubProvider(ImageProvider):
+         return "bothub"
+ 
+     async def health_check(self) -> bool:
+-        return bool(settings.AI_API_KEY)
++        return api_key_looks_valid(settings.AI_API_KEY)
+ 
+     async def generate(
+         self,
+@@ -259,7 +308,7 @@ class BothubProvider(ImageProvider):
+                         success=False,
+                         provider_name=self.name,
+                         duration_seconds=round(time.time() - start_time, 2),
+-                        error=f"Bothub API error {resp.status_code}: {resp.text}"
++                        error=f"Bothub API error {short_error(resp)}"
+                     )
+ 
+                 res_json = resp.json()
+@@ -269,7 +318,7 @@ class BothubProvider(ImageProvider):
+                         success=False,
+                         provider_name=self.name,
+                         duration_seconds=round(time.time() - start_time, 2),
+-                        error=f"Bothub returned empty data list: {res_json}"
++                        error="Bothub returned empty data list"
+                     )
+ 
+                 item = data_items[0]
+@@ -278,19 +327,16 @@ class BothubProvider(ImageProvider):
+                 if "url" in item and item["url"]:
+                     img_url = item["url"]
+                     # Download generated image from proxied URL
+-                    img_resp = await client.get(img_url)
+-                    with open(output_path, "wb") as out_f:
+-                        out_f.write(img_resp.content)
++                    await download_image(client, img_url, output_path)
+                 elif "b64_json" in item and item["b64_json"]:
+                     img_bytes = base64.b64decode(item["b64_json"])
+-                    with open(output_path, "wb") as out_f:
+-                        out_f.write(img_bytes)
++                    await asyncio.to_thread(_validate_and_save, img_bytes, output_path)
+                 else:
+                     return AIGenerationResult(
+                         success=False,
+                         provider_name=self.name,
+                         duration_seconds=round(time.time() - start_time, 2),
+-                        error=f"Bothub response missing url or b64_json: {item}"
++                        error=f"Bothub response missing url or b64_json (keys: {sorted(item)[:5]})"
+                     )
+ 
+             return AIGenerationResult(
+@@ -305,6 +351,6 @@ class BothubProvider(ImageProvider):
+                 success=False,
+                 provider_name=self.name,
+                 duration_seconds=round(time.time() - start_time, 2),
+-                error=str(e)
++                error=f"{type(e).__name__}: {str(e)[:200]}"
+             )
+ 
+diff --git a/app/ai/manager.py b/app/ai/manager.py
+index 40e094d..006e06e 100644
+--- a/app/ai/manager.py
++++ b/app/ai/manager.py
+@@ -1,11 +1,16 @@
++import logging
++import time
+ from pathlib import Path
+-from typing import Dict, Any
++from typing import Dict, Any, Optional
+ from app.config.settings import settings
+ from app.ai.provider import ImageProvider
+ from app.ai.mock_provider import MockProvider
+ from app.ai.cloud_providers import FalAiProvider, ReplicateProvider, BothubProvider
+ from app.ai.models import AIGenerationRequest, AIGenerationResult
+ 
++logger = logging.getLogger("stanok.ai")
++
++
+ class AIManager:
+     def __init__(self):
+         self.providers: Dict[str, ImageProvider] = {
+@@ -15,11 +20,25 @@ class AIManager:
+             "replicate": ReplicateProvider()
+         }
+         self.fallback_provider = MockProvider()
++        # Статистика для оператора: fallback на mock раньше был невидим (H8)
++        self.stats: Dict[str, Any] = {
++            "total": 0, "fallback_count": 0, "last_fallback": False,
++            "last_error": None, "last_error_at": None,
++        }
+ 
+     def get_active_provider(self) -> ImageProvider:
+         provider_key = settings.AI_PROVIDER.lower()
+         return self.providers.get(provider_key, self.fallback_provider)
+ 
++    def _record(self, result: AIGenerationResult, primary_error: Optional[str]):
++        self.stats["total"] += 1
++        self.stats["last_fallback"] = result.is_fallback
++        if result.is_fallback:
++            self.stats["fallback_count"] += 1
++        if primary_error:
++            self.stats["last_error"] = primary_error[:200]
++            self.stats["last_error_at"] = time.time()
++
+     async def generate_image(
+         self,
+         request: AIGenerationRequest,
+@@ -28,14 +47,18 @@ class AIManager:
+     ) -> AIGenerationResult:
+         provider = self.get_active_provider()
+         result = await provider.generate(request, combo, output_path)
+-        
++
+         # Automatic fallback if primary AI provider failed and fallback is enabled
+         if not result.success and settings.AI_FALLBACK_ON_ERROR and provider.name != "mock":
+-            print(f"Primary AI Provider '{provider.name}' failed: {result.error}. Switching to Fallback Provider...")
++            logger.warning("AI provider '%s' failed for %s: %s — switching to mock fallback",
++                           provider.name, request.session_id, (result.error or "")[:200])
+             fallback_res = await self.fallback_provider.generate(request, combo, output_path)
+             fallback_res.is_fallback = True
++            self._record(fallback_res, result.error)
+             return fallback_res
+-            
++
++        self._record(result, None if result.success else result.error)
+         return result
+ 
++
+ ai_manager = AIManager()
+diff --git a/app/api/routes_health.py b/app/api/routes_health.py
+index e6bb3c1..fd9b3ab 100644
+--- a/app/api/routes_health.py
++++ b/app/api/routes_health.py
+@@ -15,9 +15,11 @@ async def get_system_health():
+     # 1. Camera
+     cam_status = camera_manager.get_status()
+     
+-    # 2. AI
++    # 2. AI: «OK» только если ключ похож на настоящий и последняя генерация не ушла в mock (H8, H9)
+     ai_provider = ai_manager.get_active_provider()
+-    ai_healthy = await ai_provider.health_check()
++    ai_key_ok = await ai_provider.health_check()
++    ai_stats = ai_manager.stats
++    ai_healthy = ai_key_ok and not ai_stats["last_fallback"]
+     
+     # 3. Print
+     pr_status = print_manager.get_status()
+@@ -53,7 +55,14 @@ async def get_system_health():
+             },
+             "ai": {
+                 "ok": ai_healthy,
+-                "provider": ai_provider.name
++                "provider": ai_provider.name,
++                "configured_provider": settings.AI_PROVIDER,
++                "is_mock": ai_provider.name == "mock",
++                "key_ok": ai_key_ok,
++                "generations": ai_stats["total"],
++                "fallback_count": ai_stats["fallback_count"],
++                "last_fallback": ai_stats["last_fallback"],
++                "last_error": ai_stats["last_error"]
+             },
+             "printer": {
+                 "ok": pr_status["is_ready"],
