@@ -183,3 +183,128 @@ class ReplicateProvider(ImageProvider):
                 duration_seconds=round(time.time() - start_time, 2),
                 error=str(e)
             )
+
+class BothubProvider(ImageProvider):
+    """
+    BotHub AI Image Provider
+    Documentation: https://bothub.chat/api/documentation/ru/generation/image_generation
+    Base URL: https://openai.bothub.chat/v1
+    Supports Russian bank cards, fast connection without VPN, and OpenAI-compatible image endpoints.
+    """
+    @property
+    def name(self) -> str:
+        return "bothub"
+
+    async def health_check(self) -> bool:
+        return bool(settings.AI_API_KEY)
+
+    async def generate(
+        self,
+        request: AIGenerationRequest,
+        combo: Dict[str, Any],
+        output_path: Path
+    ) -> AIGenerationResult:
+        start_time = time.time()
+        if not settings.AI_API_KEY:
+            return AIGenerationResult(
+                success=False,
+                provider_name=self.name,
+                duration_seconds=0,
+                error="AI_API_KEY for Bothub is not configured. Please set AI_API_KEY in .env"
+            )
+
+        headers = {
+            "Authorization": f"Bearer {settings.AI_API_KEY.strip()}"
+        }
+
+        model_name = getattr(settings, "BOTHUB_MODEL", "gemini-2.5-flash-image")
+
+        try:
+            async with httpx.AsyncClient(timeout=settings.AI_TIMEOUT_SECONDS) as client:
+                # 1. If we have an input photo from the kiosk, use the /v1/images/edits endpoint
+                if request.input_photo_path and Path(request.input_photo_path).exists():
+                    with open(request.input_photo_path, "rb") as f:
+                        img_bytes = f.read()
+
+                    files = {
+                        "image": ("photo.jpg", img_bytes, "image/jpeg")
+                    }
+                    data = {
+                        "model": model_name,
+                        "prompt": request.prompt,
+                        "response_format": "url"
+                    }
+
+                    resp = await client.post(
+                        "https://openai.bothub.chat/v1/images/edits",
+                        headers=headers,
+                        data=data,
+                        files=files
+                    )
+                else:
+                    # 2. Text-to-image generation endpoint
+                    payload = {
+                        "model": model_name,
+                        "prompt": request.prompt,
+                        "response_format": "url"
+                    }
+                    resp = await client.post(
+                        "https://openai.bothub.chat/v1/images/generations",
+                        headers={**headers, "Content-Type": "application/json"},
+                        json=payload
+                    )
+
+                if resp.status_code != 200:
+                    return AIGenerationResult(
+                        success=False,
+                        provider_name=self.name,
+                        duration_seconds=round(time.time() - start_time, 2),
+                        error=f"Bothub API error {resp.status_code}: {resp.text}"
+                    )
+
+                res_json = resp.json()
+                data_items = res_json.get("data", [])
+                if not data_items:
+                    return AIGenerationResult(
+                        success=False,
+                        provider_name=self.name,
+                        duration_seconds=round(time.time() - start_time, 2),
+                        error=f"Bothub returned empty data list: {res_json}"
+                    )
+
+                item = data_items[0]
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+
+                if "url" in item and item["url"]:
+                    img_url = item["url"]
+                    # Download generated image from proxied URL
+                    img_resp = await client.get(img_url)
+                    with open(output_path, "wb") as out_f:
+                        out_f.write(img_resp.content)
+                elif "b64_json" in item and item["b64_json"]:
+                    img_bytes = base64.b64decode(item["b64_json"])
+                    with open(output_path, "wb") as out_f:
+                        out_f.write(img_bytes)
+                else:
+                    return AIGenerationResult(
+                        success=False,
+                        provider_name=self.name,
+                        duration_seconds=round(time.time() - start_time, 2),
+                        error=f"Bothub response missing url or b64_json: {item}"
+                    )
+
+            return AIGenerationResult(
+                success=True,
+                image_path=str(output_path),
+                provider_name=self.name,
+                duration_seconds=round(time.time() - start_time, 2)
+            )
+
+        except Exception as e:
+            return AIGenerationResult(
+                success=False,
+                provider_name=self.name,
+                duration_seconds=round(time.time() - start_time, 2),
+                error=str(e)
+            )
+

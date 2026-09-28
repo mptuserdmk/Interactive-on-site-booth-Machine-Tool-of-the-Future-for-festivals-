@@ -44,10 +44,11 @@ class Settings(BaseSettings):
     CAMERA_FPS: int = 30
     CAMERA_MIRROR: bool = True
     
-    # AI Provider: 'mock', 'fal', 'replicate', 'openai', 'stability'
+    # AI Provider: 'mock', 'bothub', 'fal', 'replicate', 'openai', 'stability'
     AI_PROVIDER: str = "mock"
     AI_API_KEY: str = ""
-    AI_TIMEOUT_SECONDS: int = 25
+    BOTHUB_MODEL: str = "gemini-2.5-flash-image"
+    AI_TIMEOUT_SECONDS: int = 35
     AI_FALLBACK_ON_ERROR: bool = True
     
     # Printer

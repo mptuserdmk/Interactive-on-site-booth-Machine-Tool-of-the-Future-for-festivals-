@@ -4,160 +4,134 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Станок Будущего // Киоск</title>
-  <link rel="stylesheet" href="/static/css/style.css">
+  
+  <!-- Google Fonts: Fredoka & Nunito for Display, Inter for Text -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: {
+              DEFAULT: '#FAF7F2',
+              card: '#FFFFFF',
+              muted: '#F0EAE1',
+              dark: '#1E1B4B'
+            },
+            ink: {
+              DEFAULT: '#1E1B4B',
+              muted: '#64748B',
+              light: '#94A3B8'
+            },
+            border: {
+              line: '#E2D9CE',
+              dark: '#C8BEB1'
+            },
+            coral: {
+              DEFAULT: '#FF5A5F',
+              light: '#FF7579',
+              dark: '#E03E43'
+            },
+            teal: {
+              DEFAULT: '#00C49F',
+              light: '#2DE2BE',
+              dark: '#009E80'
+            },
+            amber: {
+              DEFAULT: '#FFB300',
+              light: '#FFCA47',
+              dark: '#D48E00'
+            },
+            indigo: {
+              DEFAULT: '#6366F1',
+              light: '#818CF8',
+              dark: '#4338CA'
+            }
+          },
+          fontFamily: {
+            display: ['Fredoka', 'Nunito', 'sans-serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          },
+          borderWidth: {
+            '3': '3px',
+            '6': '6px',
+            '8': '8px'
+          },
+          boxShadow: {
+            'tactile': '0 8px 0 rgba(30, 27, 75, 0.12), 0 16px 24px rgba(30, 27, 75, 0.08)',
+            'tactile-sm': '0 4px 0 rgba(30, 27, 75, 0.08)'
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.25s ease-out forwards',
+            'scale-up': 'scaleUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+            'fade-out': 'fadeOut 0.2s ease-out forwards'
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(6px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            scaleUp: {
+              '0%': { opacity: '0', transform: 'scale(0.92)' },
+              '100%': { opacity: '1', transform: 'scale(1)' }
+            },
+            fadeOut: {
+              '0%': { opacity: '1' },
+              '100%': { opacity: '0' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 and Babel Standalone for seamless execution -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    :root {
+      --surface: #FAF7F2;
+      --surface-card: #FFFFFF;
+      --surface-muted: #F0EAE1;
+      --ink: #1E1B4B;
+      --ink-muted: #64748B;
+      --accent-coral: #FF5A5F;
+      --accent-teal: #00C49F;
+      --accent-amber: #FFB300;
+      --border-line: #E2D9CE;
+    }
+
+    body {
+      background-color: var(--surface);
+      color: var(--ink);
+      font-family: 'Inter', system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    /* Ambient background pattern */
+    .kiosk-grid-bg {
+      background-image: radial-gradient(#E2D9CE 1.5px, transparent 1.5px);
+      background-size: 32px 32px;
+    }
+  </style>
 </head>
-<body>
-  <div class="kiosk-ambient-glow"></div>
+<body class="kiosk-grid-bg min-h-screen">
+  <!-- React App Root Container -->
+  <div id="react-kiosk-root"></div>
 
-  <div class="kiosk-touch-container">
-    <!-- Clean Minimalist Touch Tracker (No Headers/Banners) -->
-    <div class="kiosk-step-tracker" id="touch-tracker">
-      <div class="step-indicator-pill active" id="dot-0"></div>
-      <div class="step-indicator-pill" id="dot-1"></div>
-      <div class="step-indicator-pill" id="dot-2"></div>
-      <div class="step-indicator-pill" id="dot-3"></div>
-      <div class="step-indicator-pill" id="dot-4"></div>
-    </div>
-
-    <!-- SCREEN 1: WELCOME TOUCH SCREEN -->
-    <section id="screen-welcome" class="kiosk-screen active">
-      <div class="touch-welcome-hero">
-        <div class="welcome-chip">⚡ РАСПРЕДЕЛЕНИЕ ПРОФЕССИЙ 2026</div>
-        <h1>ТВОЙ СТАНОК БУДУЩЕГО</h1>
-        <p>Выбери ключевые характеристики и узнай, каким инженером будущего ты станешь.</p>
-        <button id="btn-start-session" class="touch-btn-primary">
-          <span>СОЗДАТЬ ОБРАЗ</span>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
-      </div>
-    </section>
-
-    <!-- SCREEN 2: CAMERA TOUCH HUD -->
-    <section id="screen-photo" class="kiosk-screen">
-      <div class="touch-section-header">
-        <h2 class="touch-section-title">ФОТОГРАФИРОВАНИЕ</h2>
-        <p class="touch-section-subtitle">Посмотри в камеру и нажми кнопку для съемки</p>
-      </div>
-      
-      <div class="touch-camera-frame">
-        <img id="camera-live-stream" alt="Live Stream" style="display: none;">
-        <img id="camera-review-img" alt="Photo Review" style="display: none;">
-        
-        <div class="hud-touch-corner hud-touch-tl"></div>
-        <div class="hud-touch-corner hud-touch-tr"></div>
-        <div class="hud-touch-corner hud-touch-bl"></div>
-        <div class="hud-touch-corner hud-touch-br"></div>
-        <div class="hud-face-reticle"></div>
-      </div>
-
-      <div id="camera-live-controls" class="touch-action-row">
-        <button id="btn-take-photo" class="touch-btn-primary">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-          <span>СДЕЛАТЬ ФОТО</span>
-        </button>
-      </div>
-
-      <div id="camera-review-controls" class="touch-action-row" style="display: none;">
-        <button id="btn-retake-photo" class="touch-btn-secondary">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-          <span>ПЕРЕСНЯТЬ</span>
-        </button>
-        <button id="btn-confirm-photo" class="touch-btn-primary">
-          <span>ПОДТВЕРДИТЬ</span>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
-        </button>
-      </div>
-    </section>
-
-    <!-- SCREEN 3: ELEMENT -->
-    <section id="screen-element" class="kiosk-screen">
-      <div class="touch-section-header">
-        <h2 class="touch-section-title">ВЫБЕРИ СТИХИЮ</h2>
-        <p class="touch-section-subtitle">Какая отрасль промышленности ближе твоему будущему?</p>
-      </div>
-      <div id="grid-elements" class="touch-cards-grid"></div>
-    </section>
-
-    <!-- SCREEN 4: POWER -->
-    <section id="screen-power" class="kiosk-screen">
-      <div class="touch-section-header">
-        <h2 class="touch-section-title">ВЫБЕРИ СУПЕРСИЛУ</h2>
-        <p class="touch-section-subtitle">Какое главное качество определяет твой инженерный подход?</p>
-      </div>
-      <div id="grid-powers" class="touch-cards-grid"></div>
-    </section>
-
-    <!-- SCREEN 5: COLOR -->
-    <section id="screen-color" class="kiosk-screen">
-      <div class="touch-section-header">
-        <h2 class="touch-section-title">ВЫБЕРИ ЦВЕТ</h2>
-        <p class="touch-section-subtitle">Какой оттенок отразит энергетику твоего оборудования?</p>
-      </div>
-      <div id="grid-colors" class="touch-cards-grid grid-4"></div>
-    </section>
-
-    <!-- SCREEN 6: TELEMETRY LOADING -->
-    <section id="screen-generating" class="kiosk-screen">
-      <div class="touch-telemetry-box">
-        <h2 class="touch-section-title" style="font-size: 32px;">ГЕНЕРАЦИЯ ОБРАЗА...</h2>
-        
-        <div class="touch-progress-bar-bg">
-          <div id="generating-bar-fill" class="touch-progress-bar-fill"></div>
-        </div>
-
-        <div id="ai-generation-logs" class="touch-log-feed">
-          <div>[01/03] ВХОДНЫЕ ПАРАМЕТРЫ: ОБРАБОТКА...</div>
-          <div style="color: var(--accent-cyan);">[02/03] СИНТЕЗ НЕЙРОСЕТЕВОГО ОБРАЗА ИНЖЕНЕРА...</div>
-          <div style="color: var(--text-muted);">[03/03] КОМПОНОВКА ПАСПОРТА 300 DPI...</div>
-        </div>
-
-        <div style="margin-top: 24px; text-align: right;">
-          <button class="touch-btn-secondary" style="font-size: 14px; padding: 12px 24px;" onclick="kiosk.resetToWelcome()">СБРОСИТЬ</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- SCREEN 7: RESULT BADGE -->
-    <section id="screen-result" class="kiosk-screen">
-      <div class="touch-result-dashboard">
-        <div class="touch-card-preview">
-          <img id="result-card-img" alt="Final Badge">
-        </div>
-        <div class="touch-result-meta">
-          <div id="result-print-status" class="touch-spool-pill">● ПАСПОРТ НАПЕЧАТАН НА ПРИНТЕРЕ</div>
-          <h2 id="result-title" class="touch-result-title">КОСМИЧЕСКИЙ ТОКАРЬ</h2>
-          <div id="result-power" class="touch-result-power">СУПЕРСИЛА // ТОЧНОСТЬ</div>
-          <p id="result-desc" class="touch-result-desc"></p>
-          <div id="result-location" class="touch-result-loc"></div>
-          
-          <button id="btn-finish-session" class="touch-btn-primary">
-            <span>СЛЕДУЮЩИЙ УЧАСТНИК</span>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Minimalist Kiosk Status Footer -->
-    <div class="touch-kiosk-status-bar">
-      <div class="touch-kiosk-status-dot"></div>
-      <span>ТЕРМИНАЛ ГОТОВ К РАБОТЕ</span>
-    </div>
-  </div>
-
-  <!-- IDLE TIMEOUT MODAL (KFC-STYLE) -->
-  <div id="idle-modal" class="idle-modal-overlay">
-    <div class="idle-modal-dialog">
-      <div id="idle-countdown-val" class="idle-countdown-circle">5</div>
-      <h2 class="idle-modal-title">ВЫ ЕЩЁ ЗДЕСЬ?</h2>
-      <p class="idle-modal-desc">Сессия автоматически завершится через несколько секунд, если не продолжить работу.</p>
-      <div class="idle-modal-actions">
-        <button id="btn-idle-stay" class="idle-btn-stay">ПРОДОЛЖИТЬ</button>
-        <button id="btn-idle-leave" class="idle-btn-leave">В НАЧАЛО</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="/static/js/kiosk.js"></script>
+  <!-- Load and Execute React Application -->
+  <script type="text/babel" src="/static/js/kiosk_app.jsx"></script>
 </body>
 </html>

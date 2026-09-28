@@ -3,13 +3,14 @@ from typing import Dict, Any
 from app.config.settings import settings
 from app.ai.provider import ImageProvider
 from app.ai.mock_provider import MockProvider
-from app.ai.cloud_providers import FalAiProvider, ReplicateProvider
+from app.ai.cloud_providers import FalAiProvider, ReplicateProvider, BothubProvider
 from app.ai.models import AIGenerationRequest, AIGenerationResult
 
 class AIManager:
     def __init__(self):
         self.providers: Dict[str, ImageProvider] = {
             "mock": MockProvider(),
+            "bothub": BothubProvider(),
             "fal": FalAiProvider(),
             "replicate": ReplicateProvider()
         }
