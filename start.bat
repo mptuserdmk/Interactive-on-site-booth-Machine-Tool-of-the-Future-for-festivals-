@@ -14,14 +14,17 @@ if not exist .env (
     echo [ВНИМАНИЕ] Впишите AI_API_KEY, PRINTER_NAME и ACCESS_TOKEN в .env перед фестивалем!
 )
 
+set "PY=python"
+if exist venv\Scripts\python.exe set "PY=venv\Scripts\python.exe"
+
 echo [1/2] Проверка зависимостей Python (закреплённые версии из requirements.lock)...
-python -m pip install --quiet -r requirements.lock
+%PY% -m pip install --quiet -r requirements.lock
 if errorlevel 1 (
     echo [WARN] Не удалось установить зависимости ^(нет интернета?^). Пробуем запустить с уже установленными.
 )
 
 echo [2/2] Запуск сервера и интерфейса...
-python run.py
+%PY% run.py
 if errorlevel 1 (
     echo.
     echo [ОШИБКА] Сервер остановился с ошибкой. Частые причины:

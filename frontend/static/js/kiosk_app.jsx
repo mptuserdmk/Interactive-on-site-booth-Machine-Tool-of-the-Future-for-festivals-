@@ -40,15 +40,15 @@ function BrassCorners({ className = "" }) {
       {/* Верхний левый */}
       <div className="absolute top-2.5 left-2.5 w-6 h-6 sm:w-8 sm:h-8 border-t-2 border-l-2 border-brass pointer-events-none" />
       <div className="absolute top-3.5 left-3.5 w-1.5 h-1.5 bg-brass rounded-full opacity-70 pointer-events-none" />
-      
+
       {/* Верхний правый */}
       <div className="absolute top-2.5 right-2.5 w-6 h-6 sm:w-8 sm:h-8 border-t-2 border-r-2 border-brass pointer-events-none" />
       <div className="absolute top-3.5 right-3.5 w-1.5 h-1.5 bg-brass rounded-full opacity-70 pointer-events-none" />
-      
+
       {/* Нижний левый */}
       <div className="absolute bottom-2.5 left-2.5 w-6 h-6 sm:w-8 sm:h-8 border-b-2 border-l-2 border-brass pointer-events-none" />
       <div className="absolute bottom-3.5 left-3.5 w-1.5 h-1.5 bg-brass rounded-full opacity-70 pointer-events-none" />
-      
+
       {/* Нижний правый */}
       <div className="absolute bottom-2.5 right-2.5 w-6 h-6 sm:w-8 sm:h-8 border-b-2 border-r-2 border-brass pointer-events-none" />
       <div className="absolute bottom-3.5 right-3.5 w-1.5 h-1.5 bg-brass rounded-full opacity-70 pointer-events-none" />
@@ -68,113 +68,113 @@ const ICONS = {
   // Космос / Летучий корабль
   space: (
     <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
-      <path strokeLinecap="round" strokeLinejoin="round" d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
-      <circle cx="15" cy="9" r="2" fill="currentColor" fillOpacity="0.3"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+      <circle cx="15" cy="9" r="2" fill="currentColor" fillOpacity="0.3" />
     </svg>
   ),
   // Атом / Ядерный микромир
   atom: (
     <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <circle cx="12" cy="12" r="3" fill="currentColor" fillOpacity="0.25"/>
-      <ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(30 12 12)"/>
-      <ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(90 12 12)"/>
-      <ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(150 12 12)"/>
+      <circle cx="12" cy="12" r="3" fill="currentColor" fillOpacity="0.25" />
+      <ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(30 12 12)" />
+      <ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(90 12 12)" />
+      <ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(150 12 12)" />
     </svg>
   ),
   // Роботы / ЧПУ-самоход
   robots: (
     <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect width="16" height="14" x="4" y="6" rx="3"/>
-      <circle cx="9" cy="12" r="1.5" fill="currentColor"/>
-      <circle cx="15" cy="12" r="1.5" fill="currentColor"/>
-      <path strokeLinecap="round" d="M10 16h4M12 6V3"/>
-      <circle cx="12" cy="2" r="1.2" fill="currentColor"/>
-      <path strokeLinecap="round" d="M2 12h2M20 12h2"/>
+      <rect width="16" height="14" x="4" y="6" rx="3" />
+      <circle cx="9" cy="12" r="1.5" fill="currentColor" />
+      <circle cx="15" cy="12" r="1.5" fill="currentColor" />
+      <path strokeLinecap="round" d="M10 16h4M12 6V3" />
+      <circle cx="12" cy="2" r="1.2" fill="currentColor" />
+      <path strokeLinecap="round" d="M2 12h2M20 12h2" />
     </svg>
   ),
   // Медицина / Живая вода
   medicine: (
     <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="m2 15 5 5 13-13-5-5-13 13Z"/>
-      <path strokeLinecap="round" strokeLinejoin="round" d="m9 8 7 7M14.5 3.5 17.5 6.5M3.5 14.5 6.5 17.5"/>
-      <circle cx="8" cy="16" r="1" fill="currentColor"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m2 15 5 5 13-13-5-5-13 13Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="m9 8 7 7M14.5 3.5 17.5 6.5M3.5 14.5 6.5 17.5" />
+      <circle cx="8" cy="16" r="1" fill="currentColor" />
     </svg>
   ),
   // Металл / Кузница Данилы-Мастера
   metal: (
     <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-      <circle cx="12" cy="12" r="2.5" fill="currentColor" fillOpacity="0.25"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+      <circle cx="12" cy="12" r="2.5" fill="currentColor" fillOpacity="0.25" />
     </svg>
   ),
   // Точность / Оптический микрометр
   precision: (
     <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <circle cx="12" cy="12" r="9"/>
-      <circle cx="12" cy="12" r="5" strokeDasharray="3 3"/>
-      <circle cx="12" cy="12" r="2" fill="currentColor"/>
-      <path strokeLinecap="round" d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5" strokeDasharray="3 3" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" />
+      <path strokeLinecap="round" d="M12 2v3M12 19v3M2 12h3M19 12h3" />
     </svg>
   ),
   // Скорость / Сверхзвуковой ротор
   speed: (
     <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" fillOpacity="0.2"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" fillOpacity="0.2" />
     </svg>
   ),
   // Сила / Гидропресс
   power: (
     <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v10"/>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M18.4 6.6a9 9 0 1 1-12.77.01"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v10" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M18.4 6.6a9 9 0 1 1-12.77.01" />
     </svg>
   ),
   // Ум / Кристаллический чип
   mind: (
     <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect x="4" y="4" width="16" height="16" rx="3"/>
-      <path strokeLinecap="round" d="M9 9h6v6H9zM9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/>
+      <rect x="4" y="4" width="16" height="16" rx="3" />
+      <path strokeLinecap="round" d="M9 9h6v6H9zM9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3" />
     </svg>
   ),
   // Забота / Оберег
   care: (
     <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" fill="currentColor" fillOpacity="0.25"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" fill="currentColor" fillOpacity="0.25" />
     </svg>
   ),
   // Камера / Оптический визир
   camera: (
     <svg className="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-      <circle cx="12" cy="13" r="3.5"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+      <circle cx="12" cy="13" r="3.5" />
     </svg>
   ),
   // Искры / Волшебство
   sparkles: (
     <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z" />
     </svg>
   ),
   // Стрелка вправо
   arrowRight: (
     <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12h14M12 5l7 7-7 7"/>
+      <path d="M5 12h14M12 5l7 7-7 7" />
     </svg>
   ),
   // Галочка
   check: (
     <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 6 9 17l-5-5"/>
+      <path d="M20 6 9 17l-5-5" />
     </svg>
   ),
   // Обновление / Переснять
   refresh: (
     <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-      <path d="M21 3v5h-5"/>
-      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-      <path d="M8 16H3v5"/>
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+      <path d="M8 16H3v5" />
     </svg>
   )
 };
@@ -192,7 +192,7 @@ function FolkButton({
   type = "button"
 }) {
   const baseStyles = "relative font-mono font-bold select-none inline-flex items-center justify-center gap-3 transition-all duration-150 rounded-xl cursor-pointer outline-none focus-visible:ring-4 focus-visible:ring-brass/50";
-  
+
   const sizeStyles = {
     md: "min-h-[64px] min-w-[64px] px-6 text-base tracking-wider uppercase",
     lg: "min-h-[72px] min-w-[72px] px-8 text-xl tracking-wider uppercase",
@@ -248,35 +248,40 @@ function FolkStepTracker({ currentStep }) {
   ];
 
   return (
-    <nav aria-label="Прогресс создания образа" className="w-full max-w-3xl mx-auto px-2">
+    <nav aria-label="Прогресс создания образа" className="w-full max-w-3xl mx-auto px-2 pt-0.5 pb-1">
       <div className="flex items-center justify-between relative">
-        {/* Филигранная латунная соединительная линия */}
-        <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-0.5 sm:h-1 bg-brass/30 -z-0">
-          <div 
+        {/* Филигранная латунная соединительная линия строго по центру кнопок */}
+        <div className="absolute left-4 right-4 top-[40px] sm:top-[22px] -translate-y-1/2 h-0.5 sm:h-1 bg-brass/30 -z-0">
+          <div
             className="h-full bg-brass transition-all duration-500 ease-out shadow-brass-glow"
             style={{ width: `${Math.min(100, (currentStep / (steps.length - 1)) * 100)}%` }}
           />
         </div>
-        
+
         {steps.map((step, idx) => {
           const isCompleted = idx < currentStep;
           const isActive = idx === currentStep;
 
           return (
             <div key={idx} className="relative z-10 flex flex-col items-center">
-              <div 
+              <div
                 className={`
                   w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center font-mono font-bold text-xs sm:text-sm transition-all duration-300 select-none
-                  ${isActive 
-                    ? "bg-ruby text-brass-bright border-2 border-brass scale-105 shadow-tactile-ruby ring-2 sm:ring-4 ring-brass/25" 
-                    : isCompleted 
-                      ? "bg-panel-graphite text-brass-bright border border-brass sm:border-2 shadow-brass-sm" 
+                  ${isActive
+                    ? "bg-ruby text-brass-bright border-2 border-brass scale-105 shadow-tactile-ruby ring-2 sm:ring-4 ring-brass/25"
+                    : isCompleted
+                      ? "bg-panel-graphite text-brass-bright border border-brass sm:border-2 shadow-brass-sm"
                       : "bg-parchment-card text-ink-muted border border-brass/40 sm:border-2"}
                 `}
               >
                 {isCompleted ? <span className="scale-75 sm:scale-90">{ICONS.check}</span> : <span className="font-serif text-xs sm:text-sm">{step.num}</span>}
               </div>
-              <span className={`mt-1 font-serif text-[10px] sm:text-xs font-bold tracking-wider select-none uppercase ${isActive ? "text-ruby font-black" : isCompleted ? "text-brass-dim" : "text-ink-muted"}`}>
+              <span className={`mt-2.5 sm:mt-3 font-serif text-[11px] sm:text-[13px] md:text-sm tracking-wider select-none uppercase transition-colors ${isActive
+                ? "text-ruby font-black drop-shadow-sm"
+                : isCompleted
+                  ? "text-brass-dim font-extrabold"
+                  : "text-ink-main/80 font-bold"
+                }`}>
                 {step.label}
               </span>
             </div>
@@ -294,7 +299,7 @@ function WelcomeScreen({ onStart }) {
       {/* Декоративная фоновая латунная шестерня */}
       <div className="absolute -top-12 opacity-5 pointer-events-none animate-spin-slow">
         <svg className="w-80 h-80 text-brass" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
+          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
         </svg>
       </div>
 
@@ -321,23 +326,23 @@ function WelcomeScreen({ onStart }) {
       <div className="flex items-center justify-center gap-3 mb-3 sm:mb-5 pointer-events-none">
         <div className="text-brass animate-spin-slow opacity-80">
           <svg className="w-8 h-8 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
         </div>
         <div className="w-2.5 h-2.5 bg-ruby rounded-full animate-pulse shadow-brass-glow"></div>
         <div className="text-brass-dim animate-spin-reverse opacity-80">
           <svg className="w-6 h-6 sm:w-8 sm:h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
         </div>
       </div>
 
       {/* Главная кнопка старта (сохраняем aria-label для E2E тестов) */}
-      <FolkButton 
-        variant="primary" 
-        size="lg" 
+      <FolkButton
+        variant="primary"
+        size="lg"
         onClick={onStart}
         ariaLabel="Начать создание своего образа"
         className="w-full sm:w-auto min-w-[280px] sm:min-w-[340px] text-base sm:text-lg py-3 sm:py-3.5"
@@ -374,8 +379,8 @@ function WelcomeScreen({ onStart }) {
           <BrassCorners />
           <div className="w-9 h-9 rounded-lg bg-panel-graphite text-brass flex items-center justify-center shrink-0">
             <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 14h12v8H6z"/>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 14h12v8H6z" />
             </svg>
           </div>
           <div>
@@ -393,11 +398,14 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, bus
   const [streamKey, setStreamKey] = useState(Date.now());
   const [isCapturing, setIsCapturing] = useState(false);
   const [flash, setFlash] = useState(false);
+  const [shutterRing, setShutterRing] = useState(false);
 
   const handleShutter = async () => {
     setIsCapturing(true);
+    setShutterRing(true);
     setFlash(true);
     setTimeout(() => setFlash(false), 200);
+    setTimeout(() => setShutterRing(false), 700);
 
     try {
       await onCapture();
@@ -418,8 +426,8 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, bus
             {isReview ? "ТВОЙ КАДР ОТЛИЧНЫЙ! 🌟" : "УЛЫБНИСЬ В КАМЕРУ! 📸"}
           </h2>
           <p className="font-serif italic text-xs sm:text-sm text-ink-muted">
-            {isReview 
-              ? "Оптический слепок зафиксирован. Утверди его или перезапусти оптику станка." 
+            {isReview
+              ? "Оптический слепок зафиксирован. Утверди его или перезапусти оптику станка."
               : "Взгляни в латунный визор станка и отчекань свой портрет для гильдии."}
           </p>
         </div>
@@ -440,15 +448,15 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, bus
           {flash && <div className="absolute inset-0 bg-white z-50 animate-fade-out pointer-events-none"></div>}
 
           {isReview ? (
-            <img 
-              src={`/media/photos/${sessionId}.jpg?t=${Date.now()}`} 
-              alt="Сделанный снимок" 
+            <img
+              src={`/media/photos/${sessionId}.jpg?t=${Date.now()}`}
+              alt="Сделанный снимок"
               className="w-full h-full object-cover"
             />
           ) : (
-            <img 
-              src={`/api/camera/stream?t=${streamKey}`} 
-              alt="Видеопоток камеры" 
+            <img
+              src={`/api/camera/stream?t=${streamKey}`}
+              alt="Видеопоток камеры"
               className="w-full h-full object-cover"
             />
           )}
@@ -456,13 +464,18 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, bus
           {/* Оптический прицел HUD с латунной шкалой */}
           {!isReview && (
             <div className="absolute inset-4 pointer-events-none border border-brass/30 rounded-xl flex flex-col items-center justify-center">
-              {/* Угловые визиры */}
-              <div className="w-48 h-60 sm:w-56 sm:h-72 border-2 border-dashed border-brass/60 rounded-full flex flex-col items-center justify-center relative">
+              {/* Угловые визиры — овал удлинен по высоте для анатомической формы лица и аккуратно вписан в прямоугольник */}
+              <div className="w-44 h-52 sm:w-48 sm:h-56 border-2 border-dashed border-brass/60 rounded-full flex flex-col items-center justify-center relative translate-y-1 sm:translate-y-1.5">
                 <span className="font-mono text-[10px] sm:text-xs font-bold text-brass-bright bg-panel-graphite/80 px-2.5 py-0.5 rounded border border-brass/40 tracking-wider">
                   ЛИЦО ЗДЕСЬ
                 </span>
                 <div className="absolute top-0 bottom-0 w-px bg-brass/30 pointer-events-none"></div>
                 <div className="absolute left-0 right-0 h-px bg-brass/30 pointer-events-none"></div>
+              </div>
+
+              {/* Указание действия в видоискателе — расположено чуть выше над строкой телеметрии */}
+              <div className="absolute bottom-[34px] sm:bottom-[36px] left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-panel-graphite/95 border border-brass/70 text-brass-bright font-mono text-xs sm:text-sm font-bold shadow-industrial animate-pulse whitespace-nowrap">
+                <span>📸 Нажми кнопку для снимка</span>
               </div>
 
               {/* Маркер телеметрии внизу кадра */}
@@ -506,21 +519,33 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, bus
           {/* Панель действий затвора */}
           <div className="pt-2 sm:pt-4">
             {!isReview ? (
-              <div className="flex flex-col items-center gap-2">
-                <button
-                  type="button"
-                  aria-label="Сделать фотографию"
-                  disabled={isCapturing || busy}
-                  onClick={handleShutter}
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-ruby hover:bg-[#A31618] active:scale-95 border-3 sm:border-4 border-brass-bright border-b-6 sm:border-b-8 border-ruby-dark text-white flex items-center justify-center shadow-tactile-ruby transition-all cursor-pointer focus-visible:ring-4 focus-visible:ring-brass"
-                >
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-brass/60 flex items-center justify-center text-brass-bright scale-90">
-                    {ICONS.camera}
-                  </div>
-                </button>
-                <span className="font-mono font-bold text-xs sm:text-sm text-ruby uppercase tracking-widest">
-                  НАЖМИ ДЛЯ СНИМКА
-                </span>
+              <div className="flex flex-col items-center justify-center">
+                <div className="relative flex items-center justify-center">
+                  {/* Мягкая внешняя пульсация готовности к нажатию */}
+                  <div className="absolute inset-[-4px] rounded-full bg-ruby/25 animate-ping pointer-events-none" />
+
+                  {/* Взрывная волна затвора при клике */}
+                  {shutterRing && (
+                    <div className="absolute inset-[-14px] rounded-full border-4 border-brass-bright animate-ping pointer-events-none z-20" />
+                  )}
+
+                  <button
+                    type="button"
+                    aria-label="Сделать фотографию"
+                    disabled={isCapturing || busy}
+                    onClick={handleShutter}
+                    className={`
+                      relative z-10 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-ruby hover:bg-[#A31618] active:scale-90 active:border-b-2
+                      border-3 sm:border-4 border-brass-bright border-b-6 sm:border-b-8 border-ruby-dark text-white flex items-center justify-center
+                      shadow-tactile-ruby transition-all duration-150 cursor-pointer focus-visible:ring-4 focus-visible:ring-brass
+                      ${isCapturing ? 'scale-90 brightness-125 ring-4 ring-brass' : 'hover:scale-105'}
+                    `}
+                  >
+                    <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-brass/70 flex items-center justify-center text-brass-bright transition-transform duration-300 ${isCapturing ? 'rotate-180 scale-75' : ''}`}>
+                      {ICONS.camera}
+                    </div>
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="flex flex-col gap-2.5 sm:gap-3">
@@ -556,6 +581,55 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, bus
   );
 }
 
+// --- ТЕМАТИЧЕСКИЕ ФОНЫ КНОПОК ВЫБОРА (Folk-Tech Button Background Art) ---
+const BUTTON_BACKGROUNDS = {
+  // Былинные Стихии
+  space: "/static/images/buttons/space.jpg",
+  atom: "/static/images/buttons/atom.jpg",
+  robots: "/static/images/buttons/robots.jpg",
+  medicine: "/static/images/buttons/medicine.svg",
+  metal: "/static/images/buttons/metal.svg",
+  // Суперсилы Мастера
+  precision: "/static/images/buttons/precision.svg",
+  speed: "/static/images/buttons/speed.svg",
+  power: "/static/images/buttons/power.svg",
+  mind: "/static/images/buttons/mind.svg",
+  care: "/static/images/buttons/care.svg",
+  // Гербовые Цвета
+  azure: "/static/images/buttons/color_azure.svg",
+  gold: "/static/images/buttons/color_gold.svg",
+  emerald: "/static/images/buttons/color_emerald.svg",
+  white: "/static/images/buttons/color_white.svg"
+};
+
+// Вертикальные технические надписи по ГОСТ/ЧПУ, расположенные сбоку карточки
+const CARD_SIDE_LABELS = {
+  // Стихии
+  space: "ОРБИТА // КОСМОС // ЧПУ",
+  atom: "КВАНТ // ЯДРО // 12 ГэВ",
+  robots: "КИБЕРНЕТИКА // АВТОМАТ",
+  medicine: "БИОНИКА // ЖИВАЯ ВОДА",
+  metal: "СПЛАВ // ЛАЗЕР // 3000°C",
+  // Суперсилы
+  precision: "КАЛИБР // ±0.001 ММ",
+  speed: "ПРИВОД // 12 МАХ // ТУРБО",
+  power: "ПРЕСС // 10 000 ТОНН",
+  mind: "НЕЙРОСЕТЬ // 1.2 PF",
+  care: "ОБЕРЕГ // БЕЗОПАСНОСТЬ",
+  // Цвета
+  azure: "ЭМАЛЬ // ЛАЗУРЬ // #00D2FF",
+  gold: "ЭМАЛЬ // ЗОЛОТО // #FFD700",
+  emerald: "ЭМАЛЬ // ИЗУМРУД // #00FF88",
+  white: "ЭМАЛЬ // ПЛАТИНА // #FFFFFF"
+};
+
+const COLOR_HINTS = {
+  azure: "Квантовое сияние фотонов и чистая энергия",
+  gold: "Благородная латунь и созидательный огонь",
+  emerald: "Биосферный импульс и лазерный кристалл",
+  white: "Плазменная чистота и титановый сплав"
+};
+
 // --- ЭКРАНЫ 3, 4, 5: ВЫБОР СТИХИИ, СУПЕРСИЛЫ, ЦВЕТА (Selection Slide) ---
 function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type, busy }) {
   return (
@@ -579,39 +653,13 @@ function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type,
         </div>
       </div>
 
-      {/* Сетка вариантов */}
-      <div className={`grid gap-2.5 sm:gap-3.5 ${type === 'color' ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'} flex-1 min-h-0 items-stretch`}>
+      {/* Сетка вариантов карточек */}
+      <div className={`grid gap-2.5 sm:gap-3.5 ${type === 'color' ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'} flex-1 min-h-0 items-stretch`}>
         {options.map((opt) => {
           const isSelected = selectedId === opt.id;
-
-          if (type === 'color') {
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                disabled={busy}
-                aria-pressed={isSelected}
-                onClick={() => onSelect(opt.id)}
-                aria-label={`Выбрать цвет ${opt.name}`}
-                className={`
-                  p-3 sm:p-4 rounded-2xl bg-parchment-card border-2 transition-all duration-150 flex flex-col items-center justify-center gap-2 sm:gap-3 cursor-pointer outline-none relative select-none h-full min-h-0
-                  ${isSelected 
-                    ? "border-ruby border-b-6 border-ruby-dark shadow-tactile-ruby scale-[1.02] ring-3 ring-brass/30 bg-white" 
-                    : "border-brass/40 border-b-4 sm:border-b-6 border-brass-dim hover:border-brass hover:bg-white active:border-b-2 active:translate-y-1 shadow-brass-sm"}
-                `}
-              >
-                <BrassCorners />
-                {/* Латунный медальон с эмалью */}
-                <div 
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 sm:border-4 border-brass shadow-brass flex items-center justify-center transition-transform relative"
-                  style={{ backgroundColor: opt.hex, transform: isSelected ? 'scale(1.08)' : 'scale(1)' }}
-                >
-                  <div className="w-5 h-5 rounded-full border-2 border-white/50 opacity-60"></div>
-                </div>
-                <span className="font-serif font-bold text-base sm:text-lg text-ink-main">{opt.name}</span>
-              </button>
-            );
-          }
+          const bgImage = BUTTON_BACKGROUNDS[opt.id];
+          const sideLabel = CARD_SIDE_LABELS[opt.id] || `ГОСТ // ${opt.id.toUpperCase()}`;
+          const isColor = type === 'color';
 
           return (
             <button
@@ -620,30 +668,70 @@ function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type,
               disabled={busy}
               aria-pressed={isSelected}
               onClick={() => onSelect(opt.id)}
-              aria-label={`Выбрать вариант ${opt.name}`}
+              aria-label={isColor ? `Выбрать цвет ${opt.name}` : `Выбрать вариант ${opt.name}`}
               className={`
-                p-3.5 sm:p-4 rounded-2xl bg-parchment-card border-2 transition-all duration-150 flex flex-col items-start justify-between text-left cursor-pointer outline-none h-full min-h-0 relative select-none
-                ${isSelected 
-                  ? "border-ruby border-b-6 border-ruby-dark shadow-tactile-ruby scale-[1.02] ring-3 ring-brass/30 bg-white" 
-                  : "border-brass/40 border-b-4 sm:border-b-6 border-brass-dim hover:border-brass hover:bg-white active:border-b-2 active:translate-y-1 shadow-brass-sm"}
+                group p-3 sm:p-4 rounded-2xl bg-parchment-card border-2 transition-all duration-200 ease-out flex flex-col items-start justify-between text-left cursor-pointer outline-none h-full min-h-0 relative select-none overflow-hidden
+                ${isSelected
+                  ? "border-ruby border-b-6 border-ruby-dark shadow-tactile-ruby scale-[1.02] ring-3 ring-brass/30"
+                  : "border-brass/40 border-b-4 sm:border-b-6 border-brass-dim hover:border-brass hover:shadow-brass active:scale-[0.98] active:border-b-2 active:translate-y-1 shadow-brass-sm"}
               `}
             >
-              <BrassCorners />
-              
-              <div className="w-full flex items-center justify-between mb-2">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-panel-graphite text-brass-bright border border-brass/50 flex items-center justify-center scale-90 sm:scale-100">
-                  {ICONS[opt.id] || ICONS.gear}
+              {/* Тематическая иллюстрация на фоне кнопки — сочная, хорошо различимая, с плавным приближением */}
+              {bgImage && (
+                <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-0">
+                  <img
+                    src={bgImage}
+                    alt=""
+                    className={`w-full h-full object-cover object-center opacity-60 transition-transform duration-500 ease-out transform ${
+                      isSelected ? 'scale-105' : 'group-hover:scale-110'
+                    }`}
+                  />
+                  {/* Пергаментный мягкий градиент для сохранения идеального контраста текста */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-parchment-card/85 via-parchment-card/55 to-parchment-card/20" />
                 </div>
+              )}
+
+              {/* Вертикальная техническая надпись сбоку карточки — лежит строго вдоль правого края и не мешает другим текстам */}
+              <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none select-none z-10 flex items-center justify-center">
+                <span className="font-mono text-[8px] sm:text-[9.5px] tracking-[0.24em] text-brass-dim/75 font-black uppercase [writing-mode:vertical-lr] rotate-180 drop-shadow-sm border-l border-brass/25 pl-1 py-1">
+                  {sideLabel}
+                </span>
+              </div>
+
+              <BrassCorners className="z-10" />
+
+              {/* Верхняя строка: Иконка / Медальон цвета и статус выбора */}
+              <div className="w-full flex items-center justify-between mb-2 relative z-10 pr-6">
+                {isColor ? (
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-panel-graphite border border-brass/50 flex items-center justify-center scale-90 sm:scale-100 shadow-brass-sm">
+                    {/* Латунный медальон с гербовой эмалью цвета */}
+                    <div
+                      className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-brass shadow-sm transition-transform relative flex items-center justify-center"
+                      style={{
+                        backgroundColor: opt.hex,
+                        boxShadow: `0 0 12px ${opt.glow || opt.hex}`
+                      }}
+                    >
+                      <div className="w-2 h-2 rounded-full border border-white/60 opacity-80" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-panel-graphite text-brass-bright border border-brass/50 flex items-center justify-center scale-90 sm:scale-100 shadow-brass-sm">
+                    {ICONS[opt.id] || ICONS.gear}
+                  </div>
+                )}
+
                 {isSelected && (
-                  <span className="px-2 py-0.5 rounded bg-ruby text-white font-mono text-[9px] sm:text-[10px] font-bold tracking-wider uppercase border border-brass">
+                  <span className="px-2 py-0.5 rounded bg-ruby text-white font-mono text-[9px] sm:text-[10px] font-bold tracking-wider uppercase border border-brass shadow-sm">
                     ВЫБРАНО
                   </span>
                 )}
               </div>
 
-              <div>
-                <h3 className="font-serif font-bold text-lg sm:text-xl text-ink-main mb-1">{opt.name}</h3>
-                <p className="font-sans text-xs sm:text-sm text-ink-muted leading-tight line-clamp-2">{opt.hint}</p>
+              {/* Нижняя строка: Заголовок и пояснение (отступ справа pr-7 sm:pr-8 гарантирует что они никогда не заденут вертикальную надпись) */}
+              <div className="relative z-10 pr-7 sm:pr-8">
+                <h3 className="font-serif font-bold text-lg sm:text-xl text-ink-main mb-1 drop-shadow-sm leading-tight">{opt.name}</h3>
+                <p className="font-sans text-xs sm:text-sm text-ink-muted leading-tight line-clamp-2">{opt.hint || COLOR_HINTS[opt.id]}</p>
               </div>
             </button>
           );
@@ -666,15 +754,15 @@ function GeneratingScreen({ session }) {
         <div className="absolute inset-0 text-brass animate-spin-slow">
           <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <circle cx="12" cy="12" r="5" strokeWidth="1"/>
+            <circle cx="12" cy="12" r="5" strokeWidth="1" />
           </svg>
         </div>
-        
+
         {/* Малая противовращающаяся шестерня */}
         <div className="absolute w-16 h-16 sm:w-20 sm:h-20 text-brass-dim animate-spin-reverse">
           <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v4m0 12v4M2 12h4m12 0h4m-3.17-6.83-2.83 2.83m-8 8-2.83 2.83m0-13.66 2.83 2.83m8 8 2.83 2.83"/>
-            <circle cx="12" cy="12" r="3"/>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v4m0 12v4M2 12h4m12 0h4m-3.17-6.83-2.83 2.83m-8 8-2.83 2.83m0-13.66 2.83 2.83m8 8 2.83 2.83" />
+            <circle cx="12" cy="12" r="3" />
           </svg>
         </div>
 
@@ -691,16 +779,16 @@ function GeneratingScreen({ session }) {
       <h2 className="font-serif font-black text-2xl sm:text-3xl md:text-4xl text-ink-main mb-1.5">
         {isComposing ? "КОМПОНУЕМ ТВОРЧЕСКИЙ ПАСПОРТ... 🖨️" : "НЕЙРОСЕТЬ ГЕНЕРИРУЕТ ОБРАЗ... ✨"}
       </h2>
-      
+
       <p className="font-serif italic text-xs sm:text-sm text-ink-muted mb-3 sm:mb-4 max-w-lg">
-        {isComposing 
+        {isComposing
           ? "Отливаем форму паспорта в качестве 300 DPI и наносим персональный QR-код гильдии..."
           : `Синтез былинного архетипа: ${session?.element_name || 'Стихия'} + ${session?.power_name || 'Суперсила'} + ${session?.color_name || 'Цвет'}...`}
       </p>
 
       {/* Латунный индикатор прогресса */}
       <div className="w-full h-5 sm:h-6 bg-panel-graphite rounded-full overflow-hidden border-2 border-brass/60 shadow-industrial p-0.5 sm:p-1 max-w-md">
-        <div 
+        <div
           className="h-full bg-gradient-to-r from-brass-dim via-brass to-brass-bright rounded-full transition-all duration-700 ease-out shadow-brass-glow"
           style={{ width: `${progressPercent}%` }}
         />
@@ -845,10 +933,10 @@ function ResultScreen({ session, onFinish, autoPrint }) {
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-panel-graphite border border-brass/60 shadow-industrial text-brass-bright font-mono text-[11px] sm:text-xs self-start sm:self-auto">
           <span className="w-2.5 h-2.5 rounded-full bg-cyber-cyan animate-pulse"></span>
           <span className="font-bold tracking-wider">
-            {session?.print_status === 'printed' 
-              ? "ПАСПОРТ НАПЕЧАТАН!" 
-              : session?.print_status === 'printing' 
-                ? "ПЕЧАТАЕМ НА ПРИНТЕРЕ..." 
+            {session?.print_status === 'printed'
+              ? "ПАСПОРТ НАПЕЧАТАН!"
+              : session?.print_status === 'printing'
+                ? "ПЕЧАТАЕМ НА ПРИНТЕРЕ..."
                 : !autoPrint
                   ? "ЦИФРОВОЙ ПАСПОРТ ГОТОВ"
                   : "ГОТОВО К ВЫДАЧЕ"}
@@ -897,7 +985,7 @@ function ResultScreen({ session, onFinish, autoPrint }) {
 
           {/* Персональный QR-код для моментальной отправки на почту и телефон */}
           <div className="p-2 sm:p-2.5 rounded-xl bg-parchment border border-brass/50 shadow-sm flex items-center gap-3 text-left">
-            <img 
+            <img
               src={`/api/qr.png?data=${encodeURIComponent(window.location.origin + '/card/' + (session?.id || ''))}`}
               alt="QR-код паспорта"
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-white p-1 border-2 border-brass shrink-0 shadow-sm"
@@ -915,9 +1003,9 @@ function ResultScreen({ session, onFinish, autoPrint }) {
           {/* Модуль рассылки интерактивной карточки на почту прямо на киоске */}
           <EmailDispatchBox sessionId={session?.id} />
 
-          <FolkButton 
-            variant="primary" 
-            size="lg" 
+          <FolkButton
+            variant="primary"
+            size="lg"
             onClick={onFinish}
             ariaLabel="Завершить сессию и перейти к следующему участнику"
             className="w-full py-2.5 sm:py-3 text-sm sm:text-base"
@@ -974,15 +1062,15 @@ function IdleModal({ isOpen, countdown, onStay, onLeave }) {
         <h3 className="font-serif font-black text-3xl sm:text-4xl text-ink-main mb-3">
           ТЫ ЕЩЁ ЗДЕСЬ? 😊
         </h3>
-        
+
         <p className="font-serif italic text-lg text-ink-muted mb-8">
           Хронометр станка отсчитывает секунды. Если не продолжить, экран вернется к началу.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          <FolkButton 
-            variant="primary" 
-            size="lg" 
+          <FolkButton
+            variant="primary"
+            size="lg"
             onClick={onStay}
             ariaLabel="Продолжить работу с киоском"
             className="flex-1"
@@ -990,9 +1078,9 @@ function IdleModal({ isOpen, countdown, onStay, onLeave }) {
             <span>ПРОДОЛЖИТЬ</span>
           </FolkButton>
 
-          <FolkButton 
-            variant="secondary" 
-            size="lg" 
+          <FolkButton
+            variant="secondary"
+            size="lg"
             onClick={onLeave}
             ariaLabel="Вернуться на главный экран"
             className="flex-1"
@@ -1043,7 +1131,7 @@ function KioskRoot() {
       if (data && typeof data.enable_auto_print === 'boolean') {
         setAutoPrint(data.enable_auto_print);
       }
-    } catch (e) {}
+    } catch (e) { }
   }, []);
 
   useEffect(() => {
@@ -1212,67 +1300,67 @@ function KioskRoot() {
 
     if (session.status === 'PHOTO_PENDING') {
       return (
-        <CameraScreen 
-          isReview={false} 
+        <CameraScreen
+          isReview={false}
           busy={busy}
-          onCapture={handleCapturePhoto} 
-          onConfirm={handleConfirmPhoto} 
-          onRetake={handleRetakePhoto} 
+          onCapture={handleCapturePhoto}
+          onConfirm={handleConfirmPhoto}
+          onRetake={handleRetakePhoto}
         />
       );
     }
 
     if (session.status === 'PHOTO_TAKEN') {
       return (
-        <CameraScreen 
-          isReview={true} 
+        <CameraScreen
+          isReview={true}
           busy={busy}
-          sessionId={session.id} 
-          onCapture={handleCapturePhoto} 
-          onConfirm={handleConfirmPhoto} 
-          onRetake={handleRetakePhoto} 
+          sessionId={session.id}
+          onCapture={handleCapturePhoto}
+          onConfirm={handleConfirmPhoto}
+          onRetake={handleRetakePhoto}
         />
       );
     }
 
     if (session.status === 'QUIZ_ELEMENT') {
       return (
-        <SelectionScreen 
-          title="ВЫБЕРИ СВОЙ ВАЙБ 🚀" 
-          subtitle="Какая былинная стихия и отрасль станка тебе ближе всего?" 
-          options={quizSchema[0]?.options || []} 
-          selectedId={session.element} 
+        <SelectionScreen
+          title="ВЫБЕРИ СВОЙ ВАЙБ 🚀"
+          subtitle="Какая былинная стихия и отрасль станка тебе ближе всего?"
+          options={quizSchema[0]?.options || []}
+          selectedId={session.element}
           busy={busy}
-          onSelect={(id) => handleSelectChoice('element', id)} 
-          type="element" 
+          onSelect={(id) => handleSelectChoice('element', id)}
+          type="element"
         />
       );
     }
 
     if (session.status === 'QUIZ_POWER') {
       return (
-        <SelectionScreen 
-          title="ВЫБЕРИ СУПЕРСИЛУ ⚡" 
-          subtitle="Какая богатырская способность поможет совершать инженерные открытия?" 
-          options={quizSchema[1]?.options || []} 
-          selectedId={session.power} 
+        <SelectionScreen
+          title="ВЫБЕРИ СУПЕРСИЛУ ⚡"
+          subtitle="Какая богатырская способность поможет совершать инженерные открытия?"
+          options={quizSchema[1]?.options || []}
+          selectedId={session.power}
           busy={busy}
-          onSelect={(id) => handleSelectChoice('power', id)} 
-          type="power" 
+          onSelect={(id) => handleSelectChoice('power', id)}
+          type="power"
         />
       );
     }
 
     if (session.status === 'QUIZ_COLOR') {
       return (
-        <SelectionScreen 
-          title="ВЫБЕРИ ЦВЕТ ОБРАЗА 🎨" 
-          subtitle="Какая гербовая эмаль подчеркнет твой стиль и оборудование?" 
-          options={quizSchema[2]?.options || []} 
-          selectedId={session.color} 
+        <SelectionScreen
+          title="ВЫБЕРИ ЦВЕТ ОБРАЗА 🎨"
+          subtitle="Какая гербовая эмаль подчеркнет твой стиль и оборудование?"
+          options={quizSchema[2]?.options || []}
+          selectedId={session.color}
           busy={busy}
-          onSelect={(id) => handleSelectChoice('color', id)} 
-          type="color" 
+          onSelect={(id) => handleSelectChoice('color', id)}
+          type="color"
         />
       );
     }
@@ -1320,11 +1408,10 @@ function KioskRoot() {
             type="button"
             onClick={toggleAutoPrint}
             title="Переключить отправку на печать"
-            className={`px-2.5 sm:px-3 py-1 rounded-lg border font-mono text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none ${
-              autoPrint
-                ? "bg-panel-graphite text-brass-bright border-brass/50 hover:border-brass shadow-sm"
-                : "bg-ruby/15 text-ruby border-ruby/40 hover:border-ruby shadow-sm"
-            }`}
+            className={`px-2.5 sm:px-3 py-1 rounded-lg border font-mono text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none ${autoPrint
+              ? "bg-panel-graphite text-brass-bright border-brass/50 hover:border-brass shadow-sm"
+              : "bg-ruby/15 text-ruby border-ruby/40 hover:border-ruby shadow-sm"
+              }`}
           >
             <span>🖨️</span>
             <span>{autoPrint ? "ПЕЧАТЬ: ВКЛ" : "ПЕЧАТЬ: ВЫКЛ"}</span>
@@ -1360,7 +1447,7 @@ function KioskRoot() {
       </footer>
 
       {/* Хронометр бездействия */}
-      <IdleModal 
+      <IdleModal
         isOpen={isIdleModalOpen}
         countdown={idleCountdown}
         onStay={() => {

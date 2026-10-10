@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1A2430" />
+      <stop offset="60%" stop-color="#121820" />
+      <stop offset="100%" stop-color="#0B0F14" />
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <pattern id="techGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#C59A45" stroke-width="0.5" stroke-opacity="0.12" />
+      <circle cx="40" cy="0" r="1" fill="#C59A45" fill-opacity="0.25" />
+    </pattern>
+  </defs>
+
+  <!-- Базовый тёмный графитовый фон с сеткой станка -->
+  <rect width="800" height="450" fill="url(#bgGrad)" />
+  <rect width="800" height="450" fill="url(#techGrid)" />
+
+  <defs>
+    <radialGradient id="forgeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF5500" stop-opacity="0.6" />
+      <stop offset="40%" stop-color="#BA1B1D" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#121820" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="moltenGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFE600" />
+      <stop offset="50%" stop-color="#FF5500" />
+      <stop offset="100%" stop-color="#BA1B1D" />
+    </linearGradient>
+  </defs>
+
+  <circle cx="400" cy="235" r="210" fill="url(#forgeGlow)" />
+
+  <line x1="400" y1="20" x2="400" y2="240" stroke="#FFE600" stroke-width="3" filter="url(#glow)" />
+  <line x1="400" y1="20" x2="400" y2="240" stroke="#FFFFFF" stroke-width="1.2" />
+
+  <g stroke="#FFE600" stroke-width="1.5" opacity="0.85">
+    <line x1="400" y1="240" x2="330" y2="180" stroke-dasharray="8 4" />
+    <line x1="400" y1="240" x2="470" y2="175" stroke-dasharray="10 5" />
+    <line x1="400" y1="240" x2="310" y2="225" />
+    <line x1="400" y1="240" x2="490" y2="220" />
+    <line x1="400" y1="240" x2="350" y2="280" />
+    <line x1="400" y1="240" x2="460" y2="285" />
+  </g>
+  <circle cx="400" cy="240" r="14" fill="#FFFFFF" filter="url(#glow)" />
+
+  <g transform="translate(400, 245)">
+    <rect x="-180" y="0" width="360" height="42" rx="6" fill="#2A1D1A" stroke="url(#moltenGrad)" stroke-width="2.5" />
+    <line x1="-160" y1="21" x2="160" y2="21" stroke="url(#moltenGrad)" stroke-width="4" filter="url(#softGlow)" />
+  </g>
+
+  <g transform="translate(160, 225) scale(0.85)" opacity="0.5">
+    <circle cx="0" cy="0" r="60" fill="none" stroke="#C59A45" stroke-width="10" stroke-dasharray="18 12" />
+    <circle cx="0" cy="0" r="30" fill="#1C232D" stroke="#E8CA7B" stroke-width="2" />
+  </g>
+  <g transform="translate(640, 225) scale(0.85)" opacity="0.5">
+    <circle cx="0" cy="0" r="60" fill="none" stroke="#C59A45" stroke-width="10" stroke-dasharray="18 12" />
+    <circle cx="0" cy="0" r="30" fill="#1C232D" stroke="#E8CA7B" stroke-width="2" />
+  </g>
+  <!-- Латунная филигранная рамка и уголки Folk-Tech -->
+  <rect x="12" y="12" width="776" height="426" rx="14" fill="none" stroke="#C59A45" stroke-width="1.5" stroke-opacity="0.35" />
+  <rect x="18" y="18" width="764" height="414" rx="10" fill="none" stroke="#E8CA7B" stroke-width="0.7" stroke-opacity="0.2" stroke-dasharray="8 4" />
+  
+  <!-- Латунные заклепки по углам -->
+  <circle cx="28" cy="28" r="4" fill="#C59A45" />
+  <circle cx="28" cy="28" r="2" fill="#E8CA7B" />
+  <circle cx="772" cy="28" r="4" fill="#C59A45" />
+  <circle cx="772" cy="28" r="2" fill="#E8CA7B" />
+  <circle cx="28" cy="422" r="4" fill="#C59A45" />
+  <circle cx="28" cy="422" r="2" fill="#E8CA7B" />
+  <circle cx="772" cy="422" r="4" fill="#C59A45" />
+  <circle cx="772" cy="422" r="2" fill="#E8CA7B" />
+
+  <!-- Вертикальные надписи строго по боковым кромкам карточки (не мешают текстам в центре) -->
+  <g transform="translate(26, 225) rotate(-90)">
+    <text text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="bold" fill="#FF5500" letter-spacing="3" fill-opacity="0.55">
+      МЕТАЛЛУРГИЯ // ТИТАН 3000°C
+    </text>
+  </g>
+  <g transform="translate(774, 225) rotate(90)">
+    <text text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="bold" fill="#FF5500" letter-spacing="3" fill-opacity="0.55">
+      ЛАЗЕРНЫЙ РАСКРОЙ // 12 kW
+    </text>
+  </g>
+</svg>
