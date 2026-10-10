@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Станок Будущего // Киоск</title>
+  <title>Осенний Промышленный Фестиваль Колледжей Москвы</title>
   
-  <!-- Шрифты: системные (Google Fonts блокировал отрисовку на перегруженном Wi-Fi и не работал офлайн, S10) -->
+  <!-- Шрифты: Folk-Tech Стек (Cormorant Garamond для былин/заголовков, JetBrains Mono для ЧПУ, Plus Jakarta Sans для текста) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,500;1,700&family=JetBrains+Mono:wght@500;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 
   <!-- Tailwind: локальная копия из static/vendor (scripts/vendor_frontend.py), CDN — только запасной вариант -->
   {% if vendor.tailwind %}<script src="/static/vendor/tailwindcss-3.4.17.js"></script>{% else %}<script src="https://cdn.tailwindcss.com/3.4.17"></script>{% endif %}
@@ -14,67 +17,111 @@
       theme: {
         extend: {
           colors: {
-            surface: {
-              DEFAULT: '#FAF7F2',
-              card: '#FFFFFF',
-              muted: '#F0EAE1',
-              dark: '#1E1B4B'
+            parchment: {
+              DEFAULT: '#FBF8F1',
+              card: '#F4EEDA',
+              border: '#E8DDBF',
+              muted: '#ECE4CF'
+            },
+            brass: {
+              DEFAULT: '#C59A45',
+              dim: '#8B651B',
+              bright: '#E8CA7B',
+              glow: 'rgba(232, 202, 123, 0.45)',
+              border: 'rgba(197, 154, 69, 0.35)'
+            },
+            ruby: {
+              DEFAULT: '#BA1B1D',
+              dark: '#8C1012',
+              light: 'rgba(186, 27, 29, 0.12)'
+            },
+            panel: {
+              graphite: '#121820',
+              surface: '#1C232D',
+              border: 'rgba(197, 154, 69, 0.4)'
+            },
+            cyber: {
+              cyan: '#00A3FF',
+              glow: 'rgba(0, 163, 255, 0.35)'
             },
             ink: {
-              DEFAULT: '#1E1B4B',
-              muted: '#64748B',
-              light: '#94A3B8'
+              DEFAULT: '#1E1E1E',
+              main: '#1E1E1E',
+              muted: '#686662',
+              faint: '#98948D'
             },
-            border: {
-              line: '#E2D9CE',
-              dark: '#C8BEB1'
+            // Обратная совместимость для вспомогательных утилит
+            surface: {
+              DEFAULT: '#FBF8F1',
+              card: '#F4EEDA',
+              muted: '#ECE4CF',
+              dark: '#121820'
             },
             coral: {
-              DEFAULT: '#FF5A5F',
-              light: '#FF7579',
-              dark: '#E03E43'
+              DEFAULT: '#BA1B1D',
+              light: '#D32F2F',
+              dark: '#8C1012'
             },
             teal: {
-              DEFAULT: '#00C49F',
-              light: '#2DE2BE',
-              dark: '#009E80'
+              DEFAULT: '#008770',
+              light: '#00A3FF',
+              dark: '#005E4D'
             },
             amber: {
-              DEFAULT: '#FFB300',
-              light: '#FFCA47',
-              dark: '#D48E00'
-            },
-            indigo: {
-              DEFAULT: '#6366F1',
-              light: '#818CF8',
-              dark: '#4338CA'
+              DEFAULT: '#C59A45',
+              light: '#E8CA7B',
+              dark: '#8B651B'
             }
           },
           fontFamily: {
-            display: ['"Segoe UI Black"', '"Segoe UI"', 'Arial Black', 'system-ui', 'sans-serif'],
-            sans: ['"Segoe UI"', 'system-ui', 'sans-serif']
+            serif: ['"Cormorant Garamond"', 'Georgia', '"Times New Roman"', 'serif'],
+            display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            mono: ['"JetBrains Mono"', 'Consolas', '"Courier New"', 'monospace'],
+            sans: ['"Plus Jakarta Sans"', '"Segoe UI"', 'system-ui', 'sans-serif']
           },
           borderWidth: {
+            '1': '1px',
             '3': '3px',
             '6': '6px',
             '8': '8px'
           },
           boxShadow: {
-            'tactile': '0 8px 0 rgba(30, 27, 75, 0.12), 0 16px 24px rgba(30, 27, 75, 0.08)',
-            'tactile-sm': '0 4px 0 rgba(30, 27, 75, 0.08)'
+            'brass': '0 10px 30px -10px rgba(139, 101, 27, 0.25), 0 0 1px 1px rgba(197, 154, 69, 0.3)',
+            'brass-sm': '0 4px 12px -4px rgba(139, 101, 27, 0.2)',
+            'brass-glow': '0 0 25px rgba(232, 202, 123, 0.45)',
+            'tactile': '0 8px 0 rgba(139, 101, 27, 0.35), 0 16px 24px rgba(18, 24, 32, 0.12)',
+            'tactile-ruby': '0 8px 0 #8C1012, 0 16px 24px rgba(186, 27, 29, 0.25)',
+            'tactile-sm': '0 4px 0 rgba(139, 101, 27, 0.25)',
+            'industrial': '0 16px 40px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
           },
           animation: {
+            'spin-slow': 'spinClockwise 28s linear infinite',
+            'spin-reverse': 'spinCounterClockwise 22s linear infinite',
+            'spin-fast': 'spinClockwise 10s linear infinite',
+            'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
             'fade-in': 'fadeIn 0.25s ease-out forwards',
             'scale-up': 'scaleUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
             'fade-out': 'fadeOut 0.2s ease-out forwards'
           },
           keyframes: {
+            spinClockwise: {
+              'from': { transform: 'rotate(0deg)' },
+              'to': { transform: 'rotate(360deg)' }
+            },
+            spinCounterClockwise: {
+              'from': { transform: 'rotate(0deg)' },
+              'to': { transform: 'rotate(-360deg)' }
+            },
+            pulseGlow: {
+              '0%, 100%': { opacity: '0.85', transform: 'scale(1)' },
+              '50%': { opacity: '1', transform: 'scale(1.04)' }
+            },
             fadeIn: {
               '0%': { opacity: '0', transform: 'translateY(6px)' },
               '100%': { opacity: '1', transform: 'translateY(0)' }
             },
             scaleUp: {
-              '0%': { opacity: '0', transform: 'scale(0.92)' },
+              '0%': { opacity: '0', transform: 'scale(0.94)' },
               '100%': { opacity: '1', transform: 'scale(1)' }
             },
             fadeOut: {
@@ -95,41 +142,80 @@
 
   <style>
     :root {
-      --surface: #FAF7F2;
-      --surface-card: #FFFFFF;
-      --surface-muted: #F0EAE1;
-      --ink: #1E1B4B;
-      --ink-muted: #64748B;
-      --accent-coral: #FF5A5F;
-      --accent-teal: #00C49F;
-      --accent-amber: #FFB300;
-      --border-line: #E2D9CE;
+      --color-parchment: #FBF8F1;
+      --color-parchment-card: #F4EEDA;
+      --color-parchment-border: rgba(197, 154, 69, 0.35);
+      --color-gold-brass: #C59A45;
+      --color-gold-brass-dim: #8B651B;
+      --color-gold-bright: #E8CA7B;
+      --color-ruby-red: #BA1B1D;
+      --color-ruby-dark: #8C1012;
+      --color-panel-graphite: #121820;
+      --color-panel-surface: #1C232D;
+      --color-cyber-cyan: #00A3FF;
+      --color-ink-main: #1E1E1E;
+      --color-ink-muted: #686662;
     }
 
-    body {
-      background-color: var(--surface);
-      color: var(--ink);
-      font-family: 'Segoe UI', system-ui, sans-serif;
+    html, body {
+      height: 100%;
+      height: 100vh;
+      height: 100dvh;
+      width: 100%;
+      width: 100vw;
       margin: 0;
       padding: 0;
-      overflow-x: hidden;
+      overflow: hidden !important;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--color-parchment);
+      color: var(--color-ink-main);
+      font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
       -webkit-touch-callout: none;
-      overscroll-behavior: none; /* без pull-to-refresh и свайпа «назад» */
+      overscroll-behavior: none;
       user-select: none;
+      -webkit-user-select: none;
     }
 
-    /* Ambient background pattern */
-    .kiosk-grid-bg {
-      background-image: radial-gradient(#E2D9CE 1.5px, transparent 1.5px);
-      background-size: 32px 32px;
+    #react-kiosk-root {
+      height: 100%;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100dvh;
+      width: 100%;
+      width: 100vw;
+      overflow: hidden !important;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Благородная пергаментная фактура с тончайшей золотой филигранной сеткой */
+    .kiosk-folk-bg {
+      background-color: #FBF8F1;
+      background-image: 
+        radial-gradient(rgba(197, 154, 69, 0.18) 1.5px, transparent 1.5px),
+        linear-gradient(to right, rgba(197, 154, 69, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(197, 154, 69, 0.05) 1px, transparent 1px);
+      background-size: 32px 32px, 96px 96px, 96px 96px;
+    }
+
+    /* Фоновые стилизованные шестеренки с мягким золотым свечением */
+    .ambient-gear-bg {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.04;
     }
   </style>
 </head>
-<body class="kiosk-grid-bg min-h-screen" oncontextmenu="return false">
-  <!-- React App Root Container -->
-  <div id="react-kiosk-root"></div>
+<body class="kiosk-folk-bg h-screen w-screen overflow-hidden fixed inset-0" oncontextmenu="return false">
+  <!-- React App Root Container: Strict Fullscreen Touchscreen Canvas -->
+  <div id="react-kiosk-root" class="relative z-10 h-full w-full overflow-hidden"></div>
 
   <!-- Load and Execute React Application -->
   <script type="text/babel" src="/static/js/kiosk_app.jsx"></script>

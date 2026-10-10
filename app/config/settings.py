@@ -82,6 +82,16 @@ class Settings(BaseSettings):
     # или сессия завершилась неудачей/брошена (название сохранено для совместимости .env)
     DELETE_SOURCE_PHOTOS_AFTER_PRINT: bool = True
     
+    # Email Dispatcher
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 465
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = ""
+    SMTP_USE_TLS: bool = False
+    SMTP_USE_SSL: bool = True
+
+    
     # Branding
     FESTIVAL_NAME: str = "FUTURE INDUSTRY 2026"
     FESTIVAL_HASHTAG: str = "#ФЕСТИВАЛЬ2026"

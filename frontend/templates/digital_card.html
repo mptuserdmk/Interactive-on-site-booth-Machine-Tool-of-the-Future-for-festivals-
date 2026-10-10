@@ -3,28 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Твой Паспорт Инженера — Станок Будущего</title>
+  <title>Твой Паспорт Инженера — Осенний Промышленный Фестиваль Колледжей Москвы</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
   <style>
     body {
+      background-color: #FBF8F1;
+      background-image: 
+        radial-gradient(rgba(197, 154, 69, 0.18) 1.5px, transparent 1.5px),
+        linear-gradient(to right, rgba(197, 154, 69, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(197, 154, 69, 0.05) 1px, transparent 1px);
+      background-size: 32px 32px, 96px 96px, 96px 96px;
+      color: #1E1E1E;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
       overflow-y: auto;
-      padding: 20px 15px;
+      padding: 24px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
     }
     .digital-card-container {
       max-width: 520px;
       width: 100%;
       text-align: center;
       margin: 0 auto;
+      position: relative;
+      background: #F4EEDA;
+      border: 2px solid #C59A45;
+      border-radius: 20px;
+      padding: 28px 24px;
+      box-shadow: 0 10px 30px -10px rgba(139, 101, 27, 0.25);
+    }
+    .brass-corner {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      pointer-events: none;
+    }
+    .corner-tl { top: 8px; left: 8px; border-top: 2px solid #C59A45; border-left: 2px solid #C59A45; }
+    .corner-tr { top: 8px; right: 8px; border-top: 2px solid #C59A45; border-right: 2px solid #C59A45; }
+    .corner-bl { bottom: 8px; left: 8px; border-bottom: 2px solid #C59A45; border-left: 2px solid #C59A45; }
+    .corner-br { bottom: 8px; right: 8px; border-bottom: 2px solid #C59A45; border-right: 2px solid #C59A45; }
+    
+    .brand-stamp {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: #BA1B1D;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      background: rgba(186, 27, 29, 0.08);
+      border: 1px solid rgba(186, 27, 29, 0.25);
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    .craft-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #121820;
+      margin: 8px 0;
+      line-height: 1.15;
+    }
+    .power-badge {
+      font-family: 'JetBrains Mono', monospace;
+      color: #8B651B;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.08em;
     }
     .card-preview-box {
-      border: 3px solid var(--accent-cyan);
-      box-shadow: var(--glow-cyan);
+      border: 4px solid #C59A45;
       border-radius: 16px;
       overflow: hidden;
       margin: 20px 0;
+      box-shadow: 0 16px 36px -10px rgba(18, 24, 32, 0.35);
+      background: #121820;
     }
     .card-preview-box img {
       width: 100%;
@@ -34,45 +93,91 @@
     .action-group {
       display: flex;
       flex-direction: column;
-      gap: 15px;
-      margin-top: 25px;
+      gap: 14px;
+      margin-top: 24px;
+    }
+    .btn-folk-download {
+      background: #BA1B1D;
+      color: #FFFFFF;
+      border: 2px solid #E8CA7B;
+      padding: 16px;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 0 #8C1012, 0 12px 20px rgba(186, 27, 29, 0.25);
+      transition: all 0.15s ease;
+    }
+    .btn-folk-download:active {
+      transform: translateY(2px);
+      box-shadow: 0 4px 0 #8C1012;
     }
     .btn-tg {
-      background: #24A1DE;
-      color: #fff;
-      border: none;
-      padding: 18px;
+      background: #121820;
+      color: #E8CA7B;
+      border: 1px solid #C59A45;
+      padding: 16px;
       border-radius: 12px;
-      font-weight: 800;
-      font-size: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.04em;
       text-decoration: none;
-      display: inline-block;
-      box-shadow: 0 0 20px rgba(36, 161, 222, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.15s ease;
+    }
+    .btn-tg:hover {
+      background: #1C232D;
+    }
+    .footer-stamp {
+      margin-top: 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #686662;
+      border-top: 1px solid rgba(197, 154, 69, 0.3);
+      padding-top: 14px;
     }
   </style>
 </head>
 <body>
   <div class="digital-card-container">
-    <div class="brand-title" style="font-size: 20px;">⚡ FUTURE INDUSTRY 2026</div>
-    <h1 style="font-size: 28px; margin: 10px 0; color: #fff;">{{ session.machine_name if session else 'Инженер Будущего' }}</h1>
-    <div style="color: var(--accent-cyan); font-weight: 700;">СУПЕРСИЛА: {{ session.power_name if session else 'ТОЧНОСТЬ' }}</div>
+    <div class="brass-corner corner-tl"></div>
+    <div class="brass-corner corner-tr"></div>
+    <div class="brass-corner corner-bl"></div>
+    <div class="brass-corner corner-br"></div>
+
+    <div class="brand-stamp">⚙️ ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ // ПАСПОРТ МАСТЕРА</div>
+    <h1 class="craft-title">{{ session.machine_name if session else 'Инженер Будущего' }}</h1>
+    <div class="power-badge">СУПЕРСИЛА: {{ (session.power_name if session else 'ТОЧНОСТЬ') | upper }}</div>
 
     <div class="card-preview-box">
       {% if session and session.final_card_path %}
         <img src="/media/cards/{{ session.id }}.jpg" alt="Digital Card">
       {% else %}
-        <p style="padding: 40px; color: var(--text-muted);">{{ "Изображение формируется..." if session else "Карточка не найдена или уже удалена" }}</p>
+        <p style="padding: 40px; color: #E8CA7B; font-family: 'Cormorant Garamond', serif; font-size: 18px;">
+          {{ "Отливаем паспорт мастера в 300 DPI..." if session else "Карточка не найдена или уже удалена" }}
+        </p>
       {% endif %}
     </div>
 
-    <p style="font-size: 15px; color: var(--text-muted); line-height: 1.4;">
-      {{ session.machine_desc if session else '' }}
+    <p style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; color: #1E1E1E; line-height: 1.4; margin: 0 8px;">
+      "{{ session.machine_desc if session else '' }}"
     </p>
 
     <div class="action-group">
       {% if session and session.final_card_path %}
-        <a href="/media/cards/{{ session.id }}.jpg" download="stanok_budushego.jpg" class="btn-cyber" style="text-decoration: none; justify-content: center; font-size: 18px; padding: 18px;">
-          📥 СКАЧАТЬ КАРТОЧКУ (HD)
+        <a href="/media/cards/{{ session.id }}.jpg" download="stanok_budushego.jpg" class="btn-folk-download">
+          📥 СКАЧАТЬ ПАСПОРТ (HD)
         </a>
       {% endif %}
       
@@ -81,9 +186,117 @@
       </a>
     </div>
 
-    <div style="margin-top: 40px; font-size: 12px; color: var(--text-muted);">
-      {{ settings.FESTIVAL_HASHTAG }} ● СТАНОК БУДУЩЕГО
+    <!-- Модуль отправки на Email -->
+    <div style="margin-top: 22px; padding: 18px; background: rgba(255, 255, 255, 0.85); border: 2px solid #C59A45; border-radius: 14px; text-align: left; box-shadow: 0 4px 12px rgba(139, 101, 27, 0.1);">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #BA1B1D; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <span>✉️ ВЫСЛАТЬ ПАСПОРТ НА СВОЙ EMAIL:</span>
+        {% if session and session.meta and session.meta.email_sent %}
+          <span style="color: #008770; font-size: 10px;">✓ УЖЕ ОТПРАВЛЕНО</span>
+        {% endif %}
+      </div>
+
+      {% if session and session.meta and session.meta.email_sent %}
+        <div style="margin-bottom: 10px; padding: 8px 12px; background: rgba(0, 135, 112, 0.08); border: 1px solid rgba(0, 135, 112, 0.3); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #008770; font-weight: 700;">
+          ✓ Паспорт уже отправлен на: {{ session.meta.email_recipient }}
+        </div>
+      {% endif %}
+
+      <div style="display: flex; gap: 8px;">
+        <input 
+          id="email-input" 
+          type="email" 
+          inputmode="email"
+          autocomplete="email"
+          placeholder="твоя_почта@mail.ru" 
+          style="flex: 1; padding: 12px; border: 1.5px solid #C59A45; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 14px; outline: none; background: #FFFFFF; color: #1E1E1E;"
+        >
+        <button 
+          id="email-send-btn" 
+          onclick="sendCardEmail()" 
+          style="background: #BA1B1D; color: #FFFFFF; border: 1.5px solid #E8CA7B; padding: 10px 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: 0 3px 0 #8C1012; transition: all 0.15s ease;"
+        >
+          ОТПРАВИТЬ
+        </button>
+      </div>
+
+      <!-- Быстрые кнопки доменов для смартфона -->
+      <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;">
+        <button type="button" onclick="appendDomain('@mail.ru')" style="padding: 4px 8px; border-radius: 6px; background: #F4EEDA; border: 1px solid #C59A45; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #686662; cursor: pointer;">@mail.ru</button>
+        <button type="button" onclick="appendDomain('@yandex.ru')" style="padding: 4px 8px; border-radius: 6px; background: #F4EEDA; border: 1px solid #C59A45; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #686662; cursor: pointer;">@yandex.ru</button>
+        <button type="button" onclick="appendDomain('@gmail.com')" style="padding: 4px 8px; border-radius: 6px; background: #F4EEDA; border: 1px solid #C59A45; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #686662; cursor: pointer;">@gmail.com</button>
+        <button type="button" onclick="appendDomain('@bk.ru')" style="padding: 4px 8px; border-radius: 6px; background: #F4EEDA; border: 1px solid #C59A45; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #686662; cursor: pointer;">@bk.ru</button>
+      </div>
+
+      <div id="email-msg" style="margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; display: none;"></div>
+    </div>
+
+    <div class="footer-stamp">
+      {{ settings.FESTIVAL_HASHTAG }} ● ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ
     </div>
   </div>
+
+  <script>
+    // Восстановление ранее сохраненного email на телефоне
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedEmail = localStorage.getItem('stanok_visitor_email');
+      if (savedEmail) {
+        const input = document.getElementById('email-input');
+        if (input && !input.value) {
+          input.value = savedEmail;
+        }
+      }
+    });
+
+    function appendDomain(domain) {
+      const input = document.getElementById('email-input');
+      const val = input.value.trim();
+      if (!val) {
+        input.value = 'master' + domain;
+      } else if (val.includes('@')) {
+        input.value = val.split('@')[0] + domain;
+      } else {
+        input.value = val + domain;
+      }
+      input.focus();
+    }
+
+    async function sendCardEmail() {
+      const input = document.getElementById('email-input');
+      const btn = document.getElementById('email-send-btn');
+      const msg = document.getElementById('email-msg');
+      const email = input.value.trim();
+      if (!email || !email.includes('@')) {
+        msg.style.display = 'block';
+        msg.style.color = '#BA1B1D';
+        msg.innerText = 'Введи корректный email (например: master@mail.ru)';
+        return;
+      }
+      btn.disabled = true;
+      btn.innerText = '...';
+      try {
+        const res = await fetch('/api/email/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, session_id: '{{ session.id if session else "" }}' })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Ошибка отправки');
+        
+        // Запоминаем email на телефоне для следующих визитов
+        try { localStorage.setItem('stanok_visitor_email', email); } catch(e) {}
+
+        msg.style.display = 'block';
+        msg.style.color = '#008770';
+        msg.innerText = '✓ Паспорт успешно выслан на ' + email + '!';
+      } catch (e) {
+        msg.style.display = 'block';
+        msg.style.color = '#BA1B1D';
+        msg.innerText = e.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'ОТПРАВИТЬ';
+      }
+    }
+  </script>
 </body>
 </html>

@@ -142,7 +142,7 @@
         </div>
         <div>
           <div class="brand-title">STATION CONTROL DASHBOARD</div>
-          <div class="brand-sub">ОПЕРАТОРСКИЙ КОНТУР УПРАВЛЕНИЯ ● СТАНОК БУДУЩЕГО</div>
+          <div class="brand-sub">ОПЕРАТОРСКИЙ КОНТУР УПРАВЛЕНИЯ ● ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ</div>
         </div>
       </div>
       <div>
@@ -203,6 +203,7 @@
           <button class="op-action-btn" onclick="act('/api/session/photo/retake')">🔄 ПЕРЕСНЯТЬ</button>
           <button class="op-action-btn" onclick="act('/api/session/photo/confirm')">✅ ПОДТВЕРДИТЬ</button>
           <button class="op-action-btn" onclick="act('/api/print/trigger-active')">🖨️ ПЕЧАТАТЬ</button>
+          <button id="btn-autoprint-toggle" class="op-action-btn" onclick="toggleAutoPrint()">🖨️ АВТОПЕЧАТЬ: ВКЛ</button>
           <button class="op-action-btn" style="color: var(--accent-error);" onclick="act('/api/session/reset')">⏹️ СБРОС</button>
         </div>
 
@@ -366,10 +367,53 @@
       ws.onclose = () => setTimeout(connectWs, 2000);
     }
 
+    let autoPrintEnabled = true;
+
+    async function refreshPrintStatus() {
+      try {
+        const res = await fetch('/api/print/status');
+        const data = await res.json();
+        if (data && typeof data.enable_auto_print === 'boolean') {
+          autoPrintEnabled = data.enable_auto_print;
+          updateAutoPrintUI();
+        }
+      } catch (e) {}
+    }
+
+    function updateAutoPrintUI() {
+      const btn = document.getElementById('btn-autoprint-toggle');
+      if (btn) {
+        btn.innerHTML = autoPrintEnabled ? '🖨️ АВТОПЕЧАТЬ: ВКЛ' : '🖨️ АВТОПЕЧАТЬ: ВЫКЛ';
+        btn.style.color = autoPrintEnabled ? 'var(--accent-emerald)' : 'var(--accent-error)';
+        btn.style.borderColor = autoPrintEnabled ? 'var(--accent-emerald)' : 'var(--accent-error)';
+      }
+    }
+
+    async function toggleAutoPrint() {
+      const next = !autoPrintEnabled;
+      try {
+        const res = await fetch('/api/print/toggle-auto-print', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: next })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          autoPrintEnabled = Boolean(data.enable_auto_print);
+          updateAutoPrintUI();
+        }
+      } catch (e) {
+        alert('Не удалось изменить режим автопечати');
+      }
+    }
+
     connectWs();
     loadHealth();
     loadHistory();
+    refreshPrintStatus();
     setInterval(loadHealth, 10000);
-    setInterval(loadHistory, 15000);  </script>
+    setInterval(loadHistory, 15000);
+    setInterval(refreshPrintStatus, 8000);
+  </script>
 </body>
 </html>

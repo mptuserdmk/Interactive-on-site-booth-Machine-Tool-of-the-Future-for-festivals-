@@ -9,6 +9,7 @@ from app.config.settings import settings
 from app.api.routes_session import router as session_router
 from app.api.routes_camera import router as camera_router
 from app.api.routes_print import router as print_router
+from app.api.routes_email import router as email_router
 from app.api.routes_health import router as health_router
 from app.api.routes_ws import router as ws_router
 from app.api.routes_media import router as media_router, SESSION_ID_RE
@@ -78,6 +79,7 @@ async def session_error_handler(request: Request, exc: SessionError):
 app.include_router(session_router)
 app.include_router(camera_router)
 app.include_router(print_router)
+app.include_router(email_router)
 app.include_router(health_router)
 app.include_router(ws_router)
 app.include_router(media_router)
@@ -121,7 +123,7 @@ async def digital_card_page(request: Request, session_id: str):
     # Ссылка «Поделиться» собирается на сервере из канонического URL, а не из request.url (S13)
     share_url = "https://t.me/share/url?" + urlencode({
         "url": f"{settings.BASE_URL}/card/{session_id}",
-        "text": "Моя профессия будущего на фестивале Станок Будущего!"
+        "text": "Моя профессия будущего на Осеннем Промышленном Фестивале Колледжей Москвы!"
     })
     return templates.TemplateResponse(
         request=request,

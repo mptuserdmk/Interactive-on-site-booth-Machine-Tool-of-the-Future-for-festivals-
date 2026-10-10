@@ -1,0 +1,69 @@
+/* Neorussian Steampunk & High-Tech (Folk-Tech) Design Tokens */
+:root {
+  /* Surface & Canvas */
+  --color-parchment: #FBF8F1;
+  --color-parchment-card: #F4EEDA;
+  --color-parchment-border: rgba(197, 154, 69, 0.35);
+
+  /* Metals & Accents */
+  --color-gold-brass: #C59A45;
+  --color-gold-brass-dim: #8B651B;
+  --color-gold-bright: #E8CA7B;
+  --color-gold-glow: rgba(232, 202, 123, 0.45);
+
+  /* Ruby Carmine */
+  --color-ruby-red: #BA1B1D;
+  --color-ruby-dark: #8C1012;
+  --color-ruby-light: rgba(186, 27, 29, 0.12);
+
+  /* Industrial Graphite & Panels */
+  --color-panel-graphite: #121820;
+  --color-panel-surface: #1C232D;
+  --color-panel-border: rgba(197, 154, 69, 0.4);
+
+  /* Cyber & Telemetry */
+  --color-cyber-cyan: #00A3FF;
+  --color-cyber-glow: rgba(0, 163, 255, 0.35);
+
+  /* Typography / Ink */
+  --color-ink-main: #1E1E1E;
+  --color-ink-muted: #686662;
+  --color-ink-faint: #98948D;
+
+  /* Font Stacks */
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  /* Shadows */
+  --shadow-brass: 0 10px 30px -10px rgba(139, 101, 27, 0.25), 0 0 1px 1px rgba(197, 154, 69, 0.3);
+  --shadow-industrial: 0 16px 40px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Animations */
+@keyframes spinClockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spinCounterClockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+.spin-slow {
+  animation: spinClockwise 28s linear infinite;
+}
+
+.spin-reverse {
+  animation: spinCounterClockwise 22s linear infinite;
+}
+
+.spin-fast {
+  animation: spinClockwise 12s linear infinite;
+}
