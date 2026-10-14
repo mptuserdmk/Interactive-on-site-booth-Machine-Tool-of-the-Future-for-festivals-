@@ -217,6 +217,15 @@
   <!-- React App Root Container: Strict Fullscreen Touchscreen Canvas -->
   <div id="react-kiosk-root" class="relative z-10 h-full w-full overflow-hidden"></div>
 
+  <!-- Pass Server Config to React Client -->
+  <script>
+    window.KIOSK_CONFIG = {
+      telegramBotUsername: {{ settings.TELEGRAM_BOT_USERNAME|tojson }},
+      hasTelegramBot: {{ 'true' if settings.TELEGRAM_BOT_TOKEN else 'false' }},
+      qrRevealDelayMs: {{ settings.QR_REVEAL_DELAY_MS|int }}
+    };
+  </script>
+
   <!-- Load and Execute React Application -->
   <script type="text/babel" src="/static/js/kiosk_app.jsx"></script>
 </body>

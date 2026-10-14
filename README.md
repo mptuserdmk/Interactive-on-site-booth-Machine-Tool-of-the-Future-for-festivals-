@@ -99,7 +99,24 @@ DELETE_SOURCE_PHOTOS_AFTER_PRINT=true
 # Брендинг
 FESTIVAL_NAME=FUTURE INDUSTRY 2026
 FESTIVAL_HASHTAG=#ФЕСТИВАЛЬ2026
+
+# Telegram-бот для выдачи карточек
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_BOT_USERNAME=
+QR_REVEAL_DELAY_MS=1500
 ```
+
+### 📱 Выдача карточек через Telegram-бота (по QR-коду)
+1. Создайте бота в Telegram через [@BotFather](https://t.me/BotFather) командой `/newbot`.
+2. Скопируйте полученный токен в `.env`:
+   ```env
+   TELEGRAM_BOT_TOKEN=123456789:ABC-DEF...
+   TELEGRAM_BOT_USERNAME=MyKioskBot
+   QR_REVEAL_DELAY_MS=1500
+   ```
+3. После создания образа на киоске с плавной задержкой (по умолчанию 1.5 сек) появляется контрастный QR-код (200×200 px).
+4. Участник наводит камеру смартфона, нажимает кнопку **«START»** в Telegram и мгновенно получает готовый паспорт-карточку в чат.
+5. Если токен не указан — бот не запускается, а QR-код открывает веб-версию карточки.
 
 ---
 

@@ -6,7 +6,7 @@ import time
 import httpx
 from pathlib import Path
 from typing import Dict, Any, Optional
-from PIL import Image
+from PIL import Image, ImageOps
 from app.config.settings import settings
 from app.ai.provider import ImageProvider
 from app.ai.models import AIGenerationRequest, AIGenerationResult
@@ -266,14 +266,18 @@ class BothubProvider(ImageProvider):
             "Authorization": f"Bearer {settings.AI_API_KEY.strip()}"
         }
 
-        model_name = getattr(settings, "BOTHUB_MODEL", "gemini-2.5-flash-image")
+        model_name = getattr(settings, "BOTHUB_MODEL", "gemini-3.1-flash-lite-image")
 
         try:
             async with httpx.AsyncClient(timeout=settings.AI_TIMEOUT_SECONDS) as client:
                 # 1. If we have an input photo from the kiosk, use the /v1/images/edits endpoint
                 if request.input_photo_path and Path(request.input_photo_path).exists():
-                    with open(request.input_photo_path, "rb") as f:
-                        img_bytes = f.read()
+                    with Image.open(request.input_photo_path) as im:
+                        im = ImageOps.exif_transpose(im).convert("RGB")
+                        im.thumbnail((1024, 1024), Image.Resampling.LANCZOS)
+                        buf = io.BytesIO()
+                        im.save(buf, format="JPEG", quality=85)
+                        img_bytes = buf.getvalue()
 
                     files = {
                         "image": ("photo.jpg", img_bytes, "image/jpeg")

@@ -70,5 +70,17 @@ async def test_health_warns_when_qr_url_is_loopback(client, monkeypatch):
 def test_card_url_uses_base_url(monkeypatch):
     from app.composition.qr import get_digital_card_url
     from app.config.settings import settings
+    monkeypatch.setattr(settings, "TELEGRAM_BOT_USERNAME", "")
     monkeypatch.setattr(settings, "BASE_URL", "http://10.0.0.5:9000")
     assert get_digital_card_url("sess_x") == "http://10.0.0.5:9000/card/sess_x"
+
+
+def test_card_url_uses_telegram_bot_when_configured(monkeypatch):
+    from app.composition.qr import get_digital_card_url
+    from app.config.settings import settings
+    monkeypatch.setattr(settings, "TELEGRAM_BOT_USERNAME", "StanokFutureBot")
+    assert get_digital_card_url("sess_x") == "https://t.me/StanokFutureBot?start=sess_x"
+
+    # Also check with leading @
+    monkeypatch.setattr(settings, "TELEGRAM_BOT_USERNAME", "@StanokFutureBot")
+    assert get_digital_card_url("sess_x") == "https://t.me/StanokFutureBot?start=sess_x"

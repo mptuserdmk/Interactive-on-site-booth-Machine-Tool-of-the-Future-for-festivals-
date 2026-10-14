@@ -67,7 +67,7 @@ class Settings(BaseSettings):
     # AI Provider: 'mock', 'bothub', 'fal', 'replicate', 'openai', 'stability'
     AI_PROVIDER: str = "mock"
     AI_API_KEY: str = ""
-    BOTHUB_MODEL: str = "gemini-2.5-flash-image"
+    BOTHUB_MODEL: str = "gemini-3.1-flash-lite-image"
     AI_TIMEOUT_SECONDS: int = 35
     AI_FALLBACK_ON_ERROR: bool = True
     
@@ -91,9 +91,15 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = False
     SMTP_USE_SSL: bool = True
 
+    # Telegram Bot
+    TELEGRAM_BOT_TOKEN: str = ""
+    TELEGRAM_BOT_USERNAME: str = ""
+    TELEGRAM_PROXY_URL: str = ""
+    PROXY_URL: str = ""
+    QR_REVEAL_DELAY_MS: int = 1500
     
     # Branding
-    FESTIVAL_NAME: str = "FUTURE INDUSTRY 2026"
+    FESTIVAL_NAME: str = "ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ"
     FESTIVAL_HASHTAG: str = "#ФЕСТИВАЛЬ2026"
 
     # Access control (S1): пустой токен → случайный при каждом старте (печатается в консоли)

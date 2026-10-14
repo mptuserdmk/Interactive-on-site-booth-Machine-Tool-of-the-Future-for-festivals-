@@ -19,4 +19,7 @@ def generate_qr_code(url: str, size: int = 240) -> Image.Image:
     return img
 
 def get_digital_card_url(session_id: str) -> str:
+    bot_name = (getattr(settings, "TELEGRAM_BOT_USERNAME", "") or "").strip().lstrip("@")
+    if bot_name:
+        return f"https://t.me/{bot_name}?start={session_id}"
     return f"{settings.BASE_URL}/card/{session_id}"

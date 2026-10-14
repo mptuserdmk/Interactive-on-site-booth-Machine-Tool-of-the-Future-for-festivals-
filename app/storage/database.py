@@ -50,7 +50,16 @@ SCHEMA = """
         error_message TEXT,
         duration_seconds REAL,
         meta_json TEXT
-    )
+    );
+
+    CREATE TABLE IF NOT EXISTS telegram_links (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        chat_id INTEGER NOT NULL,
+        session_id TEXT NOT NULL,
+        username TEXT,
+        first_name TEXT,
+        created_at TEXT NOT NULL
+    );
 """
 
 
@@ -85,7 +94,7 @@ class Database:
         with closing(self.get_connection()) as conn:
             conn.execute("PRAGMA journal_mode = WAL")
             conn.execute("PRAGMA synchronous = NORMAL")
-            conn.execute(SCHEMA)
+            conn.executescript(SCHEMA)
             conn.commit()
 
     def _execute(self, sql: str, params=(), fetch: str = ""):
@@ -174,6 +183,17 @@ class Database:
     def sessions_older_than(self, cutoff_iso: str) -> List[Dict[str, Any]]:
         rows = self._execute("SELECT * FROM sessions WHERE created_at < ?", (cutoff_iso,), fetch="all")
         return [dict(r) for r in rows]
+
+    def save_telegram_link(self, chat_id: int, session_id: str, username: Optional[str] = None, first_name: Optional[str] = None):
+        now = datetime.now(timezone.utc).isoformat()
+        self._execute("""
+            INSERT INTO telegram_links (chat_id, session_id, username, first_name, created_at)
+            VALUES (?, ?, ?, ?, ?)
+        """, (chat_id, session_id, username, first_name, now))
+
+    def get_telegram_links_for_session(self, session_id: str) -> List[Dict[str, Any]]:
+        rows = self._execute("SELECT * FROM telegram_links WHERE session_id = ?", (session_id,), fetch="all")
+        return [dict(r) for r in rows] if rows else []
 
 
 db = Database()

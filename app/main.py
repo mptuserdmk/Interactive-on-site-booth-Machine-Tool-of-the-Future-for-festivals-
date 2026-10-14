@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from urllib.parse import urlencode
@@ -6,6 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.config.settings import settings
+from app.bot.service import bot_service
 from app.api.routes_session import router as session_router
 from app.api.routes_camera import router as camera_router
 from app.api.routes_print import router as print_router
@@ -32,7 +34,22 @@ async def lifespan(app: FastAPI):
         delete_file_safely(row.get("generated_image_path"))
     if interrupted:
         logger.warning("Recovered %d interrupted sessions after restart", len(interrupted))
+
+    # Запуск Telegram-бота при наличии настроенного токена
+    bot_task = None
+    if bot_service.is_configured:
+        bot_task = asyncio.create_task(bot_service.start())
+        logger.info("Telegram Bot service scheduled")
+
     yield
+
+    if bot_task:
+        await bot_service.stop()
+        bot_task.cancel()
+        try:
+            await bot_task
+        except asyncio.CancelledError:
+            pass
 
 app = FastAPI(
     title=settings.APP_NAME,

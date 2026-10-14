@@ -9,14 +9,13 @@ def build_ai_prompt(combo: Dict[str, Any]) -> str:
     machine_name = combo.get("machine_name", "Future Engineer")
 
     prompt = (
-        f"Create a realistic futuristic portrait photograph based on the provided student portrait. "
-        f"Transform the student into a heroic young engineer and industrial creator of the future: {machine_name}. "
+        f"Transform the person from the photo into a heroic young cybernetic engineer and industrial creator of the future: {machine_name}. "
+        f"Keep the exact face, facial features, hair, and identity of the person in the photo clearly recognizable and photorealistic. "
+        f"Dress the person in an ergonomic futuristic engineering suit or exoskeleton with neon {color_name} lighting accents. "
         f"Theme: {element}. Superpower: {power}. "
-        f"Color direction & neon lighting accents: {color_name}. "
-        f"Context & environment: High-tech industrial workshop, {theme_desc}, aerospace robotics, clean holographic displays, precision tools. "
-        f"The student's face structure and features should remain clearly recognizable while wearing an ergonomic futuristic engineering uniform or lab suit. "
-        f"Style: Cinematic, 8k, photorealistic, premium festival quality, optimistic atmosphere, soft neon glow. "
-        f"Strict constraint: Do not generate any text, letters, logos, labels or typography."
+        f"Setting: High-tech industrial workshop, {theme_desc}, aerospace robotics, clean holographic displays, precision tools. "
+        f"Style: Cinematic portrait, 8k, photorealistic, heroic lighting, soft neon glow. "
+        f"Strict constraint: Do not add any text, typography, letters, logos or watermarks."
     )
     return prompt
 
