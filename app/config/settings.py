@@ -91,6 +91,10 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = False
     SMTP_USE_SSL: bool = True
 
+    # Telegram Bot
+    TELEGRAM_BOT_TOKEN: str = ""
+    TELEGRAM_BOT_USERNAME: str = ""
+    QR_REVEAL_DELAY_MS: int = 1500
     
     # Branding
     FESTIVAL_NAME: str = "FUTURE INDUSTRY 2026"

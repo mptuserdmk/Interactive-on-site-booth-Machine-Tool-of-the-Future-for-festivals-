@@ -911,10 +911,31 @@ function EmailDispatchBox({ sessionId }) {
 }
 
 // --- ЭКРАН 7: ФИНАЛЬНЫЙ ПАСПОРТ И СТАТУС ПЕЧАТИ (Result Slide) ---
-function ResultScreen({ session, onFinish, autoPrint }) {
+// --- ЭКРАН 7: ФИНАЛЬНЫЙ ПАСПОРТ И СТАТУС ПЕЧАТИ (Result Slide) ---
+function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
+  const [showQr, setShowQr] = useState(false);
+  const [showEmailBox, setShowEmailBox] = useState(false);
+  const qrRevealDelay = Number(window.KIOSK_CONFIG?.qrRevealDelayMs || 1500);
+
   const cardUrl = session?.final_card_path
     ? `/media/cards/${session.id}.jpg?t=${Date.now()}`
     : null;
+
+  const botUsername = (window.KIOSK_CONFIG?.telegramBotUsername || '').replace(/^@/, '').trim();
+  const hasTelegramBot = Boolean(window.KIOSK_CONFIG?.hasTelegramBot && botUsername);
+
+  const qrDestination = hasTelegramBot
+    ? `https://t.me/${botUsername}?start=${session?.id || ''}`
+    : `${window.location.origin}/card/${session?.id || ''}`;
+
+  useEffect(() => {
+    setShowQr(false);
+    const timer = setTimeout(() => {
+      setShowQr(true);
+      if (onQrRevealed) onQrRevealed();
+    }, qrRevealDelay);
+    return () => clearTimeout(timer);
+  }, [session?.id, qrRevealDelay]);
 
   return (
     <section className="flex-1 w-full max-w-5xl mx-auto flex flex-col justify-between overflow-hidden gap-1.5 sm:gap-2.5 h-full max-h-full animate-fade-in" aria-label="Результат генерации">
@@ -947,12 +968,12 @@ function ResultScreen({ session, onFinish, autoPrint }) {
       {/* 7/5 Асимметричная витрина паспорта */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 items-stretch flex-1 min-h-0 max-h-full">
         {/* 7 колонок: демонстрация паспорта в латунной рамке */}
-        <div className="lg:col-span-7 flex items-center justify-center h-full max-h-[56vh] min-h-0">
+        <div className="lg:col-span-7 flex items-center justify-center h-full max-h-[64vh] min-h-0">
           <div className="relative max-h-full rounded-2xl overflow-hidden shadow-industrial border-3 sm:border-4 border-brass bg-panel-graphite p-1.5 flex items-center justify-center">
             <BrassCorners />
-            <div className="rounded-lg overflow-hidden border border-brass/40 max-h-[53vh] flex items-center justify-center">
+            <div className="rounded-lg overflow-hidden border border-brass/40 max-h-[61vh] flex items-center justify-center">
               {cardUrl ? (
-                <img src={cardUrl} alt="Итоговый паспорт инженера" className="max-h-[51vh] w-auto max-w-full object-contain block" />
+                <img src={cardUrl} alt="Итоговый паспорт инженера" className="max-h-[59vh] w-auto max-w-full object-contain block" />
               ) : (
                 <div className="p-10 text-center font-serif text-brass-bright text-sm">Загрузка паспорта мастера...</div>
               )}
@@ -960,8 +981,8 @@ function ResultScreen({ session, onFinish, autoPrint }) {
           </div>
         </div>
 
-        {/* 5 колонок: гербовая грамота, отправка на почту и завершение */}
-        <div className="lg:col-span-5 bg-parchment-card rounded-2xl p-3 sm:p-4 pb-7 sm:pb-8 border-2 border-brass/50 shadow-brass flex flex-col justify-between gap-2 sm:gap-2.5 relative h-full max-h-[56vh] min-h-0">
+        {/* 5 колонок: гербовая грамота, QR в Telegram и завершение */}
+        <div className="lg:col-span-5 bg-parchment-card rounded-2xl p-3 sm:p-4 pb-7 sm:pb-8 border-2 border-brass/50 shadow-brass flex flex-col justify-between gap-2 sm:gap-2.5 relative h-full max-h-[64vh] min-h-0 overflow-y-auto">
           <BrassCorners />
 
           <div className="space-y-1.5 sm:space-y-2">
@@ -974,41 +995,63 @@ function ResultScreen({ session, onFinish, autoPrint }) {
               </div>
             </div>
 
-            <p className="font-serif italic text-xs sm:text-sm text-ink-main leading-relaxed line-clamp-2 sm:line-clamp-3">
-              "{session?.machine_desc || "Ты стал выдающимся специалистом передовой индустрии и мастером чудес!"}"
-            </p>
-
             <div className="p-1.5 sm:p-2 rounded-xl bg-panel-graphite text-brass-bright border border-brass/40 font-mono text-[10px] sm:text-xs">
               <span className="text-ruby font-bold">📍 ГИЛЬДИЯ:</span> {session?.location || "Центральный производственный кластер"}
             </div>
           </div>
 
-          {/* Персональный QR-код для моментальной отправки на почту и телефон */}
-          <div className="p-2 sm:p-2.5 rounded-xl bg-parchment border border-brass/50 shadow-sm flex items-center gap-3 text-left">
-            <img
-              src={`/api/qr.png?data=${encodeURIComponent(window.location.origin + '/card/' + (session?.id || ''))}`}
-              alt="QR-код паспорта"
-              className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-white p-1 border-2 border-brass shrink-0 shadow-sm"
-            />
-            <div className="flex-1 min-w-0">
-              <span className="text-[9px] sm:text-[10px] font-mono uppercase font-bold tracking-wider text-ruby block">
-                📱 СКАНИРУЙ QR-КОД ТЕЛЕФОНОМ
-              </span>
-              <p className="font-serif italic text-[11px] sm:text-xs text-ink-main leading-tight mt-0.5">
-                Наведи камеру смартфона, чтобы моментально получить паспорт на свою почту и скачать в HD!
-              </p>
-            </div>
+          {/* Крупный QR-код (мин. 200x200 px) с задержкой появления и Telegram deep-link */}
+          <div className="p-2.5 sm:p-3 rounded-xl bg-parchment border border-brass/50 shadow-sm flex flex-col items-center justify-center text-center relative min-h-[250px]">
+            {!showQr ? (
+              <div className="flex flex-col items-center justify-center py-8 text-ink-muted animate-pulse">
+                <div className="w-10 h-10 rounded-full border-3 border-brass/30 border-t-ruby animate-spin mb-3"></div>
+                <span className="font-mono text-[11px] uppercase tracking-widest text-brass-dim font-bold">
+                  ПОДГОТОВКА ССЫЛКИ...
+                </span>
+                <span className="text-[10px] font-mono text-ink-faint mt-1">
+                  1-2 секунды
+                </span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center animate-fade-in transition-all duration-500 w-full">
+                <div className="p-1.5 bg-white rounded-xl border-2 border-brass shadow-sm mb-2 inline-block">
+                  <img
+                    src={`/api/qr.png?data=${encodeURIComponent(qrDestination)}`}
+                    alt="QR-код для получения карточки"
+                    className="w-[200px] h-[200px] block object-contain"
+                  />
+                </div>
+                <span className="text-[11px] sm:text-xs font-mono uppercase font-bold tracking-wider text-ruby block">
+                  {hasTelegramBot ? "📱 НАВЕДИТЕ КАМЕРУ — TELEGRAM" : "📱 НАВЕДИТЕ КАМЕРУ СМАРТФОНА"}
+                </span>
+                <p className="font-serif italic text-[11px] sm:text-xs text-ink-main leading-tight mt-0.5 max-w-[280px]">
+                  {hasTelegramBot
+                    ? "Отсканируй QR, чтобы мгновенно получить карточку в Telegram!"
+                    : "Отсканируй QR смартфоном, чтобы открыть и скачать карточку в HD!"}
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* Модуль рассылки интерактивной карточки на почту прямо на киоске */}
-          <EmailDispatchBox sessionId={session?.id} />
+          {/* Опциональный модуль Email рассылки */}
+          {!showEmailBox ? (
+            <button
+              type="button"
+              onClick={() => setShowEmailBox(true)}
+              className="text-[11px] font-mono text-ink-muted hover:text-ruby underline text-center transition-colors cursor-pointer py-0.5"
+            >
+              ✉️ Или отправить паспорт на Email
+            </button>
+          ) : (
+            <EmailDispatchBox sessionId={session?.id} />
+          )}
 
           <FolkButton
             variant="primary"
             size="md"
             onClick={onFinish}
             ariaLabel="Завершить сессию и перейти к следующему участнику"
-            className="w-full py-2.5 sm:py-3 text-sm sm:text-base shrink-0 mt-auto mb-3 sm:mb-4"
+            className="w-full py-2.5 sm:py-3 text-sm sm:text-base shrink-0 mt-auto mb-2 sm:mb-3"
           >
             <span>СЛЕДУЮЩИЙ УЧАСТНИК 🚀</span>
           </FolkButton>
@@ -1224,10 +1267,13 @@ function KioskRoot() {
       return;
     }
 
+    // На экране результата даём 45 секунд, чтобы посетитель успел спокойно навести камеру и отсканировать QR
+    const timeoutDuration = (session.status === 'COMPLETED' || session.status === 'PRINTING') ? 45000 : 15000;
+
     idleTimerRef.current = setTimeout(() => {
       setIdleCountdown(5);
       setIsIdleModalOpen(true);
-    }, 15000);
+    }, timeoutDuration);
   }, [session, isIdleModalOpen]);
 
   useEffect(() => {
@@ -1373,7 +1419,14 @@ function KioskRoot() {
       return <ErrorScreen session={session} onFinish={handleReset} busy={busy} />;
     }
 
-    return <ResultScreen session={session} onFinish={handleReset} autoPrint={autoPrint} />;
+    return (
+      <ResultScreen
+        session={session}
+        onFinish={handleReset}
+        autoPrint={autoPrint}
+        onQrRevealed={resetIdleTimer}
+      />
+    );
   };
 
   return (

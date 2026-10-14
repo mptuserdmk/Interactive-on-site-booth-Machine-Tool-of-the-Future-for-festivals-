@@ -80,6 +80,12 @@ async def get_system_health():
             "disk": {
                 "ok": free_gb > 1.0,
                 "free_gb": free_gb
+            },
+            "telegram": {
+                "ok": bool(settings.TELEGRAM_BOT_TOKEN),
+                "enabled": bool(settings.TELEGRAM_BOT_TOKEN),
+                "username": settings.TELEGRAM_BOT_USERNAME,
+                "qr_reveal_delay_ms": settings.QR_REVEAL_DELAY_MS
             }
         }
     }
