@@ -177,8 +177,8 @@ class CardComposer:
         card = self.create_gradient_bg(accent_hex)
         draw = ImageDraw.Draw(card)
 
-        # 2. Header (раньше «FUTURE INDUSTRY ● FUTURE INDUSTRY 2026»)
-        header_font, header_lines = self.fit_text(f"СТАНОК БУДУЩЕГО  ●  {settings.FESTIVAL_NAME}", True, 36, 24,
+        # 2. Header: ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ
+        header_font, header_lines = self.fit_text("ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ", True, 36, 22,
                                                   full_width, 1, draw)
         draw.text((70, 65), header_lines[0], font=header_font, fill="#ffffff")
         draw.text((70, 115), "ПАСПОРТ ИНЖЕНЕРА БУДУЩЕГО // ID: " + self.short_code(session_id), font=self.font_sub, fill=accent_hex)
@@ -259,7 +259,7 @@ class CardComposer:
         draw.text((qr_x - 20, qr_y + 238), "Забери digital-карту", font=self.font_small, fill="#8fa0b5")
 
         # 6. Footer (Bottom Left)
-        draw.text((70, self.height - 110), f"{settings.FESTIVAL_HASHTAG}  ●  СТАНОК БУДУЩЕГО", font=self.font_footer, fill="#ffffff")
+        draw.text((70, self.height - 110), f"{settings.FESTIVAL_HASHTAG}", font=self.font_footer, fill="#ffffff")
         draw.text((70, self.height - 70), "Создано на интерактивном стенде распределения профессий будущего", font=self.font_small, fill="#5a708a")
 
         # Save result: 300 DPI в метаданных, иначе драйвер печатает в масштабе 72/96 DPI

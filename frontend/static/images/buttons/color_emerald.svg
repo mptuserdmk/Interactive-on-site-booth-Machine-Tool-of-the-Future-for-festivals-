@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1A2430" />
+      <stop offset="60%" stop-color="#121820" />
+      <stop offset="100%" stop-color="#0B0F14" />
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <pattern id="techGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#C59A45" stroke-width="0.5" stroke-opacity="0.12" />
+      <circle cx="40" cy="0" r="1" fill="#C59A45" fill-opacity="0.25" />
+    </pattern>
+  </defs>
+
+  <!-- Базовый тёмный графитовый фон с сеткой станка -->
+  <rect width="800" height="450" fill="url(#bgGrad)" />
+  <rect width="800" height="450" fill="url(#techGrid)" />
+
+  <defs>
+    <radialGradient id="emeraldGlow" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#00FF88" stop-opacity="0.55" />
+      <stop offset="45%" stop-color="#005E4D" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#121820" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <circle cx="400" cy="225" r="210" fill="url(#emeraldGlow)" />
+
+  <!-- Малахитовые геометрические узоры и кристаллические друзы -->
+  <g transform="translate(400, 225)">
+    <circle cx="0" cy="0" r="145" fill="none" stroke="#00FF88" stroke-width="1.5" stroke-dasharray="12 6" stroke-opacity="0.6" />
+    <circle cx="0" cy="0" r="110" fill="none" stroke="#E8CA7B" stroke-width="1.2" stroke-opacity="0.5" />
+    
+    <!-- Изумрудная призма -->
+    <polygon points="0,-80 65,-20 40,65 -40,65 -65,-20" fill="#0C241D" stroke="#00FF88" stroke-width="2.5" filter="url(#softGlow)" />
+    <polygon points="0,-55 42,-15 28,42 -28,42 -42,-15" fill="#00FF88" fill-opacity="0.4" stroke="#70FFB8" stroke-width="1.2" />
+    <circle cx="0" cy="0" r="10" fill="#FFFFFF" filter="url(#glow)" />
+
+    <!-- Векторные ветви малахитовой филиграни -->
+    <g stroke="#00FF88" stroke-width="1.2" opacity="0.65" fill="none">
+      <path d="M -160 0 Q -110 -60 -65 -20" />
+      <path d="M 160 0 Q 110 -60 65 -20" />
+      <path d="M -160 0 Q -110 60 -40 65" />
+      <path d="M 160 0 Q 110 60 40 65" />
+    </g>
+  </g>
+  <!-- Латунная филигранная рамка и уголки Folk-Tech -->
+  <rect x="12" y="12" width="776" height="426" rx="14" fill="none" stroke="#C59A45" stroke-width="1.5" stroke-opacity="0.35" />
+  <rect x="18" y="18" width="764" height="414" rx="10" fill="none" stroke="#E8CA7B" stroke-width="0.7" stroke-opacity="0.2" stroke-dasharray="8 4" />
+  
+  <!-- Латунные заклепки по углам -->
+  <circle cx="28" cy="28" r="4" fill="#C59A45" />
+  <circle cx="28" cy="28" r="2" fill="#E8CA7B" />
+  <circle cx="772" cy="28" r="4" fill="#C59A45" />
+  <circle cx="772" cy="28" r="2" fill="#E8CA7B" />
+  <circle cx="28" cy="422" r="4" fill="#C59A45" />
+  <circle cx="28" cy="422" r="2" fill="#E8CA7B" />
+  <circle cx="772" cy="422" r="4" fill="#C59A45" />
+  <circle cx="772" cy="422" r="2" fill="#E8CA7B" />
+
+  <!-- Вертикальные надписи строго по боковым кромкам карточки (не мешают текстам в центре) -->
+  <g transform="translate(26, 225) rotate(-90)">
+    <text text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="bold" fill="#00FF88" letter-spacing="3" fill-opacity="0.55">
+      ГЕРБОВАЯ ЭМАЛЬ // ИЗУМРУД
+    </text>
+  </g>
+  <g transform="translate(774, 225) rotate(90)">
+    <text text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="bold" fill="#00FF88" letter-spacing="3" fill-opacity="0.55">
+      МАЛАХИТОВЫЙ КРИСТАЛЛ // #00FF88
+    </text>
+  </g>
+</svg>

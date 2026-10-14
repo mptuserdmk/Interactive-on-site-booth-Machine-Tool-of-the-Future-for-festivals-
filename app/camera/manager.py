@@ -85,9 +85,8 @@ class CameraManager:
             error=None if available else "USB camera not connected. Mobile OTA Camera is ready."
         )
 
-    def generate_mock_frame(self, text="FUTURE INDUSTRY CAMERA MOCK") -> np.ndarray:
-        """Generates high-tech placeholder frame if no webcam is physically connected.
-        Кадр кэшируется: раньше Python-цикл по 720 строкам выполнялся на каждый кадр каждого клиента (H14)."""
+    def generate_mock_frame(self, text="Нажми кнопку (📸) для снимка") -> np.ndarray:
+        """Generates high-tech placeholder frame if no webcam is physically connected."""
         cached = self._mock_frames.get(text)
         if cached is not None:
             return cached
@@ -101,11 +100,10 @@ class CameraManager:
         for y_line in range(0, 720, 80):
             cv2.line(frame, (0, y_line), (1280, y_line), (40, 50, 70), 1)
 
-        # Center box & text
+        # Center box & target
         cv2.rectangle(frame, (340, 160), (940, 560), (0, 210, 255), 2)
         cv2.circle(frame, (640, 360), 120, (0, 255, 136), 2)
-        cv2.putText(frame, text, (400, 130), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 210, 255), 2)
-        cv2.putText(frame, "STAND HERE / TOUCH TO SHOOT", (420, 600), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (200, 200, 255), 1)
+
         frame.setflags(write=False)
         self._mock_frames[text] = frame
         return frame
