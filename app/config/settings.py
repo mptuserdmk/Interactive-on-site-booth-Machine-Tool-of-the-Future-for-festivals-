@@ -99,7 +99,7 @@ class Settings(BaseSettings):
     QR_REVEAL_DELAY_MS: int = 1500
     
     # Branding
-    FESTIVAL_NAME: str = "FUTURE INDUSTRY 2026"
+    FESTIVAL_NAME: str = "ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ"
     FESTIVAL_HASHTAG: str = "#ФЕСТИВАЛЬ2026"
 
     # Access control (S1): пустой токен → случайный при каждом старте (печатается в консоли)

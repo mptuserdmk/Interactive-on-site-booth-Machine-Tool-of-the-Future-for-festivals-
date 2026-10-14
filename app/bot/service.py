@@ -197,7 +197,7 @@ class TelegramBotService:
         machine_name = session.get("machine_name", "Инженер Будущего")
         power_name = session.get("power_name", "Точность")
         location = session.get("location", "Центральный кластер")
-        festival_name = getattr(settings, "FESTIVAL_NAME", "FUTURE INDUSTRY 2026")
+        festival_name = getattr(settings, "FESTIVAL_NAME", "ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ")
         hashtag = getattr(settings, "FESTIVAL_HASHTAG", "#ФЕСТИВАЛЬ2026")
 
         caption = (
