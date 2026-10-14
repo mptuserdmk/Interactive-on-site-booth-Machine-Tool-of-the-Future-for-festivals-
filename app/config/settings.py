@@ -94,6 +94,8 @@ class Settings(BaseSettings):
     # Telegram Bot
     TELEGRAM_BOT_TOKEN: str = ""
     TELEGRAM_BOT_USERNAME: str = ""
+    TELEGRAM_PROXY_URL: str = ""
+    PROXY_URL: str = ""
     QR_REVEAL_DELAY_MS: int = 1500
     
     # Branding

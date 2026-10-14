@@ -31,7 +31,17 @@ class TelegramBotService:
             return
 
         self._running = True
-        self._client = httpx.AsyncClient(timeout=45.0)
+        
+        # Configure proxy (HTTP, HTTPS, SOCKS5)
+        proxy = (getattr(settings, "TELEGRAM_PROXY_URL", "") or getattr(settings, "PROXY_URL", "") or "").strip() or None
+        if proxy:
+            # Mask credentials if present for secure logging
+            safe_proxy = proxy.split("@")[-1] if "@" in proxy else proxy
+            logger.info("🤖 Telegram Bot: connecting via proxy (%s)", safe_proxy)
+        else:
+            logger.info("🤖 Telegram Bot: direct connection (no proxy configured)")
+
+        self._client = httpx.AsyncClient(proxy=proxy, timeout=45.0)
 
         # 1. Verify token & get bot username
         try:
@@ -58,7 +68,7 @@ class TelegramBotService:
                 result.get("first_name")
             )
         except Exception as e:
-            logger.exception("Failed to connect to Telegram Bot API: %s", e)
+            logger.warning("Failed to connect to Telegram Bot API (check token or proxy): %s", e)
             self._running = False
             return
 
@@ -133,47 +143,53 @@ class TelegramBotService:
         else:
             await self._send_help(chat_id, first_name)
 
+    def _find_card_file(self, session_id: str, session: Optional[dict]) -> Optional[Path]:
+        raw_path = session.get("final_card_path") if session else None
+        candidates = [
+            Path(raw_path) if raw_path else None,
+            settings.CARDS_DIR / f"{session_id}_card.jpg",
+            settings.CARDS_DIR / f"{session_id}.jpg",
+        ]
+        for c in candidates:
+            if c and c.is_file():
+                return c
+        return None
+
     async def _deliver_card(self, chat_id: int, session_id: str, username: Optional[str], first_name: str):
         """Looks up session, waits if still generating, and sends the finished card photo."""
+        session_id = session_id.strip()
+        if session_id.startswith("start="):
+            session_id = session_id[6:].strip()
+
         logger.info("Delivering card for session %s to chat %s (@%s)", session_id, chat_id, username or "none")
 
         # 1. Check session in DB
         session = db.get_session(session_id)
         if not session:
-            # Wait briefly in case session was just saved
+            # Wait briefly in case session was just saved or DB write is finishing
             await asyncio.sleep(1.0)
             session = db.get_session(session_id)
 
-        if not session:
-            await self._send_message(
-                chat_id,
-                f"👋 Привет, {first_name}!\n\n"
-                f"К сожалению, карточка с кодом <code>{session_id}</code> не найдена или срок сессии истёк.\n"
-                f"Попробуй подойти к экрану киоска и создать новый цифровой паспорт!"
-            )
-            return
+        # 2. Wait up to 30 seconds if card is still in progress
+        card_file = self._find_card_file(session_id, session)
 
-        # 2. Wait up to 25 seconds if card is still in progress
-        card_path_str = session.get("final_card_path")
-        card_file = Path(card_path_str) if card_path_str else None
-
-        retries = 12
-        while (not card_file or not card_file.is_file()) and retries > 0:
-            if retries == 12:
+        retries = 15
+        while not card_file and retries > 0:
+            if retries == 15:
                 await self._send_message(
                     chat_id,
                     f"⏳ Твой цифровой паспорт ещё куётся на «Станке Будущего»! Подожди пару секунд, сейчас пришлю..."
                 )
             await asyncio.sleep(2.0)
             session = db.get_session(session_id) or session
-            card_path_str = session.get("final_card_path")
-            card_file = Path(card_path_str) if card_path_str else None
+            card_file = self._find_card_file(session_id, session)
             retries -= 1
 
         if not card_file or not card_file.is_file():
             await self._send_message(
                 chat_id,
-                f"⚠️ Не удалось загрузить готовую карточку. Обратись к мастеру станка — он распечатает твой паспорт!"
+                f"⚠️ Не удалось найти готовую карточку для сессии <code>{session_id}</code>.\n\n"
+                f"Пожалуйста, обратись к мастеру станка — он распечатает твой паспорт вручную!"
             )
             return
 

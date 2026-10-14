@@ -915,14 +915,27 @@ function EmailDispatchBox({ sessionId }) {
 function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
   const [showQr, setShowQr] = useState(false);
   const [showEmailBox, setShowEmailBox] = useState(false);
+  const [botUsername, setBotUsername] = useState(
+    (window.KIOSK_CONFIG?.telegramBotUsername || '').replace(/^@/, '').trim()
+  );
   const qrRevealDelay = Number(window.KIOSK_CONFIG?.qrRevealDelayMs || 1500);
+
+  useEffect(() => {
+    if (!botUsername) {
+      api('/api/health')
+        .then(data => {
+          const u = data?.diagnostics?.telegram?.username;
+          if (u) setBotUsername(u.replace(/^@/, '').trim());
+        })
+        .catch(() => {});
+    }
+  }, [botUsername]);
 
   const cardUrl = session?.final_card_path
     ? `/media/cards/${session.id}.jpg?t=${Date.now()}`
     : null;
 
-  const botUsername = (window.KIOSK_CONFIG?.telegramBotUsername || '').replace(/^@/, '').trim();
-  const hasTelegramBot = Boolean(window.KIOSK_CONFIG?.hasTelegramBot && botUsername);
+  const hasTelegramBot = Boolean(botUsername);
 
   const qrDestination = hasTelegramBot
     ? `https://t.me/${botUsername}?start=${session?.id || ''}`

@@ -85,6 +85,7 @@ async def get_system_health():
                 "ok": bool(settings.TELEGRAM_BOT_TOKEN),
                 "enabled": bool(settings.TELEGRAM_BOT_TOKEN),
                 "username": settings.TELEGRAM_BOT_USERNAME,
+                "proxy_configured": bool(settings.TELEGRAM_PROXY_URL or settings.PROXY_URL),
                 "qr_reveal_delay_ms": settings.QR_REVEAL_DELAY_MS
             }
         }
