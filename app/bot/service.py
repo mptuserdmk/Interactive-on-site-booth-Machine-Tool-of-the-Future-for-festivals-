@@ -31,44 +31,57 @@ class TelegramBotService:
             return
 
         self._running = True
-        
-        # Configure proxy (HTTP, HTTPS, SOCKS5)
-        proxy = (getattr(settings, "TELEGRAM_PROXY_URL", "") or getattr(settings, "PROXY_URL", "") or "").strip() or None
-        if proxy:
-            # Mask credentials if present for secure logging
-            safe_proxy = proxy.split("@")[-1] if "@" in proxy else proxy
-            logger.info("🤖 Telegram Bot: connecting via proxy (%s)", safe_proxy)
+
+        # Build proxy candidates: configured proxy, protocol alternative (http <-> socks5), and direct fallback
+        raw_proxy = (getattr(settings, "TELEGRAM_PROXY_URL", "") or getattr(settings, "PROXY_URL", "") or "").strip()
+        candidates = []
+        if raw_proxy:
+            candidates.append(raw_proxy)
+            if raw_proxy.startswith("http://"):
+                candidates.append("socks5://" + raw_proxy[7:])
+            elif raw_proxy.startswith("socks5://"):
+                candidates.append("http://" + raw_proxy[9:])
+            candidates.append(None)  # direct connection fallback
         else:
-            logger.info("🤖 Telegram Bot: direct connection (no proxy configured)")
+            candidates.append(None)
 
-        self._client = httpx.AsyncClient(proxy=proxy, timeout=45.0)
+        connected = False
+        last_error = ""
 
-        # 1. Verify token & get bot username
-        try:
-            resp = await self._client.get(f"{self.api_url}/getMe")
-            if resp.status_code != 200:
-                logger.error("Telegram Bot authentication failed: HTTP %s: %s", resp.status_code, resp.text[:120])
-                self._running = False
-                return
-            data = resp.json()
-            if not data.get("ok"):
-                logger.error("Telegram Bot getMe returned error: %s", data)
-                self._running = False
-                return
+        for cand in candidates:
+            safe_desc = cand.split("@")[-1] if cand and "@" in cand else (cand or "прямое подключение")
+            try:
+                test_client = httpx.AsyncClient(proxy=cand, timeout=20.0)
+                resp = await test_client.get(f"{self.api_url}/getMe")
+                if resp.status_code == 200:
+                    data = resp.json()
+                    if data.get("ok"):
+                        self._client = test_client
+                        result = data.get("result", {})
+                        self.bot_username = result.get("username", "")
+                        if not settings.TELEGRAM_BOT_USERNAME and self.bot_username:
+                            settings.TELEGRAM_BOT_USERNAME = self.bot_username
 
-            result = data.get("result", {})
-            self.bot_username = result.get("username", "")
-            if not settings.TELEGRAM_BOT_USERNAME and self.bot_username:
-                settings.TELEGRAM_BOT_USERNAME = self.bot_username
+                        logger.info(
+                            "🤖 Telegram Bot подключен успешно: @%s через %s (ID: %s, Имя: %s)",
+                            self.bot_username,
+                            safe_desc,
+                            result.get("id"),
+                            result.get("first_name")
+                        )
+                        connected = True
+                        break
+                await test_client.aclose()
+            except Exception as e:
+                last_error = str(e)
+                logger.debug("Попытка подключения через %s не удалась: %s", safe_desc, e)
+                try:
+                    await test_client.aclose()
+                except Exception:
+                    pass
 
-            logger.info(
-                "🤖 Telegram Bot started successfully: @%s (ID: %s, Name: %s)",
-                self.bot_username,
-                result.get("id"),
-                result.get("first_name")
-            )
-        except Exception as e:
-            logger.warning("Failed to connect to Telegram Bot API (check token or proxy): %s", e)
+        if not connected:
+            logger.warning("Не удалось подключиться к Telegram Bot API (проверьте токен или прокси): %s", last_error)
             self._running = False
             return
 
