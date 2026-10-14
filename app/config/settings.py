@@ -67,7 +67,7 @@ class Settings(BaseSettings):
     # AI Provider: 'mock', 'bothub', 'fal', 'replicate', 'openai', 'stability'
     AI_PROVIDER: str = "mock"
     AI_API_KEY: str = ""
-    BOTHUB_MODEL: str = "gemini-2.5-flash-image"
+    BOTHUB_MODEL: str = "gemini-3.1-flash-lite-image"
     AI_TIMEOUT_SECONDS: int = 35
     AI_FALLBACK_ON_ERROR: bool = True
     

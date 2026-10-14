@@ -947,12 +947,12 @@ function ResultScreen({ session, onFinish, autoPrint }) {
       {/* 7/5 Асимметричная витрина паспорта */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 items-stretch flex-1 min-h-0 max-h-full">
         {/* 7 колонок: демонстрация паспорта в латунной рамке */}
-        <div className="lg:col-span-7 flex items-center justify-center h-full max-h-[55vh] min-h-0">
+        <div className="lg:col-span-7 flex items-center justify-center h-full max-h-[56vh] min-h-0">
           <div className="relative max-h-full rounded-2xl overflow-hidden shadow-industrial border-3 sm:border-4 border-brass bg-panel-graphite p-1.5 flex items-center justify-center">
             <BrassCorners />
-            <div className="rounded-lg overflow-hidden border border-brass/40 max-h-[52vh] flex items-center justify-center">
+            <div className="rounded-lg overflow-hidden border border-brass/40 max-h-[53vh] flex items-center justify-center">
               {cardUrl ? (
-                <img src={cardUrl} alt="Итоговый паспорт инженера" className="max-h-[50vh] w-auto max-w-full object-contain block" />
+                <img src={cardUrl} alt="Итоговый паспорт инженера" className="max-h-[51vh] w-auto max-w-full object-contain block" />
               ) : (
                 <div className="p-10 text-center font-serif text-brass-bright text-sm">Загрузка паспорта мастера...</div>
               )}
@@ -961,24 +961,24 @@ function ResultScreen({ session, onFinish, autoPrint }) {
         </div>
 
         {/* 5 колонок: гербовая грамота, отправка на почту и завершение */}
-        <div className="lg:col-span-5 bg-parchment-card rounded-2xl p-3 sm:p-4 border-2 border-brass/50 shadow-brass flex flex-col justify-between gap-2.5 relative h-full max-h-[55vh] min-h-0">
+        <div className="lg:col-span-5 bg-parchment-card rounded-2xl p-3 sm:p-4 pb-7 sm:pb-8 border-2 border-brass/50 shadow-brass flex flex-col justify-between gap-2 sm:gap-2.5 relative h-full max-h-[56vh] min-h-0">
           <BrassCorners />
 
-          <div className="space-y-2">
+          <div className="space-y-1.5 sm:space-y-2">
             <div className="p-2 sm:p-2.5 rounded-xl bg-parchment border border-brass/30">
               <span className="text-[9px] sm:text-[10px] font-mono uppercase font-bold tracking-wider text-ruby block">
                 СУПЕРСИЛА МАСТЕРА
               </span>
-              <div className="font-serif font-black text-lg sm:text-xl text-ink-main mt-0.5">
+              <div className="font-serif font-black text-base sm:text-xl text-ink-main mt-0.5">
                 {(session?.power_name || 'ТОЧНОСТЬ').toUpperCase()}
               </div>
             </div>
 
-            <p className="font-serif italic text-xs sm:text-sm text-ink-main leading-relaxed line-clamp-3 sm:line-clamp-4">
+            <p className="font-serif italic text-xs sm:text-sm text-ink-main leading-relaxed line-clamp-2 sm:line-clamp-3">
               "{session?.machine_desc || "Ты стал выдающимся специалистом передовой индустрии и мастером чудес!"}"
             </p>
 
-            <div className="p-2 rounded-xl bg-panel-graphite text-brass-bright border border-brass/40 font-mono text-[10px] sm:text-xs">
+            <div className="p-1.5 sm:p-2 rounded-xl bg-panel-graphite text-brass-bright border border-brass/40 font-mono text-[10px] sm:text-xs">
               <span className="text-ruby font-bold">📍 ГИЛЬДИЯ:</span> {session?.location || "Центральный производственный кластер"}
             </div>
           </div>
@@ -988,7 +988,7 @@ function ResultScreen({ session, onFinish, autoPrint }) {
             <img
               src={`/api/qr.png?data=${encodeURIComponent(window.location.origin + '/card/' + (session?.id || ''))}`}
               alt="QR-код паспорта"
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-white p-1 border-2 border-brass shrink-0 shadow-sm"
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-white p-1 border-2 border-brass shrink-0 shadow-sm"
             />
             <div className="flex-1 min-w-0">
               <span className="text-[9px] sm:text-[10px] font-mono uppercase font-bold tracking-wider text-ruby block">
@@ -1005,10 +1005,10 @@ function ResultScreen({ session, onFinish, autoPrint }) {
 
           <FolkButton
             variant="primary"
-            size="lg"
+            size="md"
             onClick={onFinish}
             ariaLabel="Завершить сессию и перейти к следующему участнику"
-            className="w-full py-2.5 sm:py-3 text-sm sm:text-base"
+            className="w-full py-2.5 sm:py-3 text-sm sm:text-base shrink-0 mt-auto mb-3 sm:mb-4"
           >
             <span>СЛЕДУЮЩИЙ УЧАСТНИК 🚀</span>
           </FolkButton>
