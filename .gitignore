@@ -70,3 +70,4 @@ htmlcov/
 .hypothesis/
 .venv/
 docs/evidence/coverage_html/
+docs/materials_slides/
