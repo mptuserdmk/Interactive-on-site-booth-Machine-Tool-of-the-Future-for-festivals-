@@ -194,14 +194,30 @@
       flex-direction: column;
     }
 
-    /* Благородная пергаментная фактура с тончайшей золотой филигранной сеткой */
+    /* Сказочная русская кибер-хохлома из будущего и благородный пергамент */
     .kiosk-folk-bg {
-      background-color: #FBF8F1;
+      background-color: #F8F3E4;
       background-image: 
-        radial-gradient(rgba(197, 154, 69, 0.18) 1.5px, transparent 1.5px),
-        linear-gradient(to right, rgba(197, 154, 69, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(197, 154, 69, 0.05) 1px, transparent 1px);
+        radial-gradient(ellipse at center, rgba(251, 248, 241, 0.74) 0%, rgba(247, 241, 223, 0.48) 55%, rgba(18, 24, 32, 0.35) 100%),
+        url('/static/images/kiosk_bg.jpg');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    /* Дополнительная золотая филигранная сетка */
+    .kiosk-folk-bg::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(rgba(197, 154, 69, 0.14) 1.5px, transparent 1.5px),
+        linear-gradient(to right, rgba(197, 154, 69, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(197, 154, 69, 0.04) 1px, transparent 1px);
       background-size: 32px 32px, 96px 96px, 96px 96px;
+      pointer-events: none;
+      z-index: 1;
     }
 
     /* Фоновые стилизованные шестеренки с мягким золотым свечением */
