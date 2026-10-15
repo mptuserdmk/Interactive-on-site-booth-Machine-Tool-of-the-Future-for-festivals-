@@ -56,6 +56,87 @@ function BrassCorners({ className = "" }) {
   );
 }
 
+// --- ДЕКОРАТИВНЫЕ ОБЪЕКТЫ «РУССКАЯ СКАЗКА 2.0 / ИНДУСТРИЯ ЧУДЕС» ---
+function FolkSteampunkFirebird({ className = "" }) {
+  return (
+    <div className={`pointer-events-none select-none drop-shadow-md ${className}`}>
+      <img
+        src="/static/images/firebird_feathered.png"
+        alt="Механическая Жар-птица"
+        className="w-full h-auto object-contain animate-pulse-glow"
+      />
+    </div>
+  );
+}
+
+function FolkTechMotto({ className = "" }) {
+  return (
+    <div className={`pointer-events-none select-none ${className}`}>
+      <img
+        src="/static/images/motto_clean.png"
+        alt="Технологии вдохновляют!"
+        className="w-auto h-8 sm:h-10 md:h-11 object-contain drop-shadow-sm rotate-[-2deg]"
+      />
+    </div>
+  );
+}
+
+function FolkGearsCluster({ size = "md", className = "" }) {
+  const isLarge = size === "lg";
+  return (
+    <div className={`relative pointer-events-none select-none ${isLarge ? 'w-24 h-24 sm:w-28 sm:h-28' : 'w-16 h-16 sm:w-20 sm:h-20'} ${className}`}>
+      {/* Главная шестерня */}
+      <div className="absolute inset-0 text-brass animate-spin-slow opacity-80">
+        <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+          <circle cx="12" cy="12" r="3" fill="currentColor" fillOpacity="0.2" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+      </div>
+      {/* Малая шестерня зацепления */}
+      <div className="absolute -bottom-1 -right-1 w-9 h-9 sm:w-11 sm:h-11 text-brass-dim animate-spin-reverse opacity-70">
+        <svg className="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+          <circle cx="12" cy="12" r="2.5" />
+          <path d="M12 2v3m0 14v3M2 12h3m14 0h3m-3.5-6.5-2.2 2.2m-8.6 8.6-2.2 2.2m0-13 2.2 2.2m8.6 8.6 2.2 2.2" />
+        </svg>
+      </div>
+      {/* Рубиновый осевой подшипник */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-ruby border border-brass-bright shadow-sm animate-pulse" />
+    </div>
+  );
+}
+
+function FolkTelemetryWidget({ className = "" }) {
+  return (
+    <div className={`p-2.5 sm:p-3 rounded-2xl bg-parchment-card/90 backdrop-blur-sm border-2 border-brass/40 shadow-brass-sm font-mono text-left relative overflow-hidden select-none pointer-events-none ${className}`}>
+      <BrassCorners />
+      <div className="flex items-center justify-between border-b border-brass/30 pb-1.5 mb-1.5">
+        <div className="flex items-center gap-1.5 font-bold text-ruby text-[10px] tracking-wider uppercase">
+          <span className="w-2 h-2 rounded-full bg-cyber-cyan animate-pulse"></span>
+          <span>СТАНОК ЧПУ // 2.0</span>
+        </div>
+        <span className="text-[9px] text-brass-dim font-bold">№ 01-ФЕСТ</span>
+      </div>
+      <div className="space-y-1 text-[10px]">
+        <div className="flex justify-between text-ink-muted">
+          <span>ОПТИЧЕСКИЙ БЛОК:</span>
+          <span className="text-ink-main font-bold">0.02 мм</span>
+        </div>
+        <div className="flex justify-between text-ink-muted">
+          <span>АРХЕТИПЫ:</span>
+          <span className="text-ink-main font-bold">100 ПРОФЕССИЙ</span>
+        </div>
+        <div className="flex justify-between text-ink-muted">
+          <span>ОТЛИВКА КАРТЫ:</span>
+          <span className="text-ink-main font-bold">300 DPI</span>
+        </div>
+      </div>
+      <div className="mt-1 pt-1.5 border-t border-brass/25 text-[9px] font-serif italic text-ink-muted leading-tight">
+        «Синтез сказок и передовой инженерии»
+      </div>
+    </div>
+  );
+}
+
 // --- ВЕКТОРНЫЕ ИНДУСТРИАЛЬНЫЕ И СКАЗОЧНЫЕ ИКОНКИ (Folk-Tech SVGs) ---
 const ICONS = {
   // Шестерня латунная (Inline SVG)
@@ -295,97 +376,115 @@ function FolkStepTracker({ currentStep }) {
 // --- ЭКРАН 1: ТИТУЛЬНЫЙ ЭКРАН (Welcome Cover Slide) ---
 function WelcomeScreen({ onStart }) {
   return (
-    <main className="flex-1 h-full max-h-full flex flex-col items-center justify-center text-center px-4 max-w-4xl mx-auto animate-fade-in relative">
-      {/* Декоративная фоновая латунная шестерня */}
-      <div className="absolute -top-12 opacity-5 pointer-events-none animate-spin-slow">
-        <svg className="w-80 h-80 text-brass" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
-        </svg>
+    <main className="flex-1 h-full max-h-full flex items-center justify-center text-center px-4 max-w-6xl mx-auto animate-fade-in relative w-full overflow-hidden">
+      {/* Декоративный былинный артефакт: Механическая Жар-птица ЧПУ справа в пустом пространстве */}
+      <div className="hidden xl:block absolute -right-6 2xl:right-2 top-1/2 -translate-y-1/2 w-[340px] 2xl:w-[400px] pointer-events-none select-none z-0 opacity-95">
+        <FolkSteampunkFirebird />
       </div>
 
-      {/* Партнерский штамп / Экосистема */}
-      <div className="inline-flex items-center gap-2 px-3.5 py-1 sm:py-1.5 rounded-lg bg-parchment-card border border-brass/50 text-brass-dim font-mono text-[10px] sm:text-xs font-bold tracking-widest uppercase mb-2 sm:mb-3 shadow-brass-sm">
-        <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-ruby"></span>
-        <span>ДЕПАРТАМЕНТ ОБРАЗОВАНИЯ И НАУКИ МОСКВЫ • ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ</span>
+      {/* Каллиграфический росчерк из брендбука «Технологии вдохновляют!» в правом верхнем углу */}
+      <div className="absolute top-1 sm:top-2 right-2 sm:right-6 pointer-events-none select-none z-20">
+        <FolkTechMotto />
       </div>
 
-      {/* Монументальный былинный заголовок */}
-      <h1 className="font-serif font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-ink-main tracking-tight leading-tight mb-2 sm:mb-3">
-        КЕМ ТЫ СТАНЕШЬ В{" "}
-        <span className="relative inline-block text-ruby font-serif">
-          БУДУЩЕМ?
-          <span className="absolute left-0 right-0 -bottom-1 h-1 bg-brass rounded-full opacity-80"></span>
-        </span>
-      </h1>
-
-      <p className="font-serif italic text-sm sm:text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed mb-3 sm:mb-4">
-        «Органический синтез традиционных сказок и передовой инженерии: посмотри в оптический визор, выбери былинную стихию и отчекань паспорт мастера на станке ЧПУ!»
-      </p>
-
-      {/* Механический триптих шестеренок */}
-      <div className="flex items-center justify-center gap-3 mb-3 sm:mb-5 pointer-events-none">
-        <div className="text-brass animate-spin-slow opacity-80">
-          <svg className="w-8 h-8 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-        </div>
-        <div className="w-2.5 h-2.5 bg-ruby rounded-full animate-pulse shadow-brass-glow"></div>
-        <div className="text-brass-dim animate-spin-reverse opacity-80">
-          <svg className="w-6 h-6 sm:w-8 sm:h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-        </div>
+      {/* Индустриальный телеметрический блок станка слева в пустом пространстве */}
+      <div className="hidden xl:block absolute left-2 2xl:left-6 top-1/2 -translate-y-1/2 w-60 pointer-events-none z-10">
+        <FolkTelemetryWidget />
       </div>
 
-      {/* Главная кнопка старта (сохраняем aria-label для E2E тестов) */}
-      <FolkButton
-        variant="primary"
-        size="lg"
-        onClick={onStart}
-        ariaLabel="Начать создание своего образа"
-        className="w-full sm:w-auto min-w-[280px] sm:min-w-[340px] text-base sm:text-lg py-3 sm:py-3.5"
-      >
-        <span>СОЗДАТЬ ОБРАЗ МАСТЕРА</span>
-        {ICONS.arrowRight}
-      </FolkButton>
+      {/* Вращающийся часовой кластер шестеренок в левом верхнем углу */}
+      <div className="absolute top-2 left-2 pointer-events-none select-none z-0">
+        <FolkGearsCluster size="lg" />
+      </div>
 
-      {/* 3 Архетипичные плашки особенностей */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 mt-3 sm:mt-5 w-full max-w-3xl">
-        <div className="p-2 sm:p-2.5 rounded-xl bg-parchment-card border border-brass/40 shadow-brass-sm flex items-center gap-3 text-left relative overflow-hidden">
-          <BrassCorners />
-          <div className="w-9 h-9 rounded-lg bg-panel-graphite text-brass flex items-center justify-center shrink-0">
-            {ICONS.camera}
-          </div>
-          <div>
-            <span className="font-mono text-[9px] sm:text-[10px] font-bold text-ruby uppercase tracking-wider block">Оптика ЧПУ</span>
-            <span className="font-serif font-bold text-ink-main text-xs sm:text-sm">Оптический визор</span>
-          </div>
+      {/* Центральный презентационный холст */}
+      <div className="relative bg-parchment-card/85 backdrop-blur-sm rounded-3xl p-5 sm:p-7 md:p-8 border-2 border-brass/50 shadow-industrial w-full max-w-2xl flex flex-col items-center justify-center text-center my-auto z-10">
+        <BrassCorners />
+
+        {/* Геральдический бейдж темы фестиваля */}
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-ruby text-white font-mono text-[10px] sm:text-xs font-bold tracking-widest uppercase mb-2.5 sm:mb-3 shadow-tactile-ruby border border-brass-bright">
+          <span className="w-1.5 h-1.5 rounded-full bg-brass-bright animate-ping"></span>
+          <span>РУССКАЯ СКАЗКА 2.0 // ИНДУСТРИЯ ЧУДЕС</span>
         </div>
 
-        <div className="p-2 sm:p-2.5 rounded-xl bg-parchment-card border border-brass/40 shadow-brass-sm flex items-center gap-3 text-left relative overflow-hidden">
-          <BrassCorners />
-          <div className="w-9 h-9 rounded-lg bg-panel-graphite text-brass-bright flex items-center justify-center shrink-0">
-            {ICONS.gear}
-          </div>
-          <div>
-            <span className="font-mono text-[9px] sm:text-[10px] font-bold text-ruby uppercase tracking-wider block">Былины & Наука</span>
-            <span className="font-serif font-bold text-ink-main text-xs sm:text-sm">100 Профессий</span>
-          </div>
-        </div>
+        {/* Монументальный былинный заголовок */}
+        <h1 className="font-serif font-black text-3xl sm:text-4xl md:text-5xl text-ink-main tracking-tight leading-tight mb-2 sm:mb-3">
+          КЕМ ТЫ СТАНЕШЬ В{" "}
+          <span className="relative inline-block text-ruby font-serif">
+            БУДУЩЕМ?
+            <span className="absolute left-0 right-0 -bottom-1 h-1 bg-brass rounded-full opacity-80"></span>
+          </span>
+        </h1>
 
-        <div className="p-2 sm:p-2.5 rounded-xl bg-parchment-card border border-brass/40 shadow-brass-sm flex items-center gap-3 text-left relative overflow-hidden">
-          <BrassCorners />
-          <div className="w-9 h-9 rounded-lg bg-panel-graphite text-brass flex items-center justify-center shrink-0">
-            <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 14h12v8H6z" />
+        <p className="font-serif italic text-xs sm:text-sm md:text-base text-ink-muted max-w-xl leading-relaxed mb-3 sm:mb-4">
+          «Органический синтез традиционных сказок и передовой инженерии: посмотри в оптический визор, выбери былинную стихию и отчекань паспорт мастера на станке ЧПУ!»
+        </p>
+
+        {/* Механический триптих шестеренок */}
+        <div className="flex items-center justify-center gap-3 mb-3 sm:mb-4 pointer-events-none">
+          <div className="text-brass animate-spin-slow opacity-85">
+            <svg className="w-8 h-8 sm:w-9 sm:h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
             </svg>
           </div>
-          <div>
-            <span className="font-mono text-[9px] sm:text-[10px] font-bold text-ruby uppercase tracking-wider block">Артефакт 300 DPI</span>
-            <span className="font-serif font-bold text-ink-main text-xs sm:text-sm">Печать в руки</span>
+          <div className="w-2.5 h-2.5 bg-ruby rounded-full animate-pulse shadow-brass-glow"></div>
+          <div className="text-brass-dim animate-spin-reverse opacity-85">
+            <svg className="w-6 h-6 sm:w-7 sm:h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Главная кнопка старта (сохраняем aria-label для E2E тестов) */}
+        <FolkButton
+          variant="primary"
+          size="lg"
+          onClick={onStart}
+          ariaLabel="Начать создание своего образа"
+          className="w-full sm:w-auto min-w-[280px] sm:min-w-[340px] text-base sm:text-lg py-3 sm:py-3.5"
+        >
+          <span>СОЗДАТЬ ОБРАЗ МАСТЕРА</span>
+          {ICONS.arrowRight}
+        </FolkButton>
+
+        {/* 3 Архетипичные плашки особенностей */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5 mt-3 sm:mt-5 w-full">
+          <div className="p-2 sm:p-2.5 rounded-xl bg-parchment/90 border border-brass/50 shadow-sm flex items-center gap-3 text-left relative overflow-hidden">
+            <BrassCorners />
+            <div className="w-9 h-9 rounded-lg bg-panel-graphite text-brass flex items-center justify-center shrink-0">
+              {ICONS.camera}
+            </div>
+            <div>
+              <span className="font-mono text-[9px] sm:text-[10px] font-bold text-ruby uppercase tracking-wider block">Оптика ЧПУ</span>
+              <span className="font-serif font-bold text-ink-main text-xs sm:text-sm">Оптический визор</span>
+            </div>
+          </div>
+
+          <div className="p-2 sm:p-2.5 rounded-xl bg-parchment/90 border border-brass/50 shadow-sm flex items-center gap-3 text-left relative overflow-hidden">
+            <BrassCorners />
+            <div className="w-9 h-9 rounded-lg bg-panel-graphite text-brass-bright flex items-center justify-center shrink-0">
+              {ICONS.gear}
+            </div>
+            <div>
+              <span className="font-mono text-[9px] sm:text-[10px] font-bold text-ruby uppercase tracking-wider block">Былины & Наука</span>
+              <span className="font-serif font-bold text-ink-main text-xs sm:text-sm">100 Профессий</span>
+            </div>
+          </div>
+
+          <div className="p-2 sm:p-2.5 rounded-xl bg-parchment/90 border border-brass/50 shadow-sm flex items-center gap-3 text-left relative overflow-hidden">
+            <BrassCorners />
+            <div className="w-9 h-9 rounded-lg bg-panel-graphite text-brass flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 14h12v8H6z" />
+              </svg>
+            </div>
+            <div>
+              <span className="font-mono text-[9px] sm:text-[10px] font-bold text-ruby uppercase tracking-wider block">Артефакт 300 DPI</span>
+              <span className="font-serif font-bold text-ink-main text-xs sm:text-sm">Печать в руки</span>
+            </div>
           </div>
         </div>
       </div>
@@ -432,9 +531,12 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, bus
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-panel-graphite border border-brass/50 text-brass-bright font-mono text-[10px] sm:text-xs font-bold self-start sm:self-auto">
-          <span className="w-2 h-2 rounded-full bg-cyber-cyan animate-pulse"></span>
-          <span>ОПТИКА: ОНЛАЙН (ГОСТ 2.0)</span>
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <FolkTechMotto className="hidden sm:block" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-panel-graphite border border-brass/50 text-brass-bright font-mono text-[10px] sm:text-xs font-bold">
+            <span className="w-2 h-2 rounded-full bg-cyber-cyan animate-pulse"></span>
+            <span>ОПТИКА: ОНЛАЙН (ГОСТ 2.0)</span>
+          </div>
         </div>
       </div>
 
@@ -648,8 +750,11 @@ function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type,
           </p>
         </div>
 
-        <div className="text-[10px] sm:text-xs font-mono text-brass-dim font-bold self-start sm:self-auto">
-          ВЫБЕРИ 1 ВАРИАНТ
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          <FolkTechMotto className="hidden sm:block" />
+          <div className="text-[10px] sm:text-xs font-mono text-brass-dim font-bold">
+            ВЫБЕРИ 1 ВАРИАНТ
+          </div>
         </div>
       </div>
 
@@ -748,6 +853,16 @@ function GeneratingScreen({ session }) {
 
   return (
     <main className="flex-1 h-full max-h-full flex flex-col items-center justify-center text-center px-4 max-w-2xl mx-auto animate-fade-in relative">
+      {/* Декоративная былинная Жар-птица справа от загрузчика */}
+      <div className="hidden lg:block absolute -right-36 xl:-right-52 top-1/2 -translate-y-1/2 w-64 xl:w-72 pointer-events-none select-none opacity-85">
+        <FolkSteampunkFirebird />
+      </div>
+
+      {/* Часовой кластер шестеренок слева от загрузчика */}
+      <div className="hidden lg:block absolute -left-28 xl:-left-40 top-1/2 -translate-y-1/2 pointer-events-none select-none opacity-80">
+        <FolkGearsCluster size="lg" />
+      </div>
+
       {/* Механизм Индустрии Чудес: 3 вращающиеся латунные шестерни */}
       <div className="relative mb-3 sm:mb-4 w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
         {/* Большая центральная шестерня */}
@@ -773,7 +888,7 @@ function GeneratingScreen({ session }) {
       </div>
 
       <span className="font-mono text-[10px] sm:text-xs font-bold tracking-widest text-ruby uppercase mb-1">
-        ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ
+        РУССКАЯ СКАЗКА 2.0 // ИНДУСТРИЯ ЧУДЕС
       </span>
 
       <h2 className="font-serif font-black text-2xl sm:text-3xl md:text-4xl text-ink-main mb-1.5">
@@ -971,18 +1086,21 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
           </h2>
         </div>
 
-        {/* Статусная плашка спулера печати */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-panel-graphite border border-brass/60 shadow-industrial text-brass-bright font-mono text-[11px] sm:text-xs self-start sm:self-auto">
-          <span className="w-2.5 h-2.5 rounded-full bg-cyber-cyan animate-pulse"></span>
-          <span className="font-bold tracking-wider">
-            {session?.print_status === 'printed'
-              ? "ПАСПОРТ НАПЕЧАТАН!"
-              : session?.print_status === 'printing'
-                ? "ПЕЧАТАЕМ НА ПРИНТЕРЕ..."
-                : !autoPrint
-                  ? "ЦИФРОВОЙ ПАСПОРТ ГОТОВ"
-                  : "ГОТОВО К ВЫДАЧЕ"}
-          </span>
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          <FolkTechMotto className="hidden sm:block" />
+          {/* Статусная плашка спулера печати */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-panel-graphite border border-brass/60 shadow-industrial text-brass-bright font-mono text-[11px] sm:text-xs">
+            <span className="w-2.5 h-2.5 rounded-full bg-cyber-cyan animate-pulse"></span>
+            <span className="font-bold tracking-wider">
+              {session?.print_status === 'printed'
+                ? "ПАСПОРТ НАПЕЧАТАН!"
+                : session?.print_status === 'printing'
+                  ? "ПЕЧАТАЕМ НА ПРИНТЕРЕ..."
+                  : !autoPrint
+                    ? "ЦИФРОВОЙ ПАСПОРТ ГОТОВ"
+                    : "ГОТОВО К ВЫДАЧЕ"}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -1506,9 +1624,9 @@ function KioskRoot() {
       {/* Верхний статус-бар */}
       <header className="shrink-0 mb-1 sm:mb-2 pb-1.5 sm:pb-2 border-b border-brass/30 flex items-center justify-between text-[11px] sm:text-xs font-mono text-brass-dim">
         <div className="flex items-center gap-2 sm:gap-3">
-          <span className="w-2 h-2 rounded-full bg-ruby"></span>
-          <span className="font-bold tracking-widest uppercase truncate max-w-[280px] sm:max-w-none">
-            ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ
+          <span className="w-2 h-2 rounded-full bg-ruby animate-pulse"></span>
+          <span className="font-bold tracking-widest uppercase truncate max-w-[280px] sm:max-w-none text-ink-main">
+            РУССКАЯ СКАЗКА 2.0 // СТАНОК БУДУЩЕГО
           </span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
