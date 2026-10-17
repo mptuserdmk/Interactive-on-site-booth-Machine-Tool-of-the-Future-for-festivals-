@@ -181,9 +181,15 @@
         </a>
       {% endif %}
       
-      <a href="{{ share_url }}" target="_blank" rel="noopener noreferrer" class="btn-tg">
-        ✈️ ПОДЕЛИТЬСЯ В TELEGRAM
-      </a>
+      {% if settings.BOT_PLATFORM == 'max' and settings.MAX_BOT_USERNAME %}
+        <a href="{{ share_url }}" target="_blank" rel="noopener noreferrer" class="btn-tg" style="border-color: #E8CA7B;">
+          💬 ОТКРЫТЬ В МЕССЕНДЖЕРЕ МАКС
+        </a>
+      {% else %}
+        <a href="{{ share_url }}" target="_blank" rel="noopener noreferrer" class="btn-tg">
+          ✈️ ПОДЕЛИТЬСЯ В TELEGRAM
+        </a>
+      {% endif %}
     </div>
 
     <!-- Модуль отправки на Email -->

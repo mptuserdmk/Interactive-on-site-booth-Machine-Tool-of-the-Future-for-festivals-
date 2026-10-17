@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.config.settings import settings
-from app.bot.service import bot_service
+from app.bot import telegram_bot_service, max_bot_service
 from app.api.routes_session import router as session_router
 from app.api.routes_camera import router as camera_router
 from app.api.routes_print import router as print_router
@@ -35,21 +35,31 @@ async def lifespan(app: FastAPI):
     if interrupted:
         logger.warning("Recovered %d interrupted sessions after restart", len(interrupted))
 
-    # Запуск Telegram-бота при наличии настроенного токена
-    bot_task = None
-    if bot_service.is_configured:
-        bot_task = asyncio.create_task(bot_service.start())
+    # Запуск ботов при наличии настроенных токенов согласно BOT_PLATFORM
+    bot_tasks = []
+    platform = (getattr(settings, "BOT_PLATFORM", "max") or "max").lower().strip()
+
+    if platform in ("max", "both") and max_bot_service.is_configured:
+        task = asyncio.create_task(max_bot_service.start())
+        bot_tasks.append((max_bot_service, task, "MAX Bot"))
+        logger.info("MAX Bot service scheduled")
+
+    if platform in ("telegram", "both") and telegram_bot_service.is_configured:
+        task = asyncio.create_task(telegram_bot_service.start())
+        bot_tasks.append((telegram_bot_service, task, "Telegram Bot"))
         logger.info("Telegram Bot service scheduled")
 
     yield
 
-    if bot_task:
-        await bot_service.stop()
-        bot_task.cancel()
+    for service, task, name in bot_tasks:
         try:
-            await bot_task
+            await service.stop()
+            task.cancel()
+            await task
         except asyncio.CancelledError:
             pass
+        except Exception as e:
+            logger.warning("Error stopping %s: %s", name, e)
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -137,11 +147,18 @@ async def mobile_camera_page(request: Request):
 @app.get("/card/{session_id}", summary="Digital Badge Landing Page (QR Destination)")
 async def digital_card_page(request: Request, session_id: str):
     sess = db.get_session(session_id) if SESSION_ID_RE.match(session_id) else None
-    # Ссылка «Поделиться» собирается на сервере из канонического URL, а не из request.url (S13)
-    share_url = "https://t.me/share/url?" + urlencode({
-        "url": f"{settings.BASE_URL}/card/{session_id}",
-        "text": "Моя профессия будущего на Осеннем Промышленном Фестивале Колледжей Москвы!"
-    })
+    platform = (getattr(settings, "BOT_PLATFORM", "max") or "max").lower().strip()
+    max_user = (getattr(settings, "MAX_BOT_USERNAME", "") or "").strip().lstrip("@")
+
+    if platform in ("max", "both") and max_user:
+        share_url = f"https://max.ru/{max_user}?start={session_id}"
+    else:
+        # Ссылка «Поделиться» собирается на сервере из канонического URL, а не из request.url (S13)
+        share_url = "https://t.me/share/url?" + urlencode({
+            "url": f"{settings.BASE_URL}/card/{session_id}",
+            "text": "Моя профессия будущего на Осеннем Промышленном Фестивале Колледжей Москвы!"
+        })
+
     return templates.TemplateResponse(
         request=request,
         name="digital_card.html",

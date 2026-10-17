@@ -91,6 +91,14 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = False
     SMTP_USE_SSL: bool = True
 
+    # Messenger Bot Platform (max / telegram / both)
+    BOT_PLATFORM: str = "max"
+
+    # MAX Bot (dev.max.ru)
+    MAX_BOT_TOKEN: str = ""
+    MAX_BOT_USERNAME: str = ""
+    MAX_API_BASE: str = "https://platform-api2.max.ru"
+
     # Telegram Bot
     TELEGRAM_BOT_TOKEN: str = ""
     TELEGRAM_BOT_USERNAME: str = ""

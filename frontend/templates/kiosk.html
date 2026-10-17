@@ -220,6 +220,9 @@
   <!-- Pass Server Config to React Client -->
   <script>
     window.KIOSK_CONFIG = {
+      botPlatform: {{ settings.BOT_PLATFORM|tojson }},
+      maxBotUsername: {{ settings.MAX_BOT_USERNAME|tojson }},
+      hasMaxBot: {{ 'true' if settings.MAX_BOT_TOKEN else 'false' }},
       telegramBotUsername: {{ settings.TELEGRAM_BOT_USERNAME|tojson }},
       hasTelegramBot: {{ 'true' if settings.TELEGRAM_BOT_TOKEN else 'false' }},
       qrRevealDelayMs: {{ settings.QR_REVEAL_DELAY_MS|int }}

@@ -81,6 +81,14 @@ async def get_system_health():
                 "ok": free_gb > 1.0,
                 "free_gb": free_gb
             },
+            "max_bot": {
+                "ok": bool(settings.MAX_BOT_TOKEN),
+                "enabled": bool(settings.MAX_BOT_TOKEN),
+                "username": settings.MAX_BOT_USERNAME,
+                "api_base": getattr(settings, "MAX_API_BASE", "https://platform-api2.max.ru"),
+                "platform_active": (getattr(settings, "BOT_PLATFORM", "max") or "max").lower() in ("max", "both")
+            },
+            "bot_platform": getattr(settings, "BOT_PLATFORM", "max"),
             "telegram": {
                 "ok": bool(settings.TELEGRAM_BOT_TOKEN),
                 "enabled": bool(settings.TELEGRAM_BOT_TOKEN),

@@ -71,6 +71,7 @@ def test_card_url_uses_base_url(monkeypatch):
     from app.composition.qr import get_digital_card_url
     from app.config.settings import settings
     monkeypatch.setattr(settings, "TELEGRAM_BOT_USERNAME", "")
+    monkeypatch.setattr(settings, "MAX_BOT_USERNAME", "")
     monkeypatch.setattr(settings, "BASE_URL", "http://10.0.0.5:9000")
     assert get_digital_card_url("sess_x") == "http://10.0.0.5:9000/card/sess_x"
 
@@ -78,9 +79,31 @@ def test_card_url_uses_base_url(monkeypatch):
 def test_card_url_uses_telegram_bot_when_configured(monkeypatch):
     from app.composition.qr import get_digital_card_url
     from app.config.settings import settings
+    monkeypatch.setattr(settings, "BOT_PLATFORM", "telegram")
     monkeypatch.setattr(settings, "TELEGRAM_BOT_USERNAME", "StanokFutureBot")
     assert get_digital_card_url("sess_x") == "https://t.me/StanokFutureBot?start=sess_x"
 
     # Also check with leading @
     monkeypatch.setattr(settings, "TELEGRAM_BOT_USERNAME", "@StanokFutureBot")
     assert get_digital_card_url("sess_x") == "https://t.me/StanokFutureBot?start=sess_x"
+
+
+def test_card_url_uses_max_bot_when_configured(monkeypatch):
+    from app.composition.qr import get_digital_card_url
+    from app.config.settings import settings
+    monkeypatch.setattr(settings, "BOT_PLATFORM", "max")
+    monkeypatch.setattr(settings, "MAX_BOT_USERNAME", "StanokMaxBot")
+    assert get_digital_card_url("sess_x") == "https://max.ru/StanokMaxBot?start=sess_x"
+
+    # Also check with leading @
+    monkeypatch.setattr(settings, "MAX_BOT_USERNAME", "@StanokMaxBot")
+    assert get_digital_card_url("sess_x") == "https://max.ru/StanokMaxBot?start=sess_x"
+
+
+def test_card_url_max_bot_priority_over_telegram(monkeypatch):
+    from app.composition.qr import get_digital_card_url
+    from app.config.settings import settings
+    monkeypatch.setattr(settings, "BOT_PLATFORM", "max")
+    monkeypatch.setattr(settings, "MAX_BOT_USERNAME", "StanokMaxBot")
+    monkeypatch.setattr(settings, "TELEGRAM_BOT_USERNAME", "StanokTelegramBot")
+    assert get_digital_card_url("sess_x") == "https://max.ru/StanokMaxBot?start=sess_x"

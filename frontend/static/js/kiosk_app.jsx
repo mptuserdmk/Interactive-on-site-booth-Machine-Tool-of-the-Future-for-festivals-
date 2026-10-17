@@ -1354,30 +1354,36 @@ function EmailDispatchBox({ sessionId }) {
 function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
   const [showQr, setShowQr] = useState(false);
   const [showEmailBox, setShowEmailBox] = useState(false);
-  const [botUsername, setBotUsername] = useState(
-    (window.KIOSK_CONFIG?.telegramBotUsername || '').replace(/^@/, '').trim()
-  );
+  const isMaxPlatform = (window.KIOSK_CONFIG?.botPlatform || 'max').toLowerCase() !== 'telegram';
+  const initialUsername = isMaxPlatform
+    ? (window.KIOSK_CONFIG?.maxBotUsername || window.KIOSK_CONFIG?.telegramBotUsername || '')
+    : (window.KIOSK_CONFIG?.telegramBotUsername || window.KIOSK_CONFIG?.maxBotUsername || '');
+  const [botUsername, setBotUsername] = useState(initialUsername.replace(/^@/, '').trim());
   const qrRevealDelay = Number(window.KIOSK_CONFIG?.qrRevealDelayMs || 1500);
 
   useEffect(() => {
     if (!botUsername) {
       api('/api/health')
         .then(data => {
-          const u = data?.diagnostics?.telegram?.username;
+          const u = isMaxPlatform
+            ? (data?.diagnostics?.max_bot?.username || data?.diagnostics?.telegram?.username)
+            : (data?.diagnostics?.telegram?.username || data?.diagnostics?.max_bot?.username);
           if (u) setBotUsername(u.replace(/^@/, '').trim());
         })
         .catch(() => {});
     }
-  }, [botUsername]);
+  }, [botUsername, isMaxPlatform]);
 
   const cardUrl = session?.final_card_path
     ? `/media/cards/${session.id}.jpg?t=${Date.now()}`
     : null;
 
-  const hasTelegramBot = Boolean(botUsername);
+  const hasBot = Boolean(botUsername);
 
-  const qrDestination = hasTelegramBot
-    ? `https://t.me/${botUsername}?start=${session?.id || ''}`
+  const qrDestination = hasBot
+    ? (isMaxPlatform
+        ? `https://max.ru/${botUsername}?start=${session?.id || ''}`
+        : `https://t.me/${botUsername}?start=${session?.id || ''}`)
     : `${window.location.origin}/card/${session?.id || ''}`;
 
   // Предзагрузка QR-кода в кеш браузера, пока створки еще сомкнуты
@@ -1474,7 +1480,7 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
           {/* Верхний бейдж портала */}
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-ruby/10 border border-ruby/30 text-ruby font-mono text-[10px] font-bold uppercase tracking-wider mb-1.5 shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-ruby animate-pulse"></span>
-            <span>{hasTelegramBot ? "TELEGRAM БОТ" : "ЦИФРОВАЯ КАРТА"}</span>
+            <span>{hasBot ? (isMaxPlatform ? "МЕССЕНДЖЕР МАКС" : "TELEGRAM БОТ") : "ЦИФРОВАЯ КАРТА"}</span>
           </div>
 
           {/* Белая подложка с QR-кодом */}
@@ -1489,11 +1495,13 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
           {/* Текстовые инструкции */}
           <div className="mt-1.5 space-y-0.5 shrink-0">
             <span className="text-[11px] sm:text-xs font-mono uppercase font-bold tracking-wider text-ruby block">
-              {hasTelegramBot ? "📱 НАВЕДИТЕ КАМЕРУ — TELEGRAM" : "📱 НАВЕДИТЕ КАМЕРУ СМАРТФОНА"}
+              {hasBot ? (isMaxPlatform ? "📱 НАВЕДИТЕ КАМЕРУ — МАКС" : "📱 НАВЕДИТЕ КАМЕРУ — TELEGRAM") : "📱 НАВЕДИТЕ КАМЕРУ СМАРТФОНА"}
             </span>
             <p className="font-serif italic text-[11px] sm:text-xs text-ink-main leading-tight max-w-[240px] mx-auto">
-              {hasTelegramBot
-                ? "Отсканируй QR, чтобы мгновенно получить карточку в Telegram!"
+              {hasBot
+                ? (isMaxPlatform
+                    ? "Отсканируй QR, чтобы мгновенно получить карточку в мессенджере МАКС!"
+                    : "Отсканируй QR, чтобы мгновенно получить карточку в Telegram!")
                 : "Отсканируй QR смартфоном, чтобы открыть и скачать карточку в HD!"}
             </p>
           </div>

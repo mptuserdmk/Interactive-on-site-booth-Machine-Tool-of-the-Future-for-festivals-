@@ -19,7 +19,12 @@ def generate_qr_code(url: str, size: int = 240) -> Image.Image:
     return img
 
 def get_digital_card_url(session_id: str) -> str:
-    bot_name = (getattr(settings, "TELEGRAM_BOT_USERNAME", "") or "").strip().lstrip("@")
-    if bot_name:
-        return f"https://t.me/{bot_name}?start={session_id}"
+    platform = (getattr(settings, "BOT_PLATFORM", "max") or "max").lower().strip()
+    max_user = (getattr(settings, "MAX_BOT_USERNAME", "") or "").strip().lstrip("@")
+    tg_user = (getattr(settings, "TELEGRAM_BOT_USERNAME", "") or "").strip().lstrip("@")
+
+    if platform in ("max", "both") and max_user:
+        return f"https://max.ru/{max_user}?start={session_id}"
+    if tg_user:
+        return f"https://t.me/{tg_user}?start={session_id}"
     return f"{settings.BASE_URL}/card/{session_id}"
