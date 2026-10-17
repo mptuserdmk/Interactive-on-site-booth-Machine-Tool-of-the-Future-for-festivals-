@@ -618,6 +618,53 @@ const ICONS = {
   )
 };
 
+// --- ЗАЩИТНЫЙ ЭКРАННЫЙ БУФЕР (Folk-Tech Error Boundary) ---
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Kiosk ErrorBoundary caught error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex-1 w-full max-w-xl mx-auto flex flex-col items-center justify-center p-6 text-center animate-fade-in bg-parchment-card rounded-2xl border-2 border-ruby shadow-tactile-ruby relative my-auto">
+          <BrassCorners />
+          <div className="w-14 h-14 rounded-full bg-ruby/15 text-ruby border border-ruby/40 flex items-center justify-center mb-4">
+            <span className="text-2xl font-bold">⚠️</span>
+          </div>
+          <h2 className="font-serif font-black text-2xl text-ink-main mb-2">
+            СБОЙ ОТОБРАЖЕНИЯ ЭКРАНА
+          </h2>
+          <p className="font-serif italic text-sm text-ink-muted mb-6">
+            Произошла ошибка при прорисовке экрана. Нажми кнопку ниже, чтобы перезапустить киоск.
+          </p>
+          <FolkButton
+            variant="primary"
+            size="lg"
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              if (this.props.onReset) this.props.onReset();
+              else window.location.reload();
+            }}
+          >
+            <span>ВЕРНУТЬСЯ В НАЧАЛО</span>
+          </FolkButton>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // --- ТАКТИЛЬНАЯ ЛАТУННАЯ КНОПКА (Folk-Tech Tactile Button) ---
 function FolkButton({
   variant = "primary", // primary (ruby-brass), secondary (parchment-brass), dark (graphite-brass)
@@ -1475,6 +1522,7 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
     ? `/media/cards/${session.id}.jpg?t=${Date.now()}`
     : null;
 
+  const hasBot = Boolean(botUsername);
   const baseUrl = (window.KIOSK_CONFIG?.baseUrl || window.location.origin).replace(/\/+$/, '');
 
   const qrDestination = hasBot
@@ -2091,7 +2139,9 @@ function KioskRoot() {
 
         {/* Рабочий холст слайда */}
         <div className="flex-1 min-h-0 w-full flex items-center justify-center my-auto overflow-hidden">
-          {renderScreen()}
+          <ErrorBoundary onReset={handleReset}>
+            {renderScreen()}
+          </ErrorBoundary>
         </div>
 
         {/* Tale-Tech Bar / Фирменный подвал по канону презентации фестиваля */}
@@ -2136,9 +2186,13 @@ function KioskRoot() {
   );
 }
 
-// Рендер React-приложения
+// Рендер React-приложения с защитой ErrorBoundary
 const rootElement = document.getElementById('react-kiosk-root');
 if (rootElement) {
   const root = ReactDOM.createRoot(rootElement);
-  root.render(<KioskRoot />);
+  root.render(
+    <ErrorBoundary>
+      <KioskRoot />
+    </ErrorBoundary>
+  );
 }
