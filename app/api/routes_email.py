@@ -23,8 +23,10 @@ async def send_passport_email(payload: EmailSendRequest):
             raise HTTPException(status_code=404, detail="Сессия с указанным идентификатором не найдена")
     else:
         sess = session_manager.get_active_session()
+        if not sess or not getattr(sess, "final_card_path", None):
+            sess = db.get_last_completed_session(max_age_seconds=1800)
         if not sess:
-            raise HTTPException(status_code=400, detail="В данный момент нет активной сессии для отправки")
+            raise HTTPException(status_code=400, detail="В данный момент нет доступной сессии для отправки")
 
     try:
         result = await email_service.send_card_email(payload.email, sess)

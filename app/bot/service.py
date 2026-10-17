@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 from pathlib import Path
 from typing import Optional
 import httpx
@@ -16,6 +17,32 @@ class TelegramBotService:
         self._client: Optional[httpx.AsyncClient] = None
         self.last_update_id = 0
         self.bot_username: str = ""
+
+    @staticmethod
+    def _extract_session_id(text_or_payload: str) -> Optional[str]:
+        """Универсально извлекает session_id из ссылки, параметра start, текста или deep-link."""
+        if not text_or_payload:
+            return None
+        text = str(text_or_payload).strip()
+        # 1. Поиск канонического паттерна сессий стенда: sess_[a-f0-9_]
+        match = re.search(r"sess_[A-Za-z0-9_]{8,64}", text)
+        if match:
+            return match.group(0)
+
+        # 2. Обработка произвольных тестовых ID или очистка параметров
+        clean = text
+        if clean.startswith("/start"):
+            parts = clean.split(maxsplit=1)
+            clean = parts[1].strip() if len(parts) > 1 else ""
+        if clean.startswith("?start="):
+            clean = clean[7:].strip()
+        elif clean.startswith("start="):
+            clean = clean[6:].strip()
+
+        clean = clean.split("&")[0].split("?")[0].strip()
+        if clean and re.match(r"^[A-Za-z0-9_\-]{6,64}$", clean):
+            return clean
+        return None
 
     @property
     def is_configured(self) -> bool:
@@ -146,15 +173,21 @@ class TelegramBotService:
 
         # Handle /start or /start <session_id>
         if text.startswith("/start"):
-            parts = text.split(maxsplit=1)
-            session_id = parts[1].strip() if len(parts) > 1 else ""
-
+            session_id = self._extract_session_id(text)
             if session_id:
                 await self._deliver_card(chat_id, session_id, username, first_name)
             else:
-                await self._send_welcome(chat_id, first_name)
+                last_sess = db.get_last_session_for_chat(chat_id) or db.get_last_completed_session(max_age_seconds=1800)
+                if last_sess and last_sess.get("id"):
+                    await self._deliver_card(chat_id, last_sess["id"], username, first_name, is_fallback=True)
+                else:
+                    await self._send_welcome(chat_id, first_name)
         else:
-            await self._send_help(chat_id, first_name)
+            session_id = self._extract_session_id(text)
+            if session_id:
+                await self._deliver_card(chat_id, session_id, username, first_name)
+            else:
+                await self._send_help(chat_id, first_name)
 
     def _find_card_file(self, session_id: str, session: Optional[dict]) -> Optional[Path]:
         raw_path = session.get("final_card_path") if session else None
@@ -168,11 +201,19 @@ class TelegramBotService:
                 return c
         return None
 
-    async def _deliver_card(self, chat_id: int, session_id: str, username: Optional[str], first_name: str):
+    async def _deliver_card(
+        self,
+        chat_id: int,
+        session_id: str,
+        username: Optional[str],
+        first_name: str,
+        is_fallback: bool = False
+    ):
         """Looks up session, waits if still generating, and sends the finished card photo."""
+        extracted = self._extract_session_id(session_id)
+        if extracted:
+            session_id = extracted
         session_id = session_id.strip()
-        if session_id.startswith("start="):
-            session_id = session_id[6:].strip()
 
         logger.info("Delivering card for session %s to chat %s (@%s)", session_id, chat_id, username or "none")
 
@@ -206,15 +247,20 @@ class TelegramBotService:
             )
             return
 
-        # 3. Send photo
-        machine_name = session.get("machine_name", "Инженер Будущего")
-        power_name = session.get("power_name", "Точность")
-        location = session.get("location", "Центральный кластер")
+        # 3. Send photo (safe against session=None)
+        session_safe = session or {}
+        machine_name = session_safe.get("machine_name") or "Инженер Будущего"
+        power_name = session_safe.get("power_name") or "Точность"
+        location = session_safe.get("location") or "Центральный кластер"
         festival_name = getattr(settings, "FESTIVAL_NAME", "ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ")
         hashtag = getattr(settings, "FESTIVAL_HASHTAG", "#ФЕСТИВАЛЬ2026")
 
+        greeting = "🎉 <b>Твой цифровой паспорт готов!</b>"
+        if is_fallback:
+            greeting += "\n<i>(доставлен паспорт с недавней сессии на нашем станке)</i>"
+
         caption = (
-            f"🎉 <b>Твой цифровой паспорт готов!</b>\n\n"
+            f"{greeting}\n\n"
             f"🛠 <b>Специальность:</b> {machine_name}\n"
             f"⚡ <b>Суперсила:</b> {power_name}\n"
             f"📍 <b>Гильдия:</b> {location}\n\n"

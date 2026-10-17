@@ -144,3 +144,56 @@ def test_interrupted_sessions_marked_on_startup():
     statuses = {r["id"]: r["status"] for r in db.get_recent_sessions(100)}
     stuck = {k: v for k, v in statuses.items() if v in ("GENERATING", "COMPOSING", "READY_TO_PRINT", "PRINTING")}
     assert stuck == {}, stuck
+
+
+def test_get_last_completed_session(tmp_path):
+    from datetime import datetime, timezone, timedelta
+    from app.storage.database import Database
+    db = Database(tmp_path / "test_last.db")
+
+    # Incomplete session
+    db.save_session({
+        "id": "sess_inc",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "status": "QUIZ_POWER",
+        "final_card_path": None
+    })
+    assert db.get_last_completed_session() is None
+
+    # Completed session
+    now_iso = datetime.now(timezone.utc).isoformat()
+    db.save_session({
+        "id": "sess_done",
+        "created_at": now_iso,
+        "status": "COMPLETED",
+        "final_card_path": "/path/to/card.jpg",
+        "machine_name": "Токарь ЧПУ"
+    })
+    last = db.get_last_completed_session(max_age_seconds=1800)
+    assert last is not None
+    assert last["id"] == "sess_done"
+    assert last["machine_name"] == "Токарь ЧПУ"
+
+    # Expired session check
+    db_expired = Database(tmp_path / "test_exp.db")
+    old_iso = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
+    db_expired.save_session({
+        "id": "sess_old",
+        "created_at": old_iso,
+        "status": "COMPLETED",
+        "final_card_path": "/path/to/old.jpg"
+    })
+    assert db_expired.get_last_completed_session(max_age_seconds=1800) is None
+
+
+def test_get_last_session_for_chat(tmp_path):
+    from app.storage.database import Database
+    db = Database(tmp_path / "test_chat.db")
+    db.save_session({"id": "sess_chat_1", "status": "COMPLETED", "final_card_path": "/a.jpg"})
+    db.save_telegram_link(chat_id=123456, session_id="sess_chat_1", username="testuser")
+
+    res = db.get_last_session_for_chat(123456)
+    assert res is not None
+    assert res["id"] == "sess_chat_1"
+    assert db.get_last_session_for_chat(999999) is None
+

@@ -195,5 +195,56 @@ class Database:
         rows = self._execute("SELECT * FROM telegram_links WHERE session_id = ?", (session_id,), fetch="all")
         return [dict(r) for r in rows] if rows else []
 
+    def get_last_completed_session(self, max_age_seconds: int = 1800) -> Optional[Dict[str, Any]]:
+        """Возвращает последнюю успешно собранную карточку стенда (в пределах max_age_seconds)."""
+        row = self._execute("""
+            SELECT * FROM sessions 
+            WHERE final_card_path IS NOT NULL 
+              AND status IN ('READY_TO_PRINT', 'PRINTING', 'COMPLETED')
+            ORDER BY created_at DESC 
+            LIMIT 1
+        """, fetch="one")
+        if not row:
+            return None
+        d = dict(row)
+        if max_age_seconds > 0:
+            created_str = d.get("created_at")
+            if created_str:
+                try:
+                    dt = datetime.fromisoformat(created_str)
+                    if dt.tzinfo is None:
+                        dt = dt.replace(tzinfo=timezone.utc)
+                    age = (datetime.now(timezone.utc) - dt).total_seconds()
+                    if age > max_age_seconds:
+                        return None
+                except Exception:
+                    pass
+        if d.get("meta_json"):
+            try:
+                d["meta"] = json.loads(d["meta_json"])
+            except Exception:
+                d["meta"] = {}
+        return d
+
+    def get_last_session_for_chat(self, chat_id: int) -> Optional[Dict[str, Any]]:
+        """Возвращает последнюю сессию, привязанную к данному чату пользователя."""
+        row = self._execute("""
+            SELECT s.* FROM sessions s 
+            JOIN telegram_links l ON s.id = l.session_id 
+            WHERE l.chat_id = ? 
+            ORDER BY l.created_at DESC 
+            LIMIT 1
+        """, (chat_id,), fetch="one")
+        if not row:
+            return None
+        d = dict(row)
+        if d.get("meta_json"):
+            try:
+                d["meta"] = json.loads(d["meta_json"])
+            except Exception:
+                d["meta"] = {}
+        return d
+
 
 db = Database()
+

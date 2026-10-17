@@ -220,6 +220,7 @@
   <!-- Pass Server Config to React Client -->
   <script>
     window.KIOSK_CONFIG = {
+      baseUrl: {{ settings.BASE_URL|tojson }},
       botPlatform: {{ settings.BOT_PLATFORM|tojson }},
       maxBotUsername: {{ settings.MAX_BOT_USERNAME|tojson }},
       hasMaxBot: {{ 'true' if settings.MAX_BOT_TOKEN else 'false' }},

@@ -115,3 +115,87 @@ async def test_send_photo_flow(max_service, monkeypatch, tmp_path):
     success = await max_service._send_photo(chat_id=12345, file_path=dummy_img, caption="Готово!")
     assert success is True
     assert max_service._client.post.call_count == 3
+
+
+def test_extract_session_id_formats(max_service):
+    # Canonical session id
+    assert max_service._extract_session_id("sess_3a8b2c1d4e5f60718293a4b5c6d7e8f9") == "sess_3a8b2c1d4e5f60718293a4b5c6d7e8f9"
+    # Deep link query format start=sess_...
+    assert max_service._extract_session_id("start=sess_3a8b2c1d4e5f60718293a4b5c6d7e8f9") == "sess_3a8b2c1d4e5f60718293a4b5c6d7e8f9"
+    # Query with question mark ?start=sess_...
+    assert max_service._extract_session_id("?start=sess_3a8b2c1d4e5f60718293a4b5c6d7e8f9") == "sess_3a8b2c1d4e5f60718293a4b5c6d7e8f9"
+    # Full URL
+    assert max_service._extract_session_id("https://max.ru/stanok_bot?start=sess_3a8b2c1d4e5f60718293a4b5c6d7e8f9") == "sess_3a8b2c1d4e5f60718293a4b5c6d7e8f9"
+    # Text with command
+    assert max_service._extract_session_id("/start sess_3a8b2c1d4e5f60718293a4b5c6d7e8f9") == "sess_3a8b2c1d4e5f60718293a4b5c6d7e8f9"
+    # Custom test session
+    assert max_service._extract_session_id("/start my_custom_test_session") == "my_custom_test_session"
+    # Bare command or empty
+    assert max_service._extract_session_id("/start") is None
+    assert max_service._extract_session_id("") is None
+    assert max_service._extract_session_id(None) is None
+
+
+@pytest.mark.asyncio
+async def test_bot_started_auto_fallback_recent_session(max_service):
+    max_service._deliver_card = AsyncMock()
+    max_service._send_welcome = AsyncMock()
+
+    with patch("app.bot.max_service.db.get_last_session_for_chat", return_value=None), \
+         patch("app.bot.max_service.db.get_last_completed_session", return_value={"id": "sess_recovered_99"}):
+        update = {
+            "update_type": "bot_started",
+            "chat_id": 55555,
+            "payload": "",  # payload lost or stripped
+            "user": {"user_id": 55555, "name": "Посетитель"}
+        }
+        await max_service._handle_update(update)
+        max_service._deliver_card.assert_awaited_once_with(
+            55555, "sess_recovered_99", None, "Посетитель", is_fallback=True
+        )
+
+
+@pytest.mark.asyncio
+async def test_message_created_auto_fallback_recent_session(max_service):
+    max_service._deliver_card = AsyncMock()
+    max_service._send_welcome = AsyncMock()
+
+    with patch("app.bot.max_service.db.get_last_session_for_chat", return_value=None), \
+         patch("app.bot.max_service.db.get_last_completed_session", return_value={"id": "sess_recent_88"}):
+        update = {
+            "update_type": "message_created",
+            "message": {
+                "sender": {"user_id": 777, "name": "Участник"},
+                "recipient": {"chat_id": 777},
+                "body": {"text": "/start"}  # bare start without payload
+            }
+        }
+        await max_service._handle_update(update)
+        max_service._deliver_card.assert_awaited_once_with(
+            777, "sess_recent_88", None, "Участник", is_fallback=True
+        )
+
+
+@pytest.mark.asyncio
+async def test_deliver_card_safe_against_none_session(max_service, tmp_path):
+    dummy_img = tmp_path / "sess_test_safe_card.jpg"
+    dummy_img.write_bytes(b"\xFF\xD8\xFF\xE0\x00\x10JFIF" + b"\x00" * 20)
+
+    max_service._send_photo = AsyncMock(return_value=True)
+
+    with patch("app.bot.max_service.db.get_session", return_value=None), \
+         patch.object(max_service, "_find_card_file", return_value=dummy_img), \
+         patch("app.bot.max_service.db.save_telegram_link"):
+        # Calling _deliver_card when db.get_session returns None must NOT crash with AttributeError
+        await max_service._deliver_card(
+            chat_id=123,
+            session_id="sess_test_safe",
+            username="user_safe",
+            first_name="Мастер"
+        )
+        max_service._send_photo.assert_awaited_once()
+        args, kwargs = max_service._send_photo.call_args
+        assert args[0] == 123
+        assert args[1] == dummy_img
+        assert "Инженер Будущего" in args[2]  # Safe default used
+

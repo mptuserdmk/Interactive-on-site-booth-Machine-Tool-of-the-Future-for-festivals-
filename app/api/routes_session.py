@@ -42,3 +42,11 @@ async def reset_session():
 @router.get("/history", summary="Get recent session history for operator")
 async def get_history(limit: int = Query(30, ge=1, le=200)):
     return db.get_recent_sessions(limit=limit)
+
+@router.get("/last-card", summary="Get last completed session with card for recovery if screen closed")
+async def get_last_card(max_age_seconds: int = Query(1800, ge=10, le=86400)):
+    sess = db.get_last_completed_session(max_age_seconds=max_age_seconds)
+    if not sess:
+        return {"found": False, "session": None}
+    return {"found": True, "session": sess}
+

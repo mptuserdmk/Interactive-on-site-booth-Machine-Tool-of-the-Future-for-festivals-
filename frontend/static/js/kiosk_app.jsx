@@ -733,6 +733,45 @@ function FolkStepTracker({ currentStep }) {
 
 // --- ЭКРАН 1: ТИТУЛЬНЫЙ ЭКРАН (Welcome Cover Slide) ---
 function WelcomeScreen({ onStart }) {
+  const [lastCardSession, setLastCardSession] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [loadingLast, setLoadingLast] = useState(false);
+  const [errorNotice, setErrorNotice] = useState("");
+
+  const isMaxPlatform = (window.KIOSK_CONFIG?.botPlatform || 'max').toLowerCase() !== 'telegram';
+  const botUsername = (isMaxPlatform
+    ? (window.KIOSK_CONFIG?.maxBotUsername || window.KIOSK_CONFIG?.telegramBotUsername || '')
+    : (window.KIOSK_CONFIG?.telegramBotUsername || window.KIOSK_CONFIG?.maxBotUsername || '')).replace(/^@/, '').trim();
+
+  const handleOpenLastCard = async () => {
+    setLoadingLast(true);
+    setErrorNotice("");
+    try {
+      const data = await api('/api/session/last-card');
+      if (data && data.found && data.session) {
+        setLastCardSession(data.session);
+        setShowModal(true);
+      } else {
+        setErrorNotice("Недавних готовых паспортов не найдено");
+        setTimeout(() => setErrorNotice(""), 3500);
+      }
+    } catch (e) {
+      setErrorNotice("Не удалось запросить последний паспорт");
+      setTimeout(() => setErrorNotice(""), 3500);
+    } finally {
+      setLoadingLast(false);
+    }
+  };
+
+  const baseUrl = (window.KIOSK_CONFIG?.baseUrl || window.location.origin).replace(/\/+$/, '');
+  const qrUrl = lastCardSession
+    ? (botUsername
+        ? (isMaxPlatform
+            ? `https://max.ru/${botUsername}?start=${lastCardSession.id}`
+            : `https://t.me/${botUsername}?start=${lastCardSession.id}`)
+        : `${baseUrl}/card/${lastCardSession.id}`)
+    : '';
+
   return (
     <main className="flex-1 h-full max-h-full flex flex-col items-center justify-center text-center px-4 max-w-4xl mx-auto animate-fade-in relative">
       {/* Декоративная фоновая латунная шестерня */}
@@ -790,8 +829,26 @@ function WelcomeScreen({ onStart }) {
         {ICONS.arrowRight}
       </FolkButton>
 
+      {/* Кнопка вызова последнего QR-кода, если экран закрылся */}
+      <div className="mt-2.5 sm:mt-3 flex flex-col items-center gap-1 z-10">
+        <button
+          type="button"
+          onClick={handleOpenLastCard}
+          disabled={loadingLast}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-parchment-card/90 hover:bg-parchment-card border border-brass/60 text-brass-dim font-mono text-[11px] sm:text-xs font-bold tracking-wide transition-all shadow-sm active:translate-y-0.5 cursor-pointer"
+        >
+          <span>📷</span>
+          <span>{loadingLast ? "ПОИСК ПАСПОРТА..." : "ПРЕДЫДУЩИЙ QR-КОД / СКАЧАТЬ ПАСПОРТ"}</span>
+        </button>
+        {errorNotice && (
+          <span className="font-mono text-[10px] text-ruby font-bold animate-fade-in">
+            {errorNotice}
+          </span>
+        )}
+      </div>
+
       {/* 3 Архетипичные плашки особенностей */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 mt-3 sm:mt-5 w-full max-w-3xl">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 mt-3 sm:mt-4 w-full max-w-3xl">
         <div className="p-2 sm:p-2.5 rounded-xl bg-parchment-card border border-brass/40 shadow-brass-sm flex items-center gap-3 text-left relative overflow-hidden">
           <BrassCorners />
           <div className="w-9 h-9 rounded-lg bg-panel-graphite text-brass flex items-center justify-center shrink-0">
@@ -828,6 +885,46 @@ function WelcomeScreen({ onStart }) {
           </div>
         </div>
       </div>
+
+      {/* Модальное окно восстановления QR-кода */}
+      {showModal && lastCardSession && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="relative w-full max-w-md bg-parchment-card border-2 border-brass rounded-2xl p-5 shadow-2xl flex flex-col items-center text-center">
+            <BrassCorners />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-ruby text-white font-mono text-[10px] font-bold uppercase tracking-wider mb-2">
+              <span>ПАСПОРТ СОХРАНЁН</span>
+            </div>
+            <h3 className="font-serif font-black text-xl sm:text-2xl text-ink-main mb-1">
+              {lastCardSession.machine_name || "ИНЖЕНЕР БУДУЩЕГО"}
+            </h3>
+            <p className="font-serif italic text-xs text-ink-muted mb-3 max-w-xs">
+              Если экран закрылся до того, как ты отсканировал QR-код — наведи камеру смартфона сейчас!
+            </p>
+
+            <div className="bg-white p-2.5 rounded-xl border-2 border-brass shadow-md mb-3">
+              <img
+                src={`/api/qr.png?data=${encodeURIComponent(qrUrl)}`}
+                alt="QR-код паспорта"
+                className="w-48 h-48 sm:w-56 sm:h-56 object-contain"
+              />
+            </div>
+
+            <div className="font-mono text-[11px] text-ink-muted mb-4 space-y-0.5">
+              <div>⚡ Суперсила: <b className="text-ink-main">{lastCardSession.power_name || "Точность"}</b></div>
+              <div>📍 Кластер: <b className="text-ink-main">{lastCardSession.location || "Центральный"}</b></div>
+            </div>
+
+            <FolkButton
+              variant="dark"
+              size="md"
+              onClick={() => setShowModal(false)}
+              className="w-full text-sm py-2"
+            >
+              <span>ПОНЯТНО, ЗАКРЫТЬ</span>
+            </FolkButton>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
@@ -1378,13 +1475,13 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
     ? `/media/cards/${session.id}.jpg?t=${Date.now()}`
     : null;
 
-  const hasBot = Boolean(botUsername);
+  const baseUrl = (window.KIOSK_CONFIG?.baseUrl || window.location.origin).replace(/\/+$/, '');
 
   const qrDestination = hasBot
     ? (isMaxPlatform
         ? `https://max.ru/${botUsername}?start=${session?.id || ''}`
         : `https://t.me/${botUsername}?start=${session?.id || ''}`)
-    : `${window.location.origin}/card/${session?.id || ''}`;
+    : `${baseUrl}/card/${session?.id || ''}`;
 
   // Предзагрузка QR-кода в кеш браузера, пока створки еще сомкнуты
   useEffect(() => {

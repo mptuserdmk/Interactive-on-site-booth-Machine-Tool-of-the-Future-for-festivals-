@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 import ssl
 from pathlib import Path
 from typing import Optional
@@ -23,6 +24,33 @@ class MaxBotService:
         self._client: Optional[httpx.AsyncClient] = None
         self.last_marker: Optional[int] = None
         self.bot_username: str = ""
+
+    @staticmethod
+    def _extract_session_id(text_or_payload: str) -> Optional[str]:
+        """Универсально извлекает session_id из ссылки, параметра start, текста или payload."""
+        if not text_or_payload:
+            return None
+        text = str(text_or_payload).strip()
+        # 1. Поиск канонического паттерна сессий стенда: sess_[a-f0-9_]
+        match = re.search(r"sess_[A-Za-z0-9_]{8,64}", text)
+        if match:
+            return match.group(0)
+
+        # 2. Обработка произвольных тестовых ID или очистка параметров
+        clean = text
+        if clean.startswith("/start"):
+            parts = clean.split(maxsplit=1)
+            clean = parts[1].strip() if len(parts) > 1 else ""
+        if clean.startswith("?start="):
+            clean = clean[7:].strip()
+        elif clean.startswith("start="):
+            clean = clean[6:].strip()
+
+        # Отсекаем параметры URL если остались
+        clean = clean.split("&")[0].split("?")[0].strip()
+        if clean and re.match(r"^[A-Za-z0-9_\-]{6,64}$", clean):
+            return clean
+        return None
 
     @property
     def is_configured(self) -> bool:
@@ -167,10 +195,16 @@ class MaxBotService:
             logger.info("MAX bot_started: chat_id=%s payload=%s user=%s", chat_id, payload, username)
 
             if chat_id:
-                if payload:
-                    await self._deliver_card(chat_id, payload, username, first_name)
+                session_id = self._extract_session_id(payload)
+                if session_id:
+                    await self._deliver_card(chat_id, session_id, username, first_name)
                 else:
-                    await self._send_welcome(chat_id, first_name)
+                    # Если payload был потерян/очищен клиентом, ищем недавнюю сессию пользователя или стенда
+                    last_sess = db.get_last_session_for_chat(chat_id) or db.get_last_completed_session(max_age_seconds=1800)
+                    if last_sess and last_sess.get("id"):
+                        await self._deliver_card(chat_id, last_sess["id"], username, first_name, is_fallback=True)
+                    else:
+                        await self._send_welcome(chat_id, first_name)
 
         # 2. Пользователь отправил сообщение (например, /start <session_id> или текст)
         elif upd_type == "message_created":
@@ -188,14 +222,21 @@ class MaxBotService:
                 return
 
             if text.startswith("/start"):
-                parts = text.split(maxsplit=1)
-                session_id = parts[1].strip() if len(parts) > 1 else ""
+                session_id = self._extract_session_id(text)
                 if session_id:
                     await self._deliver_card(chat_id, session_id, username, first_name)
                 else:
-                    await self._send_welcome(chat_id, first_name)
+                    last_sess = db.get_last_session_for_chat(chat_id) or db.get_last_completed_session(max_age_seconds=1800)
+                    if last_sess and last_sess.get("id"):
+                        await self._deliver_card(chat_id, last_sess["id"], username, first_name, is_fallback=True)
+                    else:
+                        await self._send_welcome(chat_id, first_name)
             else:
-                await self._send_help(chat_id, first_name)
+                session_id = self._extract_session_id(text)
+                if session_id:
+                    await self._deliver_card(chat_id, session_id, username, first_name)
+                else:
+                    await self._send_help(chat_id, first_name)
 
     def _find_card_file(self, session_id: str, session: Optional[dict]) -> Optional[Path]:
         raw_path = session.get("final_card_path") if session else None
@@ -209,11 +250,19 @@ class MaxBotService:
                 return c
         return None
 
-    async def _deliver_card(self, chat_id: int, session_id: str, username: Optional[str], first_name: str):
+    async def _deliver_card(
+        self,
+        chat_id: int,
+        session_id: str,
+        username: Optional[str],
+        first_name: str,
+        is_fallback: bool = False
+    ):
         """Находит карточку в SQLite, ждет завершения рендера и отправляет в чат МАКС."""
+        extracted = self._extract_session_id(session_id)
+        if extracted:
+            session_id = extracted
         session_id = session_id.strip()
-        if session_id.startswith("start="):
-            session_id = session_id[6:].strip()
 
         logger.info("MAX: Доставка карточки для сессии %s в чат %s (@%s)", session_id, chat_id, username or "none")
 
@@ -245,15 +294,20 @@ class MaxBotService:
             )
             return
 
-        # 3. Формирование текста сообщения
-        machine_name = session.get("machine_name", "Инженер Будущего")
-        power_name = session.get("power_name", "Точность")
-        location = session.get("location", "Центральный кластер")
+        # 3. Безопасное формирование текста карточки (защита от None session)
+        session_safe = session or {}
+        machine_name = session_safe.get("machine_name") or "Инженер Будущего"
+        power_name = session_safe.get("power_name") or "Точность"
+        location = session_safe.get("location") or "Центральный кластер"
         festival_name = getattr(settings, "FESTIVAL_NAME", "ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ")
         hashtag = getattr(settings, "FESTIVAL_HASHTAG", "#ФЕСТИВАЛЬ2026")
 
+        greeting = "🎉 Твой цифровой паспорт готов!"
+        if is_fallback:
+            greeting += "\n(доставлен паспорт с недавней сессии на нашем станке)"
+
         caption = (
-            f"🎉 Твой цифровой паспорт готов!\n\n"
+            f"{greeting}\n\n"
             f"🛠 Специальность: {machine_name}\n"
             f"⚡ Суперсила: {power_name}\n"
             f"📍 Гильдия: {location}\n\n"
