@@ -33,6 +33,210 @@ function friendlyError(e) {
   return (e && e.message) || "Сбой привода — попробуй ещё раз";
 }
 
+// --- САУНД-ДИЗАЙН СТАНКА (Folk-Tech Web Audio Synthesizer) ---
+class FolkSoundEngine {
+  constructor() {
+    this.ctx = null;
+    this.enabled = true;
+    try {
+      const stored = localStorage.getItem('kiosk_sound_enabled');
+      if (stored !== null) this.enabled = stored === 'true';
+    } catch (e) {}
+  }
+
+  init() {
+    if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+
+  toggle() {
+    this.enabled = !this.enabled;
+    try {
+      localStorage.setItem('kiosk_sound_enabled', String(this.enabled));
+    } catch (e) {}
+    if (this.enabled) {
+      this.init();
+      this.click();
+    }
+    return this.enabled;
+  }
+
+  // Латунный клик тумблера
+  click() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1100, now);
+      osc.frequency.exponentialRampToValueAtTime(320, now + 0.04);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.04);
+    } catch (e) {}
+  }
+
+  // Фиксация выбора карточки
+  select() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      [523.25, 659.25].forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+        gain.gain.setValueAtTime(0.12, now + idx * 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.16);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.04);
+        osc.stop(now + idx * 0.04 + 0.18);
+      });
+    } catch (e) {}
+  }
+
+  // Механический затвор камеры ЧПУ
+  shutter() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      // 1-й щелчок: подъем зеркала
+      const osc1 = this.ctx.createOscillator();
+      const gain1 = this.ctx.createGain();
+      osc1.type = 'square';
+      osc1.frequency.setValueAtTime(320, now);
+      osc1.frequency.exponentialRampToValueAtTime(80, now + 0.03);
+      gain1.gain.setValueAtTime(0.18, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      osc1.connect(gain1);
+      gain1.connect(this.ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.03);
+
+      // 2-й щелчок: спуск шторки
+      const osc2 = this.ctx.createOscillator();
+      const gain2 = this.ctx.createGain();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(880, now + 0.06);
+      osc2.frequency.exponentialRampToValueAtTime(180, now + 0.13);
+      gain2.gain.setValueAtTime(0.22, now + 0.06);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+      osc2.connect(gain2);
+      gain2.connect(this.ctx.destination);
+      osc2.start(now + 0.06);
+      osc2.stop(now + 0.14);
+    } catch (e) {}
+  }
+
+  // Раскрутка привода станка (генерация)
+  whir() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(130, now);
+      osc.frequency.exponentialRampToValueAtTime(480, now + 1.2);
+      gain.gain.setValueAtTime(0.01, now);
+      gain.gain.linearRampToValueAtTime(0.07, now + 0.4);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.25);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 1.25);
+    } catch (e) {}
+  }
+
+  // Праздничный перезвон курантов (паспорт готов)
+  celebrate() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      // Мажорный аккорд колоколов: C5, E5, G5, C6
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        const start = now + idx * 0.11;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.14, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.85);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.9);
+      });
+    } catch (e) {}
+  }
+
+  // Предостерегающий зуммер (моргание / ошибка)
+  warning() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      [0, 0.13].forEach((offset) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(420, now + offset);
+        osc.frequency.setValueAtTime(340, now + offset + 0.05);
+        gain.gain.setValueAtTime(0.1, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.09);
+      });
+    } catch (e) {}
+  }
+
+  // Тик хронометра
+  tick() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(960, now);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.03);
+    } catch (e) {}
+  }
+}
+
+const sfx = new FolkSoundEngine();
+
 // --- ДЕКОРАТИВНЫЕ ЛАТУННЫЕ УГОЛКИ (Folk-Tech Brass Corners) ---
 function BrassCorners({ className = "" }) {
   return (
@@ -701,7 +905,10 @@ function FolkButton({
       type={type}
       aria-label={ariaLabel}
       disabled={disabled || loading}
-      onClick={onClick}
+      onClick={(e) => {
+        sfx.click();
+        if (onClick) onClick(e);
+      }}
       className={`
         ${baseStyles}
         ${sizeStyles[size] || sizeStyles.lg}
@@ -987,7 +1194,14 @@ function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRe
   const isBlink = Boolean(validation?.blink_detected);
   const noFace = Boolean(validation && !validation.face_detected);
 
+  useEffect(() => {
+    if (isReview && (isBlink || noFace)) {
+      sfx.warning();
+    }
+  }, [isReview, isBlink, noFace]);
+
   const handleShutter = async () => {
+    sfx.shutter();
     setIsCapturing(true);
     setShutterRing(true);
     setFlash(true);
@@ -1328,7 +1542,10 @@ function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type,
               type="button"
               disabled={busy}
               aria-pressed={isSelected}
-              onClick={() => onSelect(opt.id)}
+              onClick={() => {
+                sfx.select();
+                onSelect(opt.id);
+              }}
               aria-label={isColor ? `Выбрать цвет ${opt.name}` : `Выбрать вариант ${opt.name}`}
               className={`
                 group p-3 sm:p-4 rounded-2xl bg-parchment-card border-2 transition-all duration-200 ease-out flex flex-col items-start justify-between text-left cursor-pointer outline-none h-full min-h-0 relative select-none overflow-hidden
@@ -1406,6 +1623,10 @@ function GeneratingScreen({ session }) {
   const isComposing = session?.status === 'COMPOSING';
   const progressPercent = isComposing ? 92 : 65;
 
+  useEffect(() => {
+    sfx.whir();
+  }, []);
+
   return (
     <main className="flex-1 h-full max-h-full flex flex-col items-center justify-center text-center px-4 max-w-2xl mx-auto animate-fade-in relative">
       {/* Механизм Индустрии Чудес: 3 вращающиеся латунные шестерни */}
@@ -1474,6 +1695,7 @@ function EmailDispatchBox({ sessionId }) {
   const domains = ["@mail.ru", "@yandex.ru", "@gmail.com", "@bk.ru"];
 
   const handleDomainClick = (domain) => {
+    sfx.click();
     if (!email) {
       setEmail("master" + domain);
     } else if (email.includes("@")) {
@@ -1485,9 +1707,11 @@ function EmailDispatchBox({ sessionId }) {
 
   const handleSendEmail = async () => {
     if (!email || !email.includes("@")) {
+      sfx.warning();
       setErrorMsg("Введи корректный email (например: master@mail.ru)");
       return;
     }
+    sfx.click();
     setErrorMsg("");
     setSending(true);
     try {
@@ -1498,10 +1722,13 @@ function EmailDispatchBox({ sessionId }) {
       });
       const data = await res.json();
       if (!res.ok) {
+        sfx.warning();
         throw new Error(data.detail || "Не удалось отправить");
       }
+      sfx.celebrate();
       setSentSuccess(true);
     } catch (e) {
+      sfx.warning();
       setErrorMsg(e.message || "Ошибка отправки почты");
     } finally {
       setSending(false);
@@ -1615,6 +1842,10 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
       preloadImg.src = `/api/qr.png?data=${encodeURIComponent(qrDestination)}`;
     }
   }, [qrDestination]);
+
+  useEffect(() => {
+    sfx.celebrate();
+  }, [session?.id]);
 
   useEffect(() => {
     setShowQr(false);
@@ -1814,6 +2045,12 @@ function ErrorScreen({ session, onFinish, busy }) {
 
 // --- МОДАЛЬНОЕ ОКНО БЕЗДЕЙСТВИЯ (Folk-Tech Chronometer Modal) ---
 function IdleModal({ isOpen, countdown, onStay, onLeave }) {
+  useEffect(() => {
+    if (isOpen) {
+      sfx.tick();
+    }
+  }, [isOpen, countdown]);
+
   if (!isOpen) return null;
 
   return (
@@ -1865,6 +2102,13 @@ function KioskRoot() {
   const [session, setSession] = useState(null);
   const [quizSchema, setQuizSchema] = useState([]);
   const [autoPrint, setAutoPrint] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(sfx.enabled);
+
+  const toggleSound = () => {
+    const nextState = sfx.toggle();
+    setSoundEnabled(nextState);
+    showNotice(nextState ? "Звуковые эффекты включены 🔊" : "Звуковые эффекты выключены 🔇");
+  };
 
   // Управление бездействием
   const [isIdleModalOpen, setIsIdleModalOpen] = useState(false);
@@ -2001,7 +2245,10 @@ function KioskRoot() {
   }, [session, isIdleModalOpen]);
 
   useEffect(() => {
-    const handleActivity = () => resetIdleTimer();
+    const handleActivity = () => {
+      sfx.init();
+      resetIdleTimer();
+    };
     window.addEventListener('touchstart', handleActivity, { passive: true });
     window.addEventListener('pointerdown', handleActivity, { passive: true });
     window.addEventListener('click', handleActivity, { passive: true });
@@ -2194,6 +2441,19 @@ function KioskRoot() {
             </span>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={toggleSound}
+              title="Переключить звуковые эффекты станка"
+              className={`px-2.5 sm:px-3 py-1 rounded-lg border font-mono text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none ${soundEnabled
+                ? "bg-panel-graphite text-brass-bright border-brass/50 hover:border-brass shadow-sm"
+                : "bg-ruby/15 text-ruby border-ruby/40 hover:border-ruby shadow-sm"
+                }`}
+            >
+              <span>{soundEnabled ? "🔊" : "🔇"}</span>
+              <span>{soundEnabled ? "ЗВУК: ВКЛ" : "ЗВУК: ВЫКЛ"}</span>
+            </button>
+
             <button
               type="button"
               onClick={toggleAutoPrint}
