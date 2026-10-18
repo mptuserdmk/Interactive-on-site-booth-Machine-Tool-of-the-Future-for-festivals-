@@ -41,16 +41,44 @@ class FolkSoundEngine {
     try {
       const stored = localStorage.getItem('kiosk_sound_enabled');
       if (stored !== null) this.enabled = stored === 'true';
-    } catch (e) {}
+    } catch (e) { }
   }
 
   init() {
-    if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      this.ctx = new AudioCtx();
+    try {
+      if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioCtx();
+        console.info('[SFX] AudioContext created, state:', this.ctx.state);
+      }
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume().catch((err) => console.warn('[SFX] resume error:', err));
+      }
+    } catch (e) {
+      console.warn('[SFX init error]', e);
     }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+    return this.ctx;
+  }
+
+  // Безопасное воспроизведение с гарантией активного AudioContext
+  play(action) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().then(() => {
+          try {
+            action(this.ctx, Math.max(this.ctx.currentTime, 0.01));
+          } catch (err) {
+            console.warn('[SFX play error]', err);
+          }
+        }).catch((err) => console.warn('[SFX resume error]', err));
+      } else {
+        action(this.ctx, Math.max(this.ctx.currentTime, 0.01));
+      }
+    } catch (e) {
+      console.warn('[SFX execution error]', e);
     }
   }
 
@@ -58,184 +86,183 @@ class FolkSoundEngine {
     this.enabled = !this.enabled;
     try {
       localStorage.setItem('kiosk_sound_enabled', String(this.enabled));
-    } catch (e) {}
+    } catch (e) { }
     if (this.enabled) {
       this.init();
       this.click();
     }
+    console.info('[SFX] Sound enabled:', this.enabled);
     return this.enabled;
   }
 
-  // Латунный клик тумблера
+  // Латунный клик тумблера (четкий двухкомпонентный щелчок)
   click() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    try {
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(1100, now);
-      osc.frequency.exponentialRampToValueAtTime(320, now + 0.04);
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.04);
-    } catch (e) {}
-  }
-
-  // Фиксация выбора карточки
-  select() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    try {
-      const now = this.ctx.currentTime;
-      [523.25, 659.25].forEach((freq, idx) => {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.04);
-        gain.gain.setValueAtTime(0.12, now + idx * 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.16);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now + idx * 0.04);
-        osc.stop(now + idx * 0.04 + 0.18);
-      });
-    } catch (e) {}
-  }
-
-  // Механический затвор камеры ЧПУ
-  shutter() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    try {
-      const now = this.ctx.currentTime;
-      // 1-й щелчок: подъем зеркала
-      const osc1 = this.ctx.createOscillator();
-      const gain1 = this.ctx.createGain();
-      osc1.type = 'square';
-      osc1.frequency.setValueAtTime(320, now);
-      osc1.frequency.exponentialRampToValueAtTime(80, now + 0.03);
-      gain1.gain.setValueAtTime(0.18, now);
-      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+    this.play((ctx, now) => {
+      // 1. Высокочастотный металлический щелчок (атака тумблера)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(1400, now);
+      osc1.frequency.exponentialRampToValueAtTime(380, now + 0.06);
+      gain1.gain.setValueAtTime(0.35, now);
+      gain1.gain.linearRampToValueAtTime(0.001, now + 0.07);
       osc1.connect(gain1);
-      gain1.connect(this.ctx.destination);
+      gain1.connect(ctx.destination);
       osc1.start(now);
-      osc1.stop(now + 0.03);
+      osc1.stop(now + 0.08);
 
-      // 2-й щелчок: спуск шторки
-      const osc2 = this.ctx.createOscillator();
-      const gain2 = this.ctx.createGain();
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(880, now + 0.06);
-      osc2.frequency.exponentialRampToValueAtTime(180, now + 0.13);
-      gain2.gain.setValueAtTime(0.22, now + 0.06);
-      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+      // 2. Механический глухой стук корпуса станка
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(240, now);
+      osc2.frequency.exponentialRampToValueAtTime(80, now + 0.09);
+      gain2.gain.setValueAtTime(0.28, now);
+      gain2.gain.linearRampToValueAtTime(0.001, now + 0.10);
       osc2.connect(gain2);
-      gain2.connect(this.ctx.destination);
-      osc2.start(now + 0.06);
-      osc2.stop(now + 0.14);
-    } catch (e) {}
+      gain2.connect(ctx.destination);
+      osc2.start(now);
+      osc2.stop(now + 0.11);
+    });
   }
 
-  // Раскрутка привода станка (генерация)
+  // Фиксация выбора карточки (былинный гармонический звон)
+  select() {
+    this.play((ctx, now) => {
+      [523.25, 659.25, 1046.50].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        const start = now + idx * 0.05;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.30 - idx * 0.06, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.24);
+      });
+    });
+  }
+
+  // Механический затвор камеры ЧПУ (подъем визора + спуск шторки)
+  shutter() {
+    this.play((ctx, now) => {
+      // 1-й щелчок: подъем латунного зеркала
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'square';
+      osc1.frequency.setValueAtTime(360, now);
+      osc1.frequency.exponentialRampToValueAtTime(90, now + 0.05);
+      gain1.gain.setValueAtTime(0.35, now);
+      gain1.gain.linearRampToValueAtTime(0.001, now + 0.06);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.07);
+
+      // 2-й щелчок: спуск механической шторки
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(920, now + 0.08);
+      osc2.frequency.exponentialRampToValueAtTime(160, now + 0.18);
+      gain2.gain.setValueAtTime(0.40, now + 0.08);
+      gain2.gain.linearRampToValueAtTime(0.001, now + 0.20);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.08);
+      osc2.stop(now + 0.22);
+    });
+  }
+
+  // Раскрутка привода станка (генерация нейросетью)
   whir() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    try {
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
+    this.play((ctx, now) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(130, now);
-      osc.frequency.exponentialRampToValueAtTime(480, now + 1.2);
-      gain.gain.setValueAtTime(0.01, now);
-      gain.gain.linearRampToValueAtTime(0.07, now + 0.4);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.25);
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.exponentialRampToValueAtTime(520, now + 1.2);
+      gain.gain.setValueAtTime(0.02, now);
+      gain.gain.linearRampToValueAtTime(0.20, now + 0.4);
+      gain.gain.linearRampToValueAtTime(0.001, now + 1.25);
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(ctx.destination);
       osc.start(now);
-      osc.stop(now + 1.25);
-    } catch (e) {}
+      osc.stop(now + 1.28);
+    });
   }
 
   // Праздничный перезвон курантов (паспорт готов)
   celebrate() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    try {
-      const now = this.ctx.currentTime;
-      // Мажорный аккорд колоколов: C5, E5, G5, C6
+    this.play((ctx, now) => {
+      // Мажорный перезвон колоколов: C5, E5, G5, C6
       const notes = [523.25, 659.25, 783.99, 1046.50];
       notes.forEach((freq, idx) => {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.type = 'sine';
-        const start = now + idx * 0.11;
+        const start = now + idx * 0.12;
         osc.frequency.setValueAtTime(freq, start);
-        gain.gain.setValueAtTime(0.14, start);
-        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.85);
+        gain.gain.setValueAtTime(0.32, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.95);
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        gain.connect(ctx.destination);
         osc.start(start);
-        osc.stop(start + 0.9);
+        osc.stop(start + 1.0);
       });
-    } catch (e) {}
+    });
   }
 
   // Предостерегающий зуммер (моргание / ошибка)
   warning() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    try {
-      const now = this.ctx.currentTime;
-      [0, 0.13].forEach((offset) => {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
+    this.play((ctx, now) => {
+      [0, 0.14].forEach((offset) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.type = 'square';
-        osc.frequency.setValueAtTime(420, now + offset);
-        osc.frequency.setValueAtTime(340, now + offset + 0.05);
-        gain.gain.setValueAtTime(0.1, now + offset);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.08);
+        osc.frequency.setValueAtTime(440, now + offset);
+        osc.frequency.setValueAtTime(350, now + offset + 0.05);
+        gain.gain.setValueAtTime(0.30, now + offset);
+        gain.gain.linearRampToValueAtTime(0.001, now + offset + 0.09);
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        gain.connect(ctx.destination);
         osc.start(now + offset);
-        osc.stop(now + offset + 0.09);
+        osc.stop(now + offset + 0.10);
       });
-    } catch (e) {}
+    });
   }
 
-  // Тик хронометра
+  // Тик хронометра (четкий механический щелчок)
   tick() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    try {
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
+    this.play((ctx, now) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(960, now);
-      gain.gain.setValueAtTime(0.09, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      osc.frequency.setValueAtTime(1080, now);
+      osc.frequency.exponentialRampToValueAtTime(320, now + 0.04);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.linearRampToValueAtTime(0.001, now + 0.05);
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.03);
-    } catch (e) {}
+      osc.stop(now + 0.06);
+    });
   }
 }
 
 const sfx = new FolkSoundEngine();
+if (typeof window !== 'undefined') {
+  window.sfx = sfx;
+  // Глобальная разблокировка Web Audio по первому тапу / клику / клавише
+  const unlockAudio = () => {
+    sfx.init();
+  };
+  ['click', 'touchstart', 'pointerdown', 'keydown'].forEach(evt => {
+    window.addEventListener(evt, unlockAudio, { passive: true });
+  });
+}
 
 // --- ДЕКОРАТИВНЫЕ ЛАТУННЫЕ УГОЛКИ (Folk-Tech Brass Corners) ---
 function BrassCorners({ className = "" }) {
@@ -998,6 +1025,7 @@ function WelcomeScreen({ onStart }) {
     : (window.KIOSK_CONFIG?.telegramBotUsername || window.KIOSK_CONFIG?.maxBotUsername || '')).replace(/^@/, '').trim();
 
   const handleOpenLastCard = async () => {
+    sfx.click();
     setLoadingLast(true);
     setErrorNotice("");
     try {
