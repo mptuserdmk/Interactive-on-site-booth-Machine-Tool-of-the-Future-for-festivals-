@@ -437,6 +437,20 @@ class MaxBotService:
             except Exception as e:
                 logger.warning("Не удалось зафиксировать delivery_link: %s", e)
 
+            # Следующее сообщение через 2 секунды (требование ТЗ)
+            try:
+                await asyncio.sleep(2.0)
+                follow_up_msg = (
+                    "Приглашаем вас подписаться:\n\n"
+                    "💬 MAX: https://max.ru/channel_cppm\n"
+                    "✈️ Telegram: https://t.me/cppm_centre\n"
+                    "💙 ВКонтакте: https://vk.ru/centre.cppm"
+                )
+                await self._send_message(chat_id, follow_up_msg)
+                logger.info("MAX Bot: приглашение к подписке успешно отправлено в чат %s", chat_id)
+            except Exception as e:
+                logger.warning("MAX Bot: ошибка отправки follow-up сообщения с соцсетями: %s", e)
+
     async def _send_welcome(self, chat_id: int, first_name: str):
         msg = (
             f"👋 Привет, {first_name}!\n\n"
