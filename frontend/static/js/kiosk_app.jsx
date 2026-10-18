@@ -33,7 +33,8 @@ function friendlyError(e) {
   return (e && e.message) || "Сбой привода — попробуй ещё раз";
 }
 
-// --- САУНД-ДИЗАЙН СТАНКА (Folk-Tech Web Audio Synthesizer) ---
+// --- САУНД-ДИЗАЙН СТАНКА (Folk-Tech Web Audio Synthesizer: Сказка 2.0 / Индустрия Чудес) ---
+// Принцип звукового дизайна: мягкие синусоидальные тона, латунный резонанс, отсутствие резких цифровых пиков
 class FolkSoundEngine {
   constructor() {
     this.ctx = null;
@@ -49,7 +50,7 @@ class FolkSoundEngine {
       if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         this.ctx = new AudioCtx();
-        console.info('[SFX] AudioContext created, state:', this.ctx.state);
+        console.info('[SFX] AudioContext активен, частота дискретизации:', this.ctx.sampleRate);
       }
       if (this.ctx && this.ctx.state === 'suspended') {
         this.ctx.resume().catch((err) => console.warn('[SFX] resume error:', err));
@@ -60,7 +61,7 @@ class FolkSoundEngine {
     return this.ctx;
   }
 
-  // Безопасное воспроизведение с гарантией активного AudioContext
+  // Безопасное воспроизведение с гарантией активного AudioContext и плавным микшированием
   play(action) {
     if (!this.enabled) return;
     try {
@@ -69,13 +70,13 @@ class FolkSoundEngine {
       if (this.ctx.state === 'suspended') {
         this.ctx.resume().then(() => {
           try {
-            action(this.ctx, Math.max(this.ctx.currentTime, 0.01));
+            action(this.ctx, Math.max(this.ctx.currentTime, 0.015));
           } catch (err) {
             console.warn('[SFX play error]', err);
           }
         }).catch((err) => console.warn('[SFX resume error]', err));
       } else {
-        action(this.ctx, Math.max(this.ctx.currentTime, 0.01));
+        action(this.ctx, Math.max(this.ctx.currentTime, 0.015));
       }
     } catch (e) {
       console.warn('[SFX execution error]', e);
@@ -91,163 +92,245 @@ class FolkSoundEngine {
       this.init();
       this.click();
     }
-    console.info('[SFX] Sound enabled:', this.enabled);
+    console.info('[SFX] Звуковые эффекты станка:', this.enabled ? 'ВКЛ' : 'ВЫКЛ');
     return this.enabled;
   }
 
-  // Латунный клик тумблера (четкий двухкомпонентный щелчок)
+  // 1. Мягкий тактильный отклик тумблера станка ЧПУ (бархатный упругий щелчок)
   click() {
     this.play((ctx, now) => {
-      // 1. Высокочастотный металлический щелчок (атака тумблера)
-      const osc1 = ctx.createOscillator();
-      const gain1 = ctx.createGain();
-      osc1.type = 'triangle';
-      osc1.frequency.setValueAtTime(1400, now);
-      osc1.frequency.exponentialRampToValueAtTime(380, now + 0.06);
-      gain1.gain.setValueAtTime(0.35, now);
-      gain1.gain.linearRampToValueAtTime(0.001, now + 0.07);
-      osc1.connect(gain1);
-      gain1.connect(ctx.destination);
-      osc1.start(now);
-      osc1.stop(now + 0.08);
-
-      // 2. Механический глухой стук корпуса станка
-      const osc2 = ctx.createOscillator();
-      const gain2 = ctx.createGain();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(240, now);
-      osc2.frequency.exponentialRampToValueAtTime(80, now + 0.09);
-      gain2.gain.setValueAtTime(0.28, now);
-      gain2.gain.linearRampToValueAtTime(0.001, now + 0.10);
-      osc2.connect(gain2);
-      gain2.connect(ctx.destination);
-      osc2.start(now);
-      osc2.stop(now + 0.11);
-    });
-  }
-
-  // Фиксация выбора карточки (былинный гармонический звон)
-  select() {
-    this.play((ctx, now) => {
-      [523.25, 659.25, 1046.50].forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        const start = now + idx * 0.05;
-        osc.frequency.setValueAtTime(freq, start);
-        gain.gain.setValueAtTime(0.30 - idx * 0.06, start);
-        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.22);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(start);
-        osc.stop(start + 0.24);
-      });
-    });
-  }
-
-  // Механический затвор камеры ЧПУ (подъем визора + спуск шторки)
-  shutter() {
-    this.play((ctx, now) => {
-      // 1-й щелчок: подъем латунного зеркала
-      const osc1 = ctx.createOscillator();
-      const gain1 = ctx.createGain();
-      osc1.type = 'square';
-      osc1.frequency.setValueAtTime(360, now);
-      osc1.frequency.exponentialRampToValueAtTime(90, now + 0.05);
-      gain1.gain.setValueAtTime(0.35, now);
-      gain1.gain.linearRampToValueAtTime(0.001, now + 0.06);
-      osc1.connect(gain1);
-      gain1.connect(ctx.destination);
-      osc1.start(now);
-      osc1.stop(now + 0.07);
-
-      // 2-й щелчок: спуск механической шторки
-      const osc2 = ctx.createOscillator();
-      const gain2 = ctx.createGain();
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(920, now + 0.08);
-      osc2.frequency.exponentialRampToValueAtTime(160, now + 0.18);
-      gain2.gain.setValueAtTime(0.40, now + 0.08);
-      gain2.gain.linearRampToValueAtTime(0.001, now + 0.20);
-      osc2.connect(gain2);
-      gain2.connect(ctx.destination);
-      osc2.start(now + 0.08);
-      osc2.stop(now + 0.22);
-    });
-  }
-
-  // Раскрутка привода станка (генерация нейросетью)
-  whir() {
-    this.play((ctx, now) => {
+      // Плавная атака без цифровых тресков (плавное нарастание за 4 мс)
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(140, now);
-      osc.frequency.exponentialRampToValueAtTime(520, now + 1.2);
-      gain.gain.setValueAtTime(0.02, now);
-      gain.gain.linearRampToValueAtTime(0.20, now + 0.4);
-      gain.gain.linearRampToValueAtTime(0.001, now + 1.25);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 1.28);
-    });
-  }
 
-  // Праздничный перезвон курантов (паспорт готов)
-  celebrate() {
-    this.play((ctx, now) => {
-      // Мажорный перезвон колоколов: C5, E5, G5, C6
-      const notes = [523.25, 659.25, 783.99, 1046.50];
-      notes.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        const start = now + idx * 0.12;
-        osc.frequency.setValueAtTime(freq, start);
-        gain.gain.setValueAtTime(0.32, start);
-        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.95);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(start);
-        osc.stop(start + 1.0);
-      });
-    });
-  }
-
-  // Предостерегающий зуммер (моргание / ошибка)
-  warning() {
-    this.play((ctx, now) => {
-      [0, 0.14].forEach((offset) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(440, now + offset);
-        osc.frequency.setValueAtTime(350, now + offset + 0.05);
-        gain.gain.setValueAtTime(0.30, now + offset);
-        gain.gain.linearRampToValueAtTime(0.001, now + offset + 0.09);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now + offset);
-        osc.stop(now + offset + 0.10);
-      });
-    });
-  }
-
-  // Тик хронометра (четкий механический щелчок)
-  tick() {
-    this.play((ctx, now) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(1080, now);
-      osc.frequency.exponentialRampToValueAtTime(320, now + 0.04);
-      gain.gain.setValueAtTime(0.25, now);
-      gain.gain.linearRampToValueAtTime(0.001, now + 0.05);
+      osc.frequency.setValueAtTime(540, now);
+      osc.frequency.exponentialRampToValueAtTime(180, now + 0.045);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.22, now + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
+
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(now);
       osc.stop(now + 0.06);
+
+      // Низкочастотный глухой демпфер корпуса (латунная станина)
+      const bodyOsc = ctx.createOscillator();
+      const bodyGain = ctx.createGain();
+      bodyOsc.type = 'sine';
+      bodyOsc.frequency.setValueAtTime(140, now);
+      bodyOsc.frequency.exponentialRampToValueAtTime(60, now + 0.04);
+
+      bodyGain.gain.setValueAtTime(0.0001, now);
+      bodyGain.gain.linearRampToValueAtTime(0.18, now + 0.005);
+      bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+
+      bodyOsc.connect(bodyGain);
+      bodyGain.connect(ctx.destination);
+      bodyOsc.start(now);
+      bodyOsc.stop(now + 0.055);
+    });
+  }
+
+  // 2. Кристальный камертон филиграни (былинный выбор стихии/суперсилы)
+  // Нежный перезвон чистой квинты с бархатным затуханием
+  select() {
+    this.play((ctx, now) => {
+      // Аккорд былинного камертона: E5 (659.3 Гц) и B5 (987.8 Гц) с мягким бархатным теплом
+      const notes = [
+        { freq: 659.25, gain: 0.18, delay: 0 },
+        { freq: 987.77, gain: 0.14, delay: 0.035 },
+        { freq: 329.63, gain: 0.10, delay: 0 } // Глубокая нижняя октава для объема
+      ];
+
+      notes.forEach(({ freq, gain: peakGain, delay }) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const start = now + delay;
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.linearRampToValueAtTime(peakGain, start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.32);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.34);
+      });
+    });
+  }
+
+  // 3. Лазерно-оптический затвор станка ЧПУ (фокусировка визора + мягкая диафрагма)
+  shutter() {
+    this.play((ctx, now) => {
+      // 1 фаза: Мягкий оптический свип фокусировки визора (без резких гармоник)
+      const sweepOsc = ctx.createOscillator();
+      const sweepGain = ctx.createGain();
+      sweepOsc.type = 'sine';
+      sweepOsc.frequency.setValueAtTime(340, now);
+      sweepOsc.frequency.exponentialRampToValueAtTime(680, now + 0.07);
+
+      sweepGain.gain.setValueAtTime(0.0001, now);
+      sweepGain.gain.linearRampToValueAtTime(0.14, now + 0.02);
+      sweepGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+
+      sweepOsc.connect(sweepGain);
+      sweepGain.connect(ctx.destination);
+      sweepOsc.start(now);
+      sweepOsc.stop(now + 0.085);
+
+      // 2 фаза: Мягкий пневматический щелчок шторки визора (через 70 мс)
+      const snapTime = now + 0.075;
+      const snapOsc = ctx.createOscillator();
+      const snapGain = ctx.createGain();
+      snapOsc.type = 'sine';
+      snapOsc.frequency.setValueAtTime(460, snapTime);
+      snapOsc.frequency.exponentialRampToValueAtTime(110, snapTime + 0.06);
+
+      snapGain.gain.setValueAtTime(0.0001, snapTime);
+      snapGain.gain.linearRampToValueAtTime(0.24, snapTime + 0.006);
+      snapGain.gain.exponentialRampToValueAtTime(0.0001, snapTime + 0.09);
+
+      snapOsc.connect(snapGain);
+      snapGain.connect(ctx.destination);
+      snapOsc.start(snapTime);
+      snapOsc.stop(snapTime + 0.095);
+    });
+  }
+
+  // 4. Квантовый разгон привода станка (мягкий гармонический ротационный гул)
+  whir() {
+    this.play((ctx, now) => {
+      // Две гармоничные синусоиды: фундаментальная + октава (гул магнитного шпинделя)
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(110, now);
+      osc1.frequency.exponentialRampToValueAtTime(260, now + 1.1);
+
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(220, now);
+      osc2.frequency.exponentialRampToValueAtTime(520, now + 1.1);
+
+      // Мягкий наплыв и кинематографичный спад
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.16, now + 0.25);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.25);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 1.3);
+      osc2.stop(now + 1.3);
+    });
+  }
+
+  // 5. Торжественный перезвон курантов («Индустрия Чудес» / Паспорт готов)
+  // Хрустальные колокола Спасской башни в теплой синусоидальной обработке
+  celebrate() {
+    this.play((ctx, now) => {
+      // Мажорный русский колокольный лад: C5 (523.2), E5 (659.3), G5 (784.0), C6 (1046.5)
+      const bells = [
+        { freq: 523.25, time: 0 },
+        { freq: 659.25, time: 0.10 },
+        { freq: 783.99, time: 0.20 },
+        { freq: 1046.50, time: 0.30 }
+      ];
+
+      bells.forEach(({ freq, time }) => {
+        const start = now + time;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+
+        // Плавная атака колокола (12 мс) и долгое певучее эхо (1.1 сек)
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.linearRampToValueAtTime(0.20, start + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 1.1);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 1.15);
+
+        // Тонкий мерцающий обертон на октаву выше для хрустального сияния
+        const overtone = ctx.createOscillator();
+        const overGain = ctx.createGain();
+        overtone.type = 'sine';
+        overtone.frequency.setValueAtTime(freq * 2, start);
+
+        overGain.gain.setValueAtTime(0.0001, start);
+        overGain.gain.linearRampToValueAtTime(0.05, start + 0.01);
+        overGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.4);
+
+        overtone.connect(overGain);
+        overGain.connect(ctx.destination);
+        overtone.start(start);
+        overtone.stop(start + 0.45);
+      });
+    });
+  }
+
+  // 6. Деликатный сигнал калибровки сенсора (вместо резкого зуммера)
+  // Дружелюбный, вежливый двухтональный сигнал напоминания
+  warning() {
+    this.play((ctx, now) => {
+      // Два мягких мелодичных тона: G4 (392 Гц) -> E4 (329.6 Гц)
+      const pings = [
+        { freq: 392.00, time: 0 },
+        { freq: 329.63, time: 0.14 }
+      ];
+
+      pings.forEach(({ freq, time }) => {
+        const start = now + time;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.linearRampToValueAtTime(0.18, start + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.16);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.18);
+      });
+    });
+  }
+
+  // 7. Мягкий балансир хронометра (деревянно-латунный маятник станка)
+  tick() {
+    this.play((ctx, now) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(380, now);
+      osc.frequency.exponentialRampToValueAtTime(140, now + 0.035);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.16, now + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.05);
     });
   }
 }
