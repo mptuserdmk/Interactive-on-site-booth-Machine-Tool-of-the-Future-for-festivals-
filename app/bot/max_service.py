@@ -3,7 +3,7 @@ import logging
 import re
 import ssl
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union, Any
 from urllib.parse import parse_qs, urlparse
 import httpx
 
@@ -52,6 +52,75 @@ class MaxBotService:
             return clean
         return None
 
+    @staticmethod
+    def _extract_file_token(data: Any) -> Optional[str]:
+        """
+        Извлекает токен медиафайла из ответа сервера загрузки oneme.ru / dev.max.ru.
+        Поддерживает форматы:
+        - {"photos": {"0": {"token": "..."}}} (официальный ответ для картинок в oneme.ru)
+        - {"photos": [{"token": "..."}]}
+        - {"docs": ...} / {"files": ...}
+        - {"token": "..."} / {"mediafile_token": "..."}
+        """
+        if not data:
+            return None
+        if isinstance(data, str):
+            text = data.strip()
+            # Проверка, не является ли сама строка JSON-объектом
+            if text.startswith("{") and text.endswith("}"):
+                try:
+                    import json
+                    parsed = json.loads(text)
+                    return MaxBotService._extract_file_token(parsed)
+                except Exception:
+                    pass
+            # Иначе ищем вхождение "token":"..." регулярным выражением
+            match = re.search(r'"token"\s*:\s*"([^"]+)"', text)
+            if match:
+                return match.group(1).replace(r"\/", "/")
+            return text if len(text) > 16 and not text.startswith("<") else None
+
+        if not isinstance(data, dict):
+            return None
+
+        # 1. Специфика oneme.ru для photos: {"photos": {"0": {"token": "..."}}}
+        photos = data.get("photos")
+        if isinstance(photos, dict):
+            for val in photos.values():
+                if isinstance(val, dict) and val.get("token"):
+                    return str(val["token"]).strip()
+        elif isinstance(photos, list):
+            for item in photos:
+                if isinstance(item, dict) and item.get("token"):
+                    return str(item["token"]).strip()
+
+        # 2. Специфика docs / files / videos
+        for container_key in ("docs", "files", "videos", "audios"):
+            container = data.get(container_key)
+            if isinstance(container, dict):
+                for val in container.values():
+                    if isinstance(val, dict) and val.get("token"):
+                        return str(val["token"]).strip()
+            elif isinstance(container, list):
+                for item in container:
+                    if isinstance(item, dict) and item.get("token"):
+                        return str(item["token"]).strip()
+
+        # 3. Прямые ключи
+        for k in ("token", "mediafile_token", "file_token"):
+            val = data.get(k)
+            if val and isinstance(val, str):
+                return val.strip()
+
+        # 4. Рекурсивный поиск на случай глубокой вложенности
+        for v in data.values():
+            if isinstance(v, (dict, list)):
+                found = MaxBotService._extract_file_token(v)
+                if found:
+                    return found
+
+        return None
+
     @property
     def is_configured(self) -> bool:
         token = (getattr(settings, "MAX_BOT_TOKEN", "") or "").strip()
@@ -71,14 +140,32 @@ class MaxBotService:
             "User-Agent": "AI-Festival-Kiosk/1.0"
         }
 
-    def _build_ssl_context(self) -> ssl.SSLContext:
-        """Создает SSL-контекст с системными сертификатами Windows/ОС."""
+    def _build_ssl_context(self) -> Union[ssl.SSLContext, bool]:
+        """
+        Создает SSL-контекст с поддержкой доверенных корневых сертификатов Минцифры РФ (Госуслуги)
+        для взаимодействия с Bot API dev.max.ru / platform-api2.max.ru.
+        """
+        verify_ssl = getattr(settings, "MAX_BOT_VERIFY_SSL", True)
+        if not verify_ssl:
+            logger.info("MAX Bot: проверка SSL отключена через MAX_BOT_VERIFY_SSL=false")
+            return False
+
+        ca_bundle_path = Path(__file__).resolve().parent / "certs" / "russian_trusted_ca.pem"
         try:
             ctx = ssl.create_default_context()
             ctx.load_default_certs()
+            if ca_bundle_path.exists():
+                ctx.load_verify_locations(cafile=str(ca_bundle_path))
+                logger.debug("MAX Bot: загружены сертификаты Минцифры РФ из %s", ca_bundle_path)
             return ctx
-        except Exception:
-            return ssl.create_default_context()
+        except Exception as e:
+            logger.warning("MAX Bot: не удалось загрузить системные сертификаты (%s), пробуем cafile напрямую", e)
+            try:
+                if ca_bundle_path.exists():
+                    return ssl.create_default_context(cafile=str(ca_bundle_path))
+            except Exception:
+                pass
+            return False
 
     async def start(self):
         if not self.is_configured:
@@ -94,13 +181,16 @@ class MaxBotService:
             timeout=httpx.Timeout(connect=15.0, read=40.0, write=20.0, pool=30.0)
         )
 
-        # 1. Проверяем токен и данные бота (GET /users/me или GET /me)
+        # 1. Проверяем токен и данные бота (GET /me или GET /users/me)
         connected = False
         try:
-            resp = await self._client.get(f"{self.api_base}/users/me", headers=self.auth_headers)
+            resp = await self._client.get(f"{self.api_base}/me", headers=self.auth_headers)
+            if resp.status_code == 404:
+                resp = await self._client.get(f"{self.api_base}/users/me", headers=self.auth_headers)
+
             if resp.status_code == 200:
                 user_data = resp.json()
-                self.bot_username = user_data.get("username") or user_data.get("name") or ""
+                self.bot_username = user_data.get("username") or user_data.get("name") or user_data.get("first_name") or ""
                 if not settings.MAX_BOT_USERNAME and self.bot_username:
                     settings.MAX_BOT_USERNAME = self.bot_username
 
@@ -108,7 +198,7 @@ class MaxBotService:
                     "🤖 MAX Bot подключен успешно: @%s (ID: %s, Имя: %s)",
                     self.bot_username or settings.MAX_BOT_USERNAME,
                     user_data.get("user_id"),
-                    user_data.get("name")
+                    user_data.get("name") or user_data.get("first_name")
                 )
                 connected = True
             elif resp.status_code in (401, 403):
@@ -117,10 +207,19 @@ class MaxBotService:
                 await self.stop()
                 return
             else:
-                logger.warning("MAX Bot /users/me вернул HTTP %s: %s", resp.status_code, resp.text[:120])
+                logger.warning("MAX Bot /me вернул HTTP %s: %s", resp.status_code, resp.text[:120])
                 connected = True
         except Exception as e:
-            logger.warning("MAX Bot: предупреждение при проверке /users/me: %s. Пробуем продолжить...", e)
+            if "CERTIFICATE_VERIFY_FAILED" in str(e):
+                logger.warning("MAX Bot: ошибка проверки сертификата Минцифры. Переключаемся на verify=False fallback...")
+                if self._client:
+                    await self._client.aclose()
+                self._client = httpx.AsyncClient(
+                    verify=False,
+                    timeout=httpx.Timeout(connect=15.0, read=40.0, write=20.0, pool=30.0)
+                )
+            else:
+                logger.warning("MAX Bot: предупреждение при проверке /me: %s. Пробуем продолжить...", e)
             connected = True
 
         if not connected:
@@ -163,6 +262,21 @@ class MaxBotService:
             except Exception as e:
                 if not self._running:
                     break
+                err_str = str(e)
+                if "CERTIFICATE_VERIFY_FAILED" in err_str:
+                    logger.warning("MAX Bot: сбой сертификата в цикле polling. Переподключение с verify=False...")
+                    if self._client:
+                        try:
+                            await self._client.aclose()
+                        except Exception:
+                            pass
+                    self._client = httpx.AsyncClient(
+                        verify=False,
+                        timeout=httpx.Timeout(connect=15.0, read=40.0, write=20.0, pool=30.0)
+                    )
+                    await asyncio.sleep(1.0)
+                    continue
+
                 logger.warning("MAX Bot polling error: %s", e)
                 await asyncio.sleep(2.0)
 
@@ -399,16 +513,20 @@ class MaxBotService:
             files = {"data": ("card.jpg", photo_bytes, "image/jpeg")}
             upload_resp = await self._client.post(upload_url, files=files, timeout=30.0)
 
-            # Если токен не был в URL, пробуем взять его из JSON ответа загрузки
+            # Если токен не был в URL, извлекаем его из ответа сервера загрузки oneme.ru
             if not token and upload_resp.status_code == 200:
                 try:
                     up_json = upload_resp.json()
-                    token = up_json.get("token") or up_json.get("mediafile_token")
-                except Exception:
-                    pass
+                    token = self._extract_file_token(up_json)
+                except Exception as e:
+                    logger.warning("MAX Bot: ошибка парсинга JSON ответа загрузки: %s", e)
+
+            # Резервный поиск по тексту, если JSON не распарсился
+            if not token and upload_resp.status_code == 200:
+                token = self._extract_file_token(upload_resp.text)
 
             if not token:
-                logger.error("MAX Bot: не удалось определить токен файла после загрузки")
+                logger.error("MAX Bot: не удалось определить токен файла после загрузки. Ответ (HTTP %s): %s", upload_resp.status_code, upload_resp.text[:200])
                 return False
 
             # Шаг 3: Отправляем сообщение с вложением
