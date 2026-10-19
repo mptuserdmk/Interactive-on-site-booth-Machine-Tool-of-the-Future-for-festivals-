@@ -230,7 +230,7 @@
     };
   </script>
 
-  <!-- Load and Execute React Application -->
-  <script type="text/babel" src="/static/js/kiosk_app.jsx"></script>
+  <!-- Load and Execute React Application with Cache Buster -->
+  <script type="text/babel" src="/static/js/kiosk_app.jsx?v={{ settings.APP_VERSION }}&t=clean"></script>
 </body>
 </html>

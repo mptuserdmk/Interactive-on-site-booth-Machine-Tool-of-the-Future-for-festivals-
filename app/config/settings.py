@@ -98,6 +98,7 @@ class Settings(BaseSettings):
     MAX_BOT_TOKEN: str = ""
     MAX_BOT_USERNAME: str = ""
     MAX_API_BASE: str = "https://platform-api2.max.ru"
+    MAX_BOT_VERIFY_SSL: bool = True
 
     # Telegram Bot
     TELEGRAM_BOT_TOKEN: str = ""

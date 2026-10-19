@@ -32,7 +32,8 @@ async def capture_usb_snapshot():
     return {
         "status": "ok",
         "session_id": sess.id,
-        "photo_url": f"/media/photos/{sess.id}.jpg"
+        "photo_url": f"/media/photos/{sess.id}.jpg",
+        "photo_validation": sess.meta.get("photo_validation")
     }
 
 @router.post("/upload-ota", summary="Over-the-air photo upload from iPhone/Android")
@@ -51,5 +52,6 @@ async def upload_ota_photo(file: UploadFile = File(...)):
         "status": "ok",
         "session_id": sess.id,
         "photo_url": f"/media/photos/{sess.id}.jpg",
+        "photo_validation": sess.meta.get("photo_validation"),
         "message": "Photo uploaded from mobile camera successfully"
     }

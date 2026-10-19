@@ -153,12 +153,12 @@ function CyberKhokhlomaFlankLeft() {
             {/* Травные побеги (кудринка) */}
             <path d="M48,38 C68,32 92,38 102,52" fill="none" stroke="url(#goldKhokhGradLeft)" strokeWidth="1.6" strokeLinecap="round" />
             <path d="M78,105 C95,102 112,114 120,130" fill="none" stroke="url(#goldKhokhGradLeft)" strokeWidth="1.6" strokeLinecap="round" />
-            
+
             {/* Кибернетические дорожки ЧПУ (PCB traces) */}
             <path d="M145,130 L175,130 L195,150 L220,150" fill="none" stroke="#C59A45" strokeWidth="1.4" opacity="0.85" />
             <circle cx="220" cy="150" r="3" fill="#F7DF94" stroke="#8B651B" strokeWidth="1" />
             <circle cx="220" cy="150" r="1" fill="#BA1B1D" />
-            
+
             <path d="M102,52 L124,30 L158,30" fill="none" stroke="#C59A45" strokeWidth="1.4" opacity="0.85" />
             <circle cx="158" cy="30" r="2.8" fill="#BA1B1D" stroke="#F7DF94" strokeWidth="0.8" />
 
@@ -350,7 +350,7 @@ function CyberKhokhlomaFlankRight() {
 
             {/* Оперение Жар-Птицы (веерные золотые и багряные перья-лезвия) */}
             <path d="M225,20 C180,25 150,55 160,95 C168,125 130,135 95,120 C70,110 75,70 110,65 C135,60 145,85 125,98" fill="none" stroke="url(#goldKhokhGradRight)" strokeWidth="2.8" strokeLinecap="round" />
-            
+
             {/* Перья с гравировкой и микросхемами */}
             <path d="M220,25 C190,30 170,50 165,70 C185,55 205,42 220,25 Z" fill="url(#rubyFeatherGrad)" stroke="#F7DF94" strokeWidth="1" opacity="0.95" />
             <path d="M205,45 C175,55 155,75 150,95 C170,80 190,65 205,45 Z" fill="url(#goldKhokhGradRight)" stroke="#BA1B1D" strokeWidth="1" opacity="0.9" />
@@ -813,10 +813,10 @@ function WelcomeScreen({ onStart }) {
   const baseUrl = (window.KIOSK_CONFIG?.baseUrl || window.location.origin).replace(/\/+$/, '');
   const qrUrl = lastCardSession
     ? (botUsername
-        ? (isMaxPlatform
-            ? `https://max.ru/${botUsername}?start=${lastCardSession.id}`
-            : `https://t.me/${botUsername}?start=${lastCardSession.id}`)
-        : `${baseUrl}/card/${lastCardSession.id}`)
+      ? (isMaxPlatform
+        ? `https://max.ru/${botUsername}?start=${lastCardSession.id}`
+        : `https://t.me/${botUsername}?start=${lastCardSession.id}`)
+      : `${baseUrl}/card/${lastCardSession.id}`)
     : '';
 
   return (
@@ -977,11 +977,15 @@ function WelcomeScreen({ onStart }) {
 }
 
 // --- ЭКРАН 2: КАМЕРА И ОПТИЧЕСКИЙ ВИЗИР (Camera Slide) ---
-function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, busy }) {
+function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRetake, busy }) {
   const [streamKey, setStreamKey] = useState(Date.now());
   const [isCapturing, setIsCapturing] = useState(false);
   const [flash, setFlash] = useState(false);
   const [shutterRing, setShutterRing] = useState(false);
+
+  const validation = session?.meta?.photo_validation;
+  const isBlink = Boolean(validation?.blink_detected);
+  const noFace = Boolean(validation && !validation.face_detected);
 
   const handleShutter = async () => {
     setIsCapturing(true);
@@ -1006,19 +1010,41 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, bus
             ОПТИЧЕСКИЙ БЛОК ЧПУ // КАЛИБРОВКА ОБРАЗА
           </span>
           <h2 className="text-2xl sm:text-3xl font-serif font-black tracking-tight text-ink-main mt-0.5">
-            {isReview ? "ТВОЙ КАДР ОТЛИЧНЫЙ! 🌟" : "УЛЫБНИСЬ В КАМЕРУ! 📸"}
+            {!isReview
+              ? "УЛЫБНИСЬ В КАМЕРУ! 📸"
+              : isBlink
+                ? "ОЙ, КАЖЕТСЯ, ТЫ МОРГНУЛ! 👁️"
+                : noFace
+                  ? "ЛИЦО НЕ В ПРИЦЕЛЕ! ⚠️"
+                  : "ТВОЙ КАДР ОТЛИЧНЫЙ! 🌟"}
           </h2>
           <p className="font-serif italic text-xs sm:text-sm text-ink-muted">
-            {isReview
-              ? "Оптический слепок зафиксирован. Утверди его или перезапусти оптику станка."
-              : "Взгляни в латунный визор станка и отчекань свой портрет для гильдии."}
+            {!isReview
+              ? "Взгляни в латунный визор станка и отчекань свой портрет для гильдии."
+              : isBlink
+                ? "Оптический датчик зафиксировал закрытые глаза. Рекомендуем переснять кадр, чтобы паспорт инженера получился безупречным!"
+                : noFace
+                  ? "Оптический сенсор не зафиксировал лицо. Встаньте прямо напротив объектива."
+                  : "Оптический слепок зафиксирован. Утверди его или перезапусти оптику станка."}
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-panel-graphite border border-brass/50 text-brass-bright font-mono text-[10px] sm:text-xs font-bold self-start sm:self-auto">
-          <span className="w-2 h-2 rounded-full bg-cyber-cyan animate-pulse"></span>
-          <span>ОПТИКА: ОНЛАЙН (ГОСТ 2.0)</span>
-        </div>
+        {isReview && isBlink ? (
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-ruby/20 border-2 border-ruby text-ruby font-mono text-[10px] sm:text-xs font-bold self-start sm:self-auto animate-pulse shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-ruby"></span>
+            <span>ДАТЧИК: ОБНАРУЖЕНО МОРГАНИЕ</span>
+          </div>
+        ) : isReview && noFace ? (
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-ruby/20 border-2 border-ruby text-ruby font-mono text-[10px] sm:text-xs font-bold self-start sm:self-auto animate-pulse shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-ruby"></span>
+            <span>ДАТЧИК: ЛИЦО НЕ НАЙДЕНО</span>
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-panel-graphite border border-brass/50 text-brass-bright font-mono text-[10px] sm:text-xs font-bold self-start sm:self-auto">
+            <span className="w-2 h-2 rounded-full bg-cyber-cyan animate-pulse"></span>
+            <span>ОПТИКА: {isReview ? "ГЛАЗА ОТКРЫТЫ (ГОСТ 2.0)" : "ОНЛАЙН (ГОСТ 2.0)"}</span>
+          </div>
+        )}
       </div>
 
       {/* 7/5 Асимметричная раскладка станка */}
@@ -1075,14 +1101,36 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, bus
           <BrassCorners />
 
           <div className="space-y-2.5 sm:space-y-3">
-            <div className="p-2.5 sm:p-3 rounded-xl bg-parchment border border-brass/30">
-              <span className="text-[9px] sm:text-[10px] font-mono uppercase font-bold tracking-wider text-ruby block">
-                Сказочный наказ мастера
-              </span>
-              <p className="mt-0.5 text-xs sm:text-sm font-serif italic text-ink-main leading-relaxed">
-                "Держи взгляд прямой и смелый, как подобает инженеру Руси великой. Нажми рубиновый затвор, когда будешь готов!"
-              </p>
-            </div>
+            {isReview && isBlink ? (
+              <div className="p-2.5 sm:p-3 rounded-xl bg-ruby/15 border-2 border-ruby text-ink-main shadow-tactile-ruby animate-pulse">
+                <span className="text-[9px] sm:text-[10px] font-mono uppercase font-bold tracking-wider text-ruby block mb-0.5">
+                  👁️ Оптический контроль станка
+                </span>
+                <p className="mt-0.5 text-xs sm:text-sm font-serif italic text-ink-main leading-relaxed">
+                  "Похоже, в момент вспышки глаза закрылись! Нажми «ПЕРЕСНЯТЬ ЗАНОВО», чтобы портрет мастера получился живым и выразительным."
+                </p>
+              </div>
+            ) : isReview && noFace ? (
+              <div className="p-2.5 sm:p-3 rounded-xl bg-ruby/15 border-2 border-ruby text-ink-main shadow-tactile-ruby">
+                <span className="text-[9px] sm:text-[10px] font-mono uppercase font-bold tracking-wider text-ruby block mb-0.5">
+                  ⚠️ Предупреждение оптики
+                </span>
+                <p className="mt-0.5 text-xs sm:text-sm font-serif italic text-ink-main leading-relaxed">
+                  "Оптический датчик не зафиксировал лицо в центре. Встань ровно напротив камеры и повтори снимок."
+                </p>
+              </div>
+            ) : (
+              <div className="p-2.5 sm:p-3 rounded-xl bg-parchment border border-brass/30">
+                <span className="text-[9px] sm:text-[10px] font-mono uppercase font-bold tracking-wider text-ruby block">
+                  Сказочный наказ мастера
+                </span>
+                <p className="mt-0.5 text-xs sm:text-sm font-serif italic text-ink-main leading-relaxed">
+                  {isReview
+                    ? "Взгляд ясный и открытый — как и подобает инженеру будущего! Утверждай снимок."
+                    : "Держи взгляд прямой и смелый, как подобает инженеру Руси великой. Нажми рубиновый затвор, когда будешь готов!"}
+                </p>
+              </div>
+            )}
 
             {/* Индустриальная плашка телеметрии ЧПУ */}
             <div className="p-2.5 sm:p-3 rounded-xl bg-panel-graphite text-brass-bright border border-brass/40 flex items-center justify-between font-mono text-xs">
@@ -1092,10 +1140,14 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, bus
                 </div>
                 <div>
                   <div className="font-bold text-white uppercase text-[11px] sm:text-xs">Привод оптической ячейки</div>
-                  <div className="text-ink-faint text-[9px] sm:text-[10px]">Готовность 100% • Станок № 1</div>
+                  <div className="text-ink-faint text-[9px] sm:text-[10px]">
+                    {isReview && isBlink ? "Обнаружено закрытие век" : "Готовность 100% • Станок № 1"}
+                  </div>
                 </div>
               </div>
-              <span className="text-cyber-cyan font-bold text-xs">ОК</span>
+              <span className={`font-bold text-xs ${isReview && isBlink ? "text-ruby" : "text-cyber-cyan"}`}>
+                {isReview && isBlink ? "МОРГАНИЕ" : "ОК"}
+              </span>
             </div>
           </div>
 
@@ -1129,6 +1181,32 @@ function CameraScreen({ isReview, sessionId, onCapture, onConfirm, onRetake, bus
                     </div>
                   </button>
                 </div>
+              </div>
+            ) : isBlink ? (
+              <div className="flex flex-col gap-2.5 sm:gap-3">
+                <FolkButton
+                  variant="primary"
+                  size="md"
+                  onClick={onRetake}
+                  disabled={busy}
+                  ariaLabel="Переснять фотографию с открытыми глазами"
+                  className="w-full animate-pulse shadow-tactile-ruby"
+                >
+                  {ICONS.refresh}
+                  <span>ПЕРЕСНЯТЬ ЗАНОВО</span>
+                </FolkButton>
+
+                <FolkButton
+                  variant="secondary"
+                  size="sm"
+                  onClick={onConfirm}
+                  loading={busy}
+                  ariaLabel="Всё равно подтвердить фотографию"
+                  className="w-full opacity-80 hover:opacity-100"
+                >
+                  <span>ОСТАВИТЬ КАК ЕСТЬ</span>
+                  {ICONS.arrowRight}
+                </FolkButton>
               </div>
             ) : (
               <div className="flex flex-col gap-2.5 sm:gap-3">
@@ -1265,9 +1343,8 @@ function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type,
                   <img
                     src={bgImage}
                     alt=""
-                    className={`w-full h-full object-cover object-center opacity-60 transition-transform duration-500 ease-out transform ${
-                      isSelected ? 'scale-105' : 'group-hover:scale-110'
-                    }`}
+                    className={`w-full h-full object-cover object-center opacity-60 transition-transform duration-500 ease-out transform ${isSelected ? 'scale-105' : 'group-hover:scale-110'
+                      }`}
                   />
                   {/* Пергаментный мягкий градиент для сохранения идеального контраста текста */}
                   <div className="absolute inset-0 bg-gradient-to-t from-parchment-card/85 via-parchment-card/55 to-parchment-card/20" />
@@ -1514,7 +1591,7 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
             : (data?.diagnostics?.telegram?.username || data?.diagnostics?.max_bot?.username);
           if (u) setBotUsername(u.replace(/^@/, '').trim());
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [botUsername, isMaxPlatform]);
 
@@ -1527,8 +1604,8 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
 
   const qrDestination = hasBot
     ? (isMaxPlatform
-        ? `https://max.ru/${botUsername}?start=${session?.id || ''}`
-        : `https://t.me/${botUsername}?start=${session?.id || ''}`)
+      ? `https://max.ru/${botUsername}?start=${session?.id || ''}`
+      : `https://t.me/${botUsername}?start=${session?.id || ''}`)
     : `${baseUrl}/card/${session?.id || ''}`;
 
   // Предзагрузка QR-кода в кеш браузера, пока створки еще сомкнуты
@@ -1645,8 +1722,8 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
             <p className="font-serif italic text-[11px] sm:text-xs text-ink-main leading-tight max-w-[240px] mx-auto">
               {hasBot
                 ? (isMaxPlatform
-                    ? "Отсканируй QR, чтобы мгновенно получить карточку в мессенджере МАКС!"
-                    : "Отсканируй QR, чтобы мгновенно получить карточку в Telegram!")
+                  ? "Отсканируй QR, чтобы мгновенно получить карточку в мессенджере МАКС!"
+                  : "Отсканируй QR, чтобы мгновенно получить карточку в Telegram!")
                 : "Отсканируй QR смартфоном, чтобы открыть и скачать карточку в HD!"}
             </p>
           </div>
@@ -1996,6 +2073,7 @@ function KioskRoot() {
         <CameraScreen
           isReview={false}
           busy={busy}
+          session={session}
           onCapture={handleCapturePhoto}
           onConfirm={handleConfirmPhoto}
           onRetake={handleRetakePhoto}
@@ -2009,6 +2087,7 @@ function KioskRoot() {
           isReview={true}
           busy={busy}
           sessionId={session.id}
+          session={session}
           onCapture={handleCapturePhoto}
           onConfirm={handleConfirmPhoto}
           onRetake={handleRetakePhoto}

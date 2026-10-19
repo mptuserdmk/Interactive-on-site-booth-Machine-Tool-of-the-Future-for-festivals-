@@ -171,6 +171,12 @@ class SessionManager:
             raise InvalidTransition("Сессия изменилась, пока сохранялось фото")
         sess.photo_path = str(photo_path)
         sess.status = SessionState.PHOTO_TAKEN
+        try:
+            from app.camera.blink_detector import validate_photo
+            val_res = await asyncio.to_thread(validate_photo, photo_path)
+            sess.meta["photo_validation"] = val_res.to_dict()
+        except Exception as e:
+            logger.warning("Photo validation / blink detection warning: %s", e)
         self._save(sess)
         await self._notify(sess)
 
@@ -186,6 +192,7 @@ class SessionManager:
         sess = self._require(PHOTO_STATES, "переснять фото")
         delete_file_safely(sess.photo_path)
         sess.photo_path = None
+        sess.meta.pop("photo_validation", None)
         sess.status = SessionState.PHOTO_PENDING
         self._save(sess)
         await self._notify(sess)
