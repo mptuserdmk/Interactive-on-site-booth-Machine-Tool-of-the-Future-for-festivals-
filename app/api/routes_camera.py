@@ -23,9 +23,17 @@ async def stream_camera():
 async def capture_usb_snapshot():
     sess = session_manager.begin_photo()
     out_path = settings.PHOTOS_DIR / f"{sess.id}_raw.jpg"
-    # OpenCV-захват и запись файла блокируют — в пул потоков (H13)
+    # OpenCV-захват и запись файла блокируют — в пул потоков с жестким таймаутом (H13)
     try:
-        await asyncio.to_thread(camera_manager.capture_usb_snapshot, out_path)
+        await asyncio.wait_for(
+            asyncio.to_thread(camera_manager.capture_usb_snapshot, out_path),
+            timeout=6.0
+        )
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=504,
+            detail="Оптический датчик не успел зафиксировать кадр. Попробуйте еще раз."
+        )
     except CameraUnavailable as e:
         raise HTTPException(status_code=503, detail=str(e)) from e
     await session_manager.attach_photo(sess.id, out_path)

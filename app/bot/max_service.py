@@ -24,6 +24,9 @@ class MaxBotService:
         self._client: Optional[httpx.AsyncClient] = None
         self.last_marker: Optional[int] = None
         self.bot_username: str = ""
+        self._in_flight: set = set()
+        self._delivered: set = set()
+        self._tasks: set = set()
 
     @staticmethod
     def _extract_session_id(text_or_payload: str) -> Optional[str]:
@@ -255,7 +258,9 @@ class MaxBotService:
 
                 updates = data.get("updates", [])
                 for upd in updates:
-                    await self._handle_update(upd)
+                    t = asyncio.create_task(self._handle_update(upd))
+                    self._tasks.add(t)
+                    t.add_done_callback(self._tasks.discard)
 
             except asyncio.CancelledError:
                 break
@@ -364,6 +369,29 @@ class MaxBotService:
                 return c
         return None
 
+    def _schedule_followup(self, chat_id: int):
+        task = asyncio.create_task(self._send_followup(chat_id))
+        self._tasks.add(task)
+        task.add_done_callback(self._tasks.discard)
+
+    async def _send_followup(self, chat_id: int):
+        try:
+            await asyncio.sleep(2.0)
+            follow_up_msg = (
+                "Приглашаем вас подписаться:\n\n"
+                "💬 MAX: https://max.ru/channel_cppm\n"
+                "✈️ Telegram: https://t.me/cppm_centre\n"
+                "💙 ВКонтакте: https://vk.ru/centre.cppm"
+            )
+            for _ in range(2):
+                sent = await self._send_message(chat_id, follow_up_msg)
+                if sent:
+                    logger.info("MAX Bot: приглашение к подписке успешно отправлено в чат %s", chat_id)
+                    break
+                await asyncio.sleep(1.0)
+        except Exception as e:
+            logger.warning("MAX Bot: ошибка отправки follow-up сообщения с соцсетями: %s", e)
+
     async def _deliver_card(
         self,
         chat_id: int,
@@ -378,78 +406,87 @@ class MaxBotService:
             session_id = extracted
         session_id = session_id.strip()
 
-        logger.info("MAX: Доставка карточки для сессии %s в чат %s (@%s)", session_id, chat_id, username or "none")
-
-        # 1. Поиск сессии в базе
-        session = db.get_session(session_id)
-        if not session:
-            await asyncio.sleep(1.0)
-            session = db.get_session(session_id)
-
-        # 2. Ожидание завершения генерации до 30 секунд
-        card_file = self._find_card_file(session_id, session)
-        retries = 15
-        while not card_file and retries > 0:
-            if retries == 15:
-                await self._send_message(
-                    chat_id,
-                    "⏳ Твой цифровой паспорт ещё куётся на «Станке Будущего»! Подожди пару секунд, сейчас пришлю..."
-                )
-            await asyncio.sleep(2.0)
-            session = db.get_session(session_id) or session
-            card_file = self._find_card_file(session_id, session)
-            retries -= 1
-
-        if not card_file or not card_file.is_file():
-            await self._send_message(
-                chat_id,
-                f"⚠️ Не удалось найти готовую карточку для сессии {session_id}.\n\n"
-                f"Пожалуйста, обратись к мастеру станка — он распечатает твой паспорт вручную!"
-            )
+        delivery_key = f"{chat_id}:{session_id}"
+        if delivery_key in self._delivered:
+            logger.info("MAX: Card for %s already delivered to chat %s, skipping", session_id, chat_id)
+            return
+        if delivery_key in self._in_flight:
+            logger.info("MAX: Card delivery for %s to chat %s already in flight, skipping", session_id, chat_id)
             return
 
-        # 3. Безопасное формирование текста карточки (защита от None session)
-        session_safe = session or {}
-        machine_name = session_safe.get("machine_name") or "Инженер Будущего"
-        power_name = session_safe.get("power_name") or "Точность"
-        location = session_safe.get("location") or "Центральный кластер"
-        festival_name = getattr(settings, "FESTIVAL_NAME", "ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ")
-        hashtag = getattr(settings, "FESTIVAL_HASHTAG", "#ФЕСТИВАЛЬ2026")
+        self._in_flight.add(delivery_key)
+        try:
+            logger.info("MAX: Доставка карточки для сессии %s в чат %s (@%s)", session_id, chat_id, username or "none")
 
-        greeting = "🎉 Твой цифровой паспорт готов!"
-        if is_fallback:
-            greeting += "\n(доставлен паспорт с недавней сессии на нашем станке)"
+            # 1. Поиск сессии в базе
+            session = db.get_session(session_id)
+            if not session:
+                await asyncio.sleep(1.0)
+                session = db.get_session(session_id)
 
-        caption = (
-            f"{greeting}\n\n"
-            f"🛠 Специальность: {machine_name}\n"
-            f"⚡ Суперсила: {power_name}\n"
-            f"📍 Гильдия: {location}\n\n"
-            f"🏛 {festival_name}\n"
-            f"{hashtag}"
-        )
-
-        # 4. Двухэтапная отправка изображения в МАКС
-        success = await self._send_photo(chat_id, card_file, caption)
-        if success:
-            try:
-                db.save_telegram_link(chat_id, session_id, username, first_name)
-            except Exception as e:
-                logger.warning("Не удалось зафиксировать delivery_link: %s", e)
-
-            # Следующее сообщение через 2 секунды (требование ТЗ)
-            try:
+            # 2. Ожидание завершения генерации до 30 секунд
+            card_file = self._find_card_file(session_id, session)
+            retries = 15
+            while not card_file and retries > 0:
+                if delivery_key in self._delivered:
+                    return
+                if retries == 15:
+                    await self._send_message(
+                        chat_id,
+                        "⏳ Твой цифровой паспорт ещё куётся на «Станке Будущего»! Подожди пару секунд, сейчас пришлю..."
+                    )
                 await asyncio.sleep(2.0)
-                follow_up_msg = (
-                    "Приглашаем вас подписаться:\n\n"
-                    "💬 MAX: https://max.ru/channel_cppm\n"
-                    "✈️ Telegram: https://t.me/cppm_centre\n"
-                    "💙 ВКонтакте: https://vk.ru/centre.cppm"
-                )
-                await self._send_message(chat_id, follow_up_msg)
-                logger.info("MAX Bot: приглашение к подписке успешно отправлено в чат %s", chat_id)
-            except Exception as e:
-                logger.warning("MAX Bot: ошибка отправки follow-up сообщения с соцсетями: %s", e)
+                if delivery_key in self._delivered:
+                    return
+                session = db.get_session(session_id) or session
+                card_file = self._find_card_file(session_id, session)
+                retries -= 1
+
+            if not card_file or not card_file.is_file():
+                if delivery_key not in self._delivered:
+                    await self._send_message(
+                        chat_id,
+                        f"⚠️ Не удалось найти готовую карточку для сессии {session_id}.\n\n"
+                        f"Пожалуйста, обратись к мастеру станка — он распечатает твой паспорт вручную!"
+                    )
+                return
+
+            if delivery_key in self._delivered:
+                return
+
+            # 3. Безопасное формирование текста карточки (защита от None session)
+            session_safe = session or {}
+            machine_name = session_safe.get("machine_name") or "Инженер Будущего"
+            power_name = session_safe.get("power_name") or "Точность"
+            location = session_safe.get("location") or "Центральный кластер"
+            festival_name = getattr(settings, "FESTIVAL_NAME", "ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ")
+            hashtag = getattr(settings, "FESTIVAL_HASHTAG", "#ФЕСТИВАЛЬ2026")
+
+            greeting = "🎉 Твой цифровой паспорт готов!"
+            if is_fallback:
+                greeting += "\n(доставлен паспорт с недавней сессии на нашем станке)"
+
+            caption = (
+                f"{greeting}\n\n"
+                f"🛠 Специальность: {machine_name}\n"
+                f"⚡ Суперсила: {power_name}\n"
+                f"📍 Гильдия: {location}\n\n"
+                f"🏛 {festival_name}\n"
+                f"{hashtag}"
+            )
+
+            # 4. Двухэтапная отправка изображения в МАКС
+            success = await self._send_photo(chat_id, card_file, caption)
+            if success:
+                self._delivered.add(delivery_key)
+                try:
+                    db.save_telegram_link(chat_id, session_id, username, first_name)
+                except Exception as e:
+                    logger.warning("Не удалось зафиксировать delivery_link: %s", e)
+
+                self._schedule_followup(chat_id)
+        finally:
+            self._in_flight.discard(delivery_key)
 
     async def _send_welcome(self, chat_id: int, first_name: str):
         msg = (
@@ -470,22 +507,24 @@ class MaxBotService:
         )
         await self._send_message(chat_id, msg)
 
-    async def _send_message(self, chat_id: int, text: str):
+    async def _send_message(self, chat_id: int, text: str) -> bool:
         if not self._client or not self.is_configured:
-            return
+            return False
         try:
             payload = {
                 "text": text
             }
-            await self._client.post(
+            resp = await self._client.post(
                 f"{self.api_base}/messages",
                 params={"chat_id": chat_id},
                 json=payload,
                 headers=self.auth_headers,
                 timeout=15.0
             )
+            return resp.status_code in (200, 201)
         except Exception as e:
             logger.warning("MAX Bot sendMessage error: %s", e)
+            return False
 
     async def _send_photo(self, chat_id: int, file_path: Path, caption: str) -> bool:
         """

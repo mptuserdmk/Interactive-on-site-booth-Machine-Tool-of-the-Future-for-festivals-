@@ -139,7 +139,10 @@ class CameraManager:
             if not ok and self.cap is not None and self._reopen():
                 ok, frame = self._read_camera()
             if not ok:
-                if self.cap is None and settings.CAMERA_MOCK_FALLBACK:
+                if self.last_frame is not None:
+                    frame = self.last_frame
+                    ok = True
+                elif self.cap is None and settings.CAMERA_MOCK_FALLBACK:
                     frame = self.generate_mock_frame("CAPTURED MOCK PHOTO")
                 else:
                     raise CameraUnavailable("USB-камера не отвечает: переподключите её или снимайте телефоном")

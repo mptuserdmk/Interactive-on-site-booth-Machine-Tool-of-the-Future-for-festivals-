@@ -13,22 +13,44 @@
 
 const { useState, useEffect, useRef, useCallback } = React;
 
-// --- API Helper с обработкой ошибок ---
+// --- API Helper с обработкой ошибок и таймаутами ---
 async function api(url, options = {}) {
-  const res = await fetch(url, options);
-  let body = null;
-  try { body = await res.json(); } catch (e) { /* пустой ответ */ }
-  if (!res.ok) {
-    const err = new Error((body && body.detail) || `Ошибка ${res.status}`);
-    err.status = res.status;
+  const timeoutMs = options.timeoutMs || (url.includes('/api/camera') ? 8000 : 75000);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  const fetchOptions = {
+    ...options,
+    signal: options.signal || controller.signal
+  };
+  delete fetchOptions.timeoutMs;
+
+  try {
+    const res = await fetch(url, fetchOptions);
+    clearTimeout(timer);
+    let body = null;
+    try { body = await res.json(); } catch (e) { /* пустой ответ */ }
+    if (!res.ok) {
+      const err = new Error((body && body.detail) || `Ошибка ${res.status}`);
+      err.status = res.status;
+      throw err;
+    }
+    return body;
+  } catch (err) {
+    clearTimeout(timer);
+    if (err.name === 'AbortError') {
+      const timeoutErr = new Error("Время ожидания ответа истекло. Попробуйте еще раз.");
+      timeoutErr.status = 504;
+      throw timeoutErr;
+    }
     throw err;
   }
-  return body;
 }
 
 function friendlyError(e) {
   if (e && e.status === 409) return "Секунду… калибровка станка";
   if (e && e.status === 503) return "Оптический датчик не отвечает — позови мастера 📷";
+  if (e && e.status === 504) return "Оптический датчик не успел ответить — нажми ещё раз 📷";
   if (e instanceof TypeError) return "Нет связи со станком — позови мастера";
   return (e && e.message) || "Сбой привода — попробуй ещё раз";
 }
@@ -110,7 +132,7 @@ function CyberKhokhlomaFlankLeft() {
   return (
     <aside
       aria-hidden="true"
-      className="fixed left-2 2xl:left-5 top-12 bottom-12 w-60 2xl:w-68 z-10 pointer-events-none hidden xl:flex flex-col justify-between select-none animate-fade-in"
+      className="fixed left-2 2xl:left-5 top-12 bottom-12 w-60 2xl:w-68 z-10 pointer-events-none hidden min-[1650px]:flex flex-col justify-between select-none animate-fade-in"
     >
       {/* Вертикальная направляющая ось станка с заклепками */}
       <div className="absolute left-8 top-12 bottom-12 w-[1px] bg-gradient-to-b from-brass/0 via-brass/40 to-brass/0 pointer-events-none -z-10" />
@@ -312,7 +334,7 @@ function CyberKhokhlomaFlankRight() {
   return (
     <aside
       aria-hidden="true"
-      className="fixed right-2 2xl:right-5 top-12 bottom-12 w-60 2xl:w-68 z-10 pointer-events-none hidden xl:flex flex-col justify-between items-end select-none animate-fade-in"
+      className="fixed right-2 2xl:right-5 top-12 bottom-12 w-60 2xl:w-68 z-10 pointer-events-none hidden min-[1650px]:flex flex-col justify-between items-end select-none animate-fade-in"
     >
       {/* Вертикальная направляющая ось станка с заклепками */}
       <div className="absolute right-8 top-12 bottom-12 w-[1px] bg-gradient-to-b from-brass/0 via-brass/40 to-brass/0 pointer-events-none -z-10" />
@@ -988,6 +1010,7 @@ function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRe
   const noFace = Boolean(validation && !validation.face_detected);
 
   const handleShutter = async () => {
+    if (isCapturing || busy) return;
     setIsCapturing(true);
     setShutterRing(true);
     setFlash(true);

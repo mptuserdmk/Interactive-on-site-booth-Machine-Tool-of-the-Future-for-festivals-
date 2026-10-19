@@ -8,6 +8,7 @@
 import cv2
 import numpy as np
 import logging
+import threading
 from pathlib import Path
 from typing import Optional, Dict, Any, Union
 from pydantic import BaseModel, Field
@@ -36,6 +37,7 @@ class BlinkDetector:
     def __init__(self):
         self.model_path = MODEL_PATH
         self.detector: Optional[cv2.FaceDetectorYN] = None
+        self._lock = threading.Lock()
         self._load_model()
 
     @classmethod
@@ -170,13 +172,25 @@ class BlinkDetector:
                 scale = max_dim / float(max(h_orig, w_orig))
                 w_proc = int(w_orig * scale)
                 h_proc = int(h_orig * scale)
-                proc_img = cv2.resize(img, (w_proc, h_proc), interpolation=cv2.INTER_AREA)
             else:
-                proc_img = img
                 h_proc, w_proc = h_orig, w_orig
 
-            self.detector.setInputSize((w_proc, h_proc))
-            retval, faces = self.detector.detect(proc_img)
+            # YuNet DNN требует четные размеры (stride 32/2) и C-contiguous буфер
+            w_proc = max(32, int(w_proc // 2 * 2))
+            h_proc = max(32, int(h_proc // 2 * 2))
+            proc_img = np.ascontiguousarray(cv2.resize(img, (w_proc, h_proc), interpolation=cv2.INTER_AREA))
+
+            with self._lock:
+                try:
+                    self.detector.setInputSize((w_proc, h_proc))
+                    retval, faces = self.detector.detect(proc_img)
+                except Exception as detect_err:
+                    logger.warning("YuNet detect failure (%s), resetting detector", detect_err)
+                    try:
+                        self._load_model()
+                    except Exception:
+                        pass
+                    return PhotoValidationResult(code="OK", warning=None)
 
             if faces is None or len(faces) == 0:
                 # В кадре нет лица

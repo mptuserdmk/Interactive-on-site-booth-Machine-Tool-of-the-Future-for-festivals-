@@ -41,8 +41,9 @@ class LiveServer:
         deadline = time.time() + 40
         while time.time() < deadline:
             try:
-                if httpx.get(self.url + "/api/quiz/schema", timeout=1).status_code == 200:
-                    return self
+                with httpx.Client(trust_env=False) as client:
+                    if client.get(self.url + "/api/quiz/schema", timeout=1).status_code == 200:
+                        return self
             except httpx.HTTPError:
                 pass
             time.sleep(0.3)
@@ -54,7 +55,8 @@ class LiveServer:
             self.proc.wait(10)
 
     def api(self, method, path, **kw):
-        return httpx.request(method, self.url + path, timeout=30, **kw)
+        with httpx.Client(trust_env=False) as client:
+            return client.request(method, self.url + path, timeout=30, **kw)
 
 
 @pytest.fixture(scope="session")

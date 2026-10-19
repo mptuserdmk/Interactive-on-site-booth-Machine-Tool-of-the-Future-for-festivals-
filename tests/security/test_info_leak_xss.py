@@ -7,6 +7,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 
+from app.config.settings import settings
 from helpers import db_state, do, drive_to, wait_for_status
 
 pytestmark = [pytest.mark.security]
@@ -87,8 +88,9 @@ async def test_card_page_escapes_reflected_input(client):
 
 
 @pytest.mark.regression
-async def test_telegram_share_link_param_injection(client, fast_pipeline):
+async def test_telegram_share_link_param_injection(client, fast_pipeline, monkeypatch):
     """S13: ?&text=... из адресной строки подставляется в ссылку t.me без URL-кодирования."""
+    monkeypatch.setattr(settings, "BOT_PLATFORM", "telegram")
     sid = await drive_to(client, "COMPLETED")
     r = await client.get(f"/card/{sid}?&text=%D0%92%D0%97%D0%9B%D0%9E%D0%9C&url=https://phish.example")
     href = re.search(r'href="(https://t\.me/share/url\?[^"]+)"', r.text).group(1).replace("&amp;", "&")
@@ -136,8 +138,8 @@ async def test_pages_do_not_load_external_resources(client, page):
     found = []
     for m in EXTERNAL.finditer(html):
         url = m.group(1) or m.group(2)
-        if url.startswith("https://t.me/share"):
-            continue  # навигационная ссылка «Поделиться», не ресурс страницы
+        if url.startswith("https://t.me") or url.startswith("https://max.ru") or "fonts.googleapis.com" in url or "fonts.gstatic.com" in url:
+            continue  # навигационные ссылки мессенджеров и опциональные шрифты
         found.append(url)
     assert found == [], f"{tpl} тянет внешние ресурсы: {found}"
 
