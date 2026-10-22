@@ -117,6 +117,7 @@ class CameraManager:
                     if settings.CAMERA_MIRROR:
                         frame = cv2.flip(frame, 1)
                     self.last_frame = frame
+                    self.last_capture_time = time.monotonic()
                     return True, frame
                 self._fail_count += 1
         return False, None
@@ -135,7 +136,14 @@ class CameraManager:
         """Captures a high-resolution snapshot from USB webcam.
         Если камера была, но перестала отдавать кадры, — 503, а не заглушка вместо фото ребёнка."""
         with self.lock:
-            ok, frame = self._read_camera()
+            ok, frame = False, None
+            # Если уже есть свежий кадр из видеопотока (< 0.5с), берем его для мгновенного отклика без задержек
+            if self.last_frame is not None and (time.monotonic() - self.last_capture_time < 0.5):
+                frame = self.last_frame
+                ok = True
+            else:
+                ok, frame = self._read_camera()
+
             if not ok and self.cap is not None and self._reopen():
                 ok, frame = self._read_camera()
             if not ok:

@@ -173,8 +173,13 @@ class SessionManager:
         sess.status = SessionState.PHOTO_TAKEN
         try:
             from app.camera.blink_detector import validate_photo
-            val_res = await asyncio.to_thread(validate_photo, photo_path)
+            val_res = await asyncio.wait_for(
+                asyncio.to_thread(validate_photo, photo_path),
+                timeout=2.5
+            )
             sess.meta["photo_validation"] = val_res.to_dict()
+        except asyncio.TimeoutError:
+            logger.warning("Photo validation timed out after 2.5s; proceeding gracefully")
         except Exception as e:
             logger.warning("Photo validation / blink detection warning: %s", e)
         self._save(sess)

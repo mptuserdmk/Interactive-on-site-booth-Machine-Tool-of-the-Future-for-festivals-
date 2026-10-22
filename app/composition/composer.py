@@ -17,25 +17,42 @@ class CardComposer:
         self._load_fonts()
 
     def _load_fonts(self):
-        # Find available system fonts on Windows or fallback
-        font_paths = [
-            "C:/Windows/Fonts/arialbd.ttf",
-            "C:/Windows/Fonts/arial.ttf",
-            "C:/Windows/Fonts/segoeui.ttf",
-            "C:/Windows/Fonts/segoeuib.ttf",
-            "C:/Windows/Fonts/calibrib.ttf"
-        ]
+        # 1. Сначала проверяем локальные встроенные шрифты проекта (assets/fonts)
+        local_fonts_dir = settings.BASE_DIR / "assets" / "fonts"
+        bundled_bold = local_fonts_dir / "DejaVuSans-Bold.ttf"
+        bundled_regular = local_fonts_dir / "DejaVuSans.ttf"
 
-        bold_font_path = None
-        regular_font_path = None
+        bold_font_path = str(bundled_bold) if bundled_bold.is_file() else None
+        regular_font_path = str(bundled_regular) if bundled_regular.is_file() else None
 
-        for fp in font_paths:
-            if os.path.exists(fp):
-                if "bd" in fp.lower() or "b.ttf" in fp.lower():
-                    if not bold_font_path:
+        # 2. Если локальные не найдены, ищем в системных каталогах Linux и Windows
+        if not bold_font_path or not regular_font_path:
+            candidate_paths = [
+                # Linux DejaVu / Liberation / PT Astra (MOS, РЕД ОС, Astra, Debian, Ubuntu)
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/dejavu/DejaVuSans.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+                "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/TTF/DejaVuSans.ttf",
+                "/usr/share/fonts/truetype/pt-astra/PTAstraSans-Bold.ttf",
+                "/usr/share/fonts/truetype/pt-astra/PTAstraSans-Regular.ttf",
+                # Windows
+                "C:/Windows/Fonts/arialbd.ttf",
+                "C:/Windows/Fonts/arial.ttf",
+                "C:/Windows/Fonts/segoeuib.ttf",
+                "C:/Windows/Fonts/segoeui.ttf",
+                "C:/Windows/Fonts/calibrib.ttf",
+                "C:/Windows/Fonts/calibri.ttf",
+            ]
+            for fp in candidate_paths:
+                if os.path.exists(fp):
+                    lower = fp.lower()
+                    if ("bd" in lower or "bold" in lower or "b.ttf" in lower) and not bold_font_path:
                         bold_font_path = fp
-                else:
-                    if not regular_font_path:
+                    elif not regular_font_path:
                         regular_font_path = fp
 
         if not bold_font_path and regular_font_path:
@@ -43,8 +60,8 @@ class CardComposer:
         if not regular_font_path and bold_font_path:
             regular_font_path = bold_font_path
 
-        self.bold_path = bold_font_path or "arial.ttf"
-        self.regular_path = regular_font_path or "arial.ttf"
+        self.bold_path = bold_font_path or "DejaVuSans-Bold.ttf"
+        self.regular_path = regular_font_path or "DejaVuSans.ttf"
         try:
             self.font_header = self._font(True, 36)
             self.font_sub = self._font(False, 26)

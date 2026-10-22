@@ -50,6 +50,11 @@ storage/cards/*
 !storage/generated/.gitkeep
 !storage/cards/.gitkeep
 
+# Large font binaries (installed on Linux via fonts-dejavu-core)
+assets/fonts/*.ttf
+assets/fonts/*.otf
+!assets/fonts/.gitkeep
+
 # IDEs & OS files
 .idea/
 .vscode/

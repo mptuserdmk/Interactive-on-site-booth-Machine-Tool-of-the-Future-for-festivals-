@@ -1,3 +1,4 @@
+import os
 import sys
 import webbrowser
 import threading
@@ -5,12 +6,16 @@ import time
 import uvicorn
 from app.config.settings import settings
 
-if sys.stdout and hasattr(sys.stdout, "reconfigure"):
-    try:
-        sys.stdout.reconfigure(encoding="utf-8")
-        sys.stderr.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
+# Принудительная инициализация кодировки UTF-8 для Linux и Windows
+os.environ.setdefault("PYTHONUTF8", "1")
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+
+for stream in (sys.stdin, sys.stdout, sys.stderr):
+    if stream and hasattr(stream, "reconfigure"):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
 
 def open_browser():
     time.sleep(1.5)

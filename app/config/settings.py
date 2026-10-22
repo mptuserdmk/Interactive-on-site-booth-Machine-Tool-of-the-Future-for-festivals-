@@ -68,6 +68,8 @@ class Settings(BaseSettings):
     AI_PROVIDER: str = "mock"
     AI_API_KEY: str = ""
     BOTHUB_MODEL: str = "gemini-3.1-flash-lite-image"
+    BOTHUB_API_BASE: str = "https://openai.bothub.chat/v1"
+    AI_SSL_VERIFY: bool = True
     AI_TIMEOUT_SECONDS: int = 35
     AI_FALLBACK_ON_ERROR: bool = True
     

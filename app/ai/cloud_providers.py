@@ -1,19 +1,42 @@
 import asyncio
 import base64
 import io
+import logging
 import re
+import ssl
 import time
 import httpx
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
 from PIL import Image, ImageOps
 from app.config.settings import settings
 from app.ai.provider import ImageProvider
 from app.ai.models import AIGenerationRequest, AIGenerationResult
 from app.ai.prompts import build_negative_prompt
 
+logger = logging.getLogger("stanok.ai")
 MAX_AI_IMAGE_BYTES = 20 * 1024 * 1024
 _PLACEHOLDER_KEY = re.compile(r"ваш|ключ|your|api[_-]?key|changeme|xxx|<|>|example", re.IGNORECASE)
+
+
+def get_ai_ssl_context() -> Union[ssl.SSLContext, bool]:
+    """
+    Гибридный SSL-контекст: системные сертификаты ОС (Windows / Linux)
+    + доверенный бандл НУЦ Минцифры РФ (app/bot/certs/russian_trusted_ca.pem).
+    Если в .env задано AI_SSL_VERIFY=false — отключает проверку для DPI-сетей.
+    """
+    if not getattr(settings, "AI_SSL_VERIFY", True):
+        return False
+    try:
+        ctx = ssl.create_default_context()
+        ctx.load_default_certs()
+        ca_path = settings.BASE_DIR / "app" / "bot" / "certs" / "russian_trusted_ca.pem"
+        if ca_path.is_file():
+            ctx.load_verify_locations(cafile=str(ca_path))
+        return ctx
+    except Exception as e:
+        logger.warning("Could not build custom SSL context (%s), falling back to default certifi", e)
+        return True
 
 
 class ProviderError(Exception):
@@ -268,8 +291,12 @@ class BothubProvider(ImageProvider):
 
         model_name = getattr(settings, "BOTHUB_MODEL", "gemini-3.1-flash-lite-image")
 
-        try:
-            async with httpx.AsyncClient(timeout=settings.AI_TIMEOUT_SECONDS) as client:
+        base_url = (getattr(settings, "BOTHUB_API_BASE", "https://openai.bothub.chat/v1") or "https://openai.bothub.chat/v1").rstrip("/")
+        edits_url = f"{base_url}/images/edits"
+        generations_url = f"{base_url}/images/generations"
+
+        async def _attempt_generation(verify_ssl: Union[ssl.SSLContext, bool]) -> AIGenerationResult:
+            async with httpx.AsyncClient(timeout=settings.AI_TIMEOUT_SECONDS, verify=verify_ssl) as client:
                 # 1. If we have an input photo from the kiosk, use the /v1/images/edits endpoint
                 if request.input_photo_path and Path(request.input_photo_path).exists():
                     with Image.open(request.input_photo_path) as im:
@@ -289,7 +316,7 @@ class BothubProvider(ImageProvider):
                     }
 
                     resp = await client.post(
-                        "https://openai.bothub.chat/v1/images/edits",
+                        edits_url,
                         headers=headers,
                         data=data,
                         files=files
@@ -302,7 +329,7 @@ class BothubProvider(ImageProvider):
                         "response_format": "url"
                     }
                     resp = await client.post(
-                        "https://openai.bothub.chat/v1/images/generations",
+                        generations_url,
                         headers={**headers, "Content-Type": "application/json"},
                         json=payload
                     )
@@ -350,6 +377,29 @@ class BothubProvider(ImageProvider):
                 duration_seconds=round(time.time() - start_time, 2)
             )
 
+        ssl_ctx = get_ai_ssl_context()
+        try:
+            return await _attempt_generation(ssl_ctx)
+        except (httpx.ConnectError, ssl.SSLError) as ssl_err:
+            err_str = str(ssl_err)
+            # Если возникла ошибка сертификатов (Минцифры / фестивальный прокси / DPI) и SSL был включен:
+            if ssl_ctx is not False and any(tok in err_str.upper() for tok in ("CERTIFICATE", "SSL", "WRONG", "VERIFY", "HANDSHAKE")):
+                logger.warning("BotHub SSL verification failed (%s). Retrying with verify=False fallback...", ssl_err)
+                try:
+                    return await _attempt_generation(False)
+                except Exception as retry_err:
+                    return AIGenerationResult(
+                        success=False,
+                        provider_name=self.name,
+                        duration_seconds=round(time.time() - start_time, 2),
+                        error=f"Bothub SSL Fallback Error: {retry_err}"
+                    )
+            return AIGenerationResult(
+                success=False,
+                provider_name=self.name,
+                duration_seconds=round(time.time() - start_time, 2),
+                error=f"Bothub ConnectError: {ssl_err}"
+            )
         except Exception as e:
             return AIGenerationResult(
                 success=False,

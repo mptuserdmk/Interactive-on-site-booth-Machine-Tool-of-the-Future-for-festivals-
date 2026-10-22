@@ -132,7 +132,7 @@ function CyberKhokhlomaFlankLeft() {
   return (
     <aside
       aria-hidden="true"
-      className="fixed left-2 2xl:left-5 top-12 bottom-12 w-60 2xl:w-68 z-10 pointer-events-none hidden min-[1650px]:flex flex-col justify-between select-none animate-fade-in"
+      className="shrink-0 w-44 2xl:w-56 h-full flex flex-col justify-between select-none pointer-events-none hidden xl:flex relative z-10 transition-all py-1"
     >
       {/* Вертикальная направляющая ось станка с заклепками */}
       <div className="absolute left-8 top-12 bottom-12 w-[1px] bg-gradient-to-b from-brass/0 via-brass/40 to-brass/0 pointer-events-none -z-10" />
@@ -334,7 +334,7 @@ function CyberKhokhlomaFlankRight() {
   return (
     <aside
       aria-hidden="true"
-      className="fixed right-2 2xl:right-5 top-12 bottom-12 w-60 2xl:w-68 z-10 pointer-events-none hidden min-[1650px]:flex flex-col justify-between items-end select-none animate-fade-in"
+      className="shrink-0 w-44 2xl:w-56 h-full flex flex-col justify-between items-end select-none pointer-events-none hidden xl:flex relative z-10 transition-all py-1"
     >
       {/* Вертикальная направляющая ось станка с заклепками */}
       <div className="absolute right-8 top-12 bottom-12 w-[1px] bg-gradient-to-b from-brass/0 via-brass/40 to-brass/0 pointer-events-none -z-10" />
@@ -1017,9 +1017,14 @@ function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRe
     setTimeout(() => setFlash(false), 200);
     setTimeout(() => setShutterRing(false), 700);
 
+    const safetyTimer = setTimeout(() => {
+      setIsCapturing(false);
+    }, 6000);
+
     try {
       await onCapture();
     } finally {
+      clearTimeout(safetyTimer);
       setIsCapturing(false);
     }
   };
@@ -1199,7 +1204,7 @@ function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRe
                       ${isCapturing ? 'scale-90 brightness-125 ring-4 ring-brass' : 'hover:scale-105'}
                     `}
                   >
-                    <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-brass/70 flex items-center justify-center text-brass-bright transition-transform duration-300 ${isCapturing ? 'rotate-180 scale-75' : ''}`}>
+                    <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-brass/70 flex items-center justify-center text-brass-bright transition-transform duration-300 ${isCapturing ? 'scale-90 animate-pulse' : ''}`}>
                       {ICONS.camera}
                     </div>
                   </button>
@@ -2056,15 +2061,30 @@ function KioskRoot() {
     setSession(sess);
   });
 
-  const handleCapturePhoto = () => runAction(() => api('/api/camera/capture', { method: 'POST' }));
-  const handleConfirmPhoto = () => runAction(() => api('/api/session/photo/confirm', { method: 'POST' }));
-  const handleRetakePhoto = () => runAction(() => api('/api/session/photo/retake', { method: 'POST' }));
+  const handleCapturePhoto = () => runAction(async () => {
+    await api('/api/camera/capture', { method: 'POST' });
+    await syncActiveSession();
+  });
+  const handleConfirmPhoto = () => runAction(async () => {
+    const res = await api('/api/session/photo/confirm', { method: 'POST' });
+    if (res && res.session) setSession(res.session);
+    else await syncActiveSession();
+  });
+  const handleRetakePhoto = () => runAction(async () => {
+    const res = await api('/api/session/photo/retake', { method: 'POST' });
+    if (res && res.session) setSession(res.session);
+    else await syncActiveSession();
+  });
 
-  const handleSelectChoice = (questionType, choiceId) => runAction(() => api('/api/session/answer', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question_type: questionType, answer_id: choiceId })
-  }));
+  const handleSelectChoice = (questionType, choiceId) => runAction(async () => {
+    const res = await api('/api/session/answer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question_type: questionType, answer_id: choiceId })
+    });
+    if (res && res.session) setSession(res.session);
+    else await syncActiveSession();
+  });
 
   const handleReset = async () => {
     setIsIdleModalOpen(false);
@@ -2179,110 +2199,113 @@ function KioskRoot() {
   };
 
   return (
-    <div className="w-full h-full max-h-screen relative overflow-hidden flex flex-col justify-between">
+    <div className="w-full h-full max-h-screen relative overflow-hidden flex items-center justify-center p-1 sm:p-2.5 box-border">
       {/* Тонкие фоновые чертежные лимбы и шкалы градусов со Слайдов 07, 10, 20 */}
       <BlueprintWatermarks />
 
-      {/* Левый кибер-хохломской фланг (Folk-Tech ЧПУ тотем) */}
-      <CyberKhokhlomaFlankLeft />
+      {/* Единая гармоничная выставочная станция (Фланг Левый + Центральная Консоль + Фланг Правый) */}
+      <div className="relative w-full max-w-[1720px] 2xl:max-w-[1880px] h-full max-h-[880px] 2xl:max-h-[940px] my-auto mx-auto flex items-stretch justify-center gap-3 xl:gap-5 z-20">
+        {/* Левый кибер-хохломской фланг (Folk-Tech ЧПУ тотем) */}
+        <CyberKhokhlomaFlankLeft />
 
-      {/* Правый кибер-хохломской фланг (Жар-Птица 2.0 & Индустрия чудес) */}
-      <CyberKhokhlomaFlankRight />
+        {/* Центральное интерактивное пространство киоска (пропорциональная сцена) */}
+        <div className="flex-1 w-full max-w-[1360px] 2xl:max-w-[1440px] h-full my-auto mx-auto flex flex-col justify-between p-2.5 sm:p-3.5 md:p-4 select-none relative z-20 overflow-hidden box-border bg-parchment/85 backdrop-blur-[2px] rounded-2xl border border-brass/35 sm:border-2 sm:border-brass/45 shadow-tactile transition-all">
+          {/* Латунная окантовка центрального интерактивного пространства */}
+          <BrassCorners className="z-20 pointer-events-none" />
 
-      {/* Центральное интерактивное пространство киоска */}
-      <div className="w-full max-w-[1340px] 2xl:max-w-[1400px] mx-auto h-full max-h-screen flex flex-col justify-between p-2 sm:p-3 md:p-4 select-none relative z-20 overflow-hidden box-border">
-        {/* Латунная окантовка центрального интерактивного пространства */}
-        <BrassCorners className="z-20 pointer-events-none" />
+          {/* Потеря связи со стендом */}
+          {!connected && (
+            <div role="status" className="fixed top-0 inset-x-0 z-50 bg-ruby text-white text-center font-mono font-bold text-xs sm:text-sm py-2 border-b-2 border-brass-bright shadow-tactile-ruby">
+              НЕТ СВЯЗИ СО СТЕНДОМ — ПЕРЕПОДКЛЮЧАЕМСЯ…
+            </div>
+          )}
 
-        {/* Потеря связи со стендом */}
-        {!connected && (
-          <div role="status" className="fixed top-0 inset-x-0 z-50 bg-ruby text-white text-center font-mono font-bold text-xs sm:text-sm py-2 border-b-2 border-brass-bright shadow-tactile-ruby">
-            НЕТ СВЯЗИ СО СТЕНДОМ — ПЕРЕПОДКЛЮЧАЕМСЯ…
+          {/* Сообщение об ошибке действия */}
+          {notice && (
+            <div role="alert" className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-panel-graphite text-brass-bright font-mono font-bold text-sm sm:text-base px-6 py-3 rounded-xl border-2 border-ruby shadow-tactile-ruby">
+              {notice}
+            </div>
+          )}
+
+          {/* Верхний статус-бар */}
+          <header className="shrink-0 mb-1 sm:mb-2 pb-1.5 sm:pb-2 border-b border-brass/30 flex items-center justify-between text-[11px] sm:text-xs font-mono text-brass-dim">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="w-2 h-2 rounded-full bg-ruby"></span>
+              <span className="font-bold tracking-widest uppercase truncate max-w-[280px] sm:max-w-none">
+                ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ
+              </span>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={toggleAutoPrint}
+                title="Переключить отправку на печать"
+                className={`px-2.5 sm:px-3 py-1 rounded-lg border font-mono text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none ${autoPrint
+                  ? "bg-panel-graphite text-brass-bright border-brass/50 hover:border-brass shadow-sm"
+                  : "bg-ruby/15 text-ruby border-ruby/40 hover:border-ruby shadow-sm"
+                  }`}
+              >
+                <span>🖨️</span>
+                <span>{autoPrint ? "ПЕЧАТЬ: ВКЛ" : "ПЕЧАТЬ: ВЫКЛ"}</span>
+              </button>
+            </div>
+          </header>
+
+          {/* Индикатор шагов */}
+          {session && session.status !== 'IDLE' && (
+            <div className="shrink-0 mb-1 sm:mb-2">
+              <FolkStepTracker currentStep={getStepIndex()} />
+            </div>
+          )}
+
+          {/* Рабочий холст слайда */}
+          <div className="flex-1 min-h-0 w-full flex items-center justify-center my-auto overflow-hidden">
+            <ErrorBoundary onReset={handleReset}>
+              {renderScreen()}
+            </ErrorBoundary>
           </div>
-        )}
 
-        {/* Сообщение об ошибке действия */}
-        {notice && (
-          <div role="alert" className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-panel-graphite text-brass-bright font-mono font-bold text-sm sm:text-base px-6 py-3 rounded-xl border-2 border-ruby shadow-tactile-ruby">
-            {notice}
-          </div>
-        )}
-
-        {/* Верхний статус-бар */}
-        <header className="shrink-0 mb-1 sm:mb-2 pb-1.5 sm:pb-2 border-b border-brass/30 flex items-center justify-between text-[11px] sm:text-xs font-mono text-brass-dim">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span className="w-2 h-2 rounded-full bg-ruby"></span>
-            <span className="font-bold tracking-widest uppercase truncate max-w-[280px] sm:max-w-none">
-              ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ
+          {/* Tale-Tech Bar / Фирменный подвал по канону презентации фестиваля */}
+          <footer className="shrink-0 mt-1 sm:mt-2 pt-1.5 sm:pt-2 border-t border-brass/40 w-full max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-6 text-[10px] sm:text-xs font-mono text-center">
+            <div className="flex items-center gap-1.5 text-brass-dim font-bold tracking-widest uppercase">
+              <svg className="w-3.5 h-3.5 text-brass inline-block shrink-0 animate-spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+              <span>ОТ ТРАДИЦИЙ К БОЛЬШИМ ВОЗМОЖНОСТЯМ</span>
+            </div>
+            <span className="hidden sm:inline text-brass/40">•</span>
+            <div className="flex items-center gap-1.5 font-serif font-black text-ruby tracking-wider uppercase text-xs sm:text-sm">
+              <svg className="w-3.5 h-3.5 text-brass inline-block shrink-0 fill-current" viewBox="0 0 24 24">
+                <path d="M12 0l2.8 8.5L23.5 12l-8.7 2.8L12 23.5l-2.8-8.7L0.5 12l8.7-2.8z" />
+              </svg>
+              <span>ЗНАНИЯ • ТЕХНОЛОГИИ • ЛЮДИ • БУДУЩЕЕ</span>
+            </div>
+            <span className="hidden sm:inline text-brass/40">•</span>
+            <span className="tracking-widest uppercase text-ink-muted">
+              МОСКВА 2026
             </span>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              type="button"
-              onClick={toggleAutoPrint}
-              title="Переключить отправку на печать"
-              className={`px-2.5 sm:px-3 py-1 rounded-lg border font-mono text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none ${autoPrint
-                ? "bg-panel-graphite text-brass-bright border-brass/50 hover:border-brass shadow-sm"
-                : "bg-ruby/15 text-ruby border-ruby/40 hover:border-ruby shadow-sm"
-                }`}
-            >
-              <span>🖨️</span>
-              <span>{autoPrint ? "ПЕЧАТЬ: ВКЛ" : "ПЕЧАТЬ: ВЫКЛ"}</span>
-            </button>
-          </div>
-        </header>
+          </footer>
 
-        {/* Индикатор шагов */}
-        {session && session.status !== 'IDLE' && (
-          <div className="shrink-0 mb-1 sm:mb-2">
-            <FolkStepTracker currentStep={getStepIndex()} />
-          </div>
-        )}
-
-        {/* Рабочий холст слайда */}
-        <div className="flex-1 min-h-0 w-full flex items-center justify-center my-auto overflow-hidden">
-          <ErrorBoundary onReset={handleReset}>
-            {renderScreen()}
-          </ErrorBoundary>
+          {/* Хронометр бездействия */}
+          <IdleModal
+            isOpen={isIdleModalOpen}
+            countdown={idleCountdown}
+            onStay={() => {
+              setIsIdleModalOpen(false);
+              clearInterval(countdownIntervalRef.current);
+              resetIdleTimer();
+            }}
+            onLeave={() => {
+              setIsIdleModalOpen(false);
+              clearInterval(countdownIntervalRef.current);
+              handleReset();
+            }}
+          />
         </div>
 
-        {/* Tale-Tech Bar / Фирменный подвал по канону презентации фестиваля */}
-        <footer className="shrink-0 mt-1 sm:mt-2 pt-1.5 sm:pt-2 border-t border-brass/40 w-full max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-6 text-[10px] sm:text-xs font-mono text-center">
-          <div className="flex items-center gap-1.5 text-brass-dim font-bold tracking-widest uppercase">
-            <svg className="w-3.5 h-3.5 text-brass inline-block shrink-0 animate-spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-            <span>ОТ ТРАДИЦИЙ К БОЛЬШИМ ВОЗМОЖНОСТЯМ</span>
-          </div>
-          <span className="hidden sm:inline text-brass/40">•</span>
-          <div className="flex items-center gap-1.5 font-serif font-black text-ruby tracking-wider uppercase text-xs sm:text-sm">
-            <svg className="w-3.5 h-3.5 text-brass inline-block shrink-0 fill-current" viewBox="0 0 24 24">
-              <path d="M12 0l2.8 8.5L23.5 12l-8.7 2.8L12 23.5l-2.8-8.7L0.5 12l8.7-2.8z" />
-            </svg>
-            <span>ЗНАНИЯ • ТЕХНОЛОГИИ • ЛЮДИ • БУДУЩЕЕ</span>
-          </div>
-          <span className="hidden sm:inline text-brass/40">•</span>
-          <span className="tracking-widest uppercase text-ink-muted">
-            МОСКВА 2026
-          </span>
-        </footer>
-
-        {/* Хронометр бездействия */}
-        <IdleModal
-          isOpen={isIdleModalOpen}
-          countdown={idleCountdown}
-          onStay={() => {
-            setIsIdleModalOpen(false);
-            clearInterval(countdownIntervalRef.current);
-            resetIdleTimer();
-          }}
-          onLeave={() => {
-            setIsIdleModalOpen(false);
-            clearInterval(countdownIntervalRef.current);
-            handleReset();
-          }}
-        />
+        {/* Правый кибер-хохломской фланг (Жар-Птица 2.0 & Индустрия чудес) */}
+        <CyberKhokhlomaFlankRight />
       </div>
     </div>
   );
