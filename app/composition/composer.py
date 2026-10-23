@@ -25,12 +25,14 @@ class CardComposer:
         bundled_regular = None
         
         for fdir in (local_ttf_dir, assets_fonts_dir):
-            b_cand = fdir / "DejaVuSans-Bold.ttf"
-            r_cand = fdir / "DejaVuSans.ttf"
-            if b_cand.is_file() and not bundled_bold:
-                bundled_bold = b_cand
-            if r_cand.is_file() and not bundled_regular:
-                bundled_regular = r_cand
+            for b_name in ("DejaVuLGCSans-Bold.ttf", "DejaVuSans-Bold.ttf"):
+                b_cand = fdir / b_name
+                if b_cand.is_file() and not bundled_bold:
+                    bundled_bold = b_cand
+            for r_name in ("DejaVuLGCSans.ttf", "DejaVuSans.ttf"):
+                r_cand = fdir / r_name
+                if r_cand.is_file() and not bundled_regular:
+                    bundled_regular = r_cand
 
         bold_font_path = str(bundled_bold) if bundled_bold and bundled_bold.is_file() else None
         regular_font_path = str(bundled_regular) if bundled_regular and bundled_regular.is_file() else None
