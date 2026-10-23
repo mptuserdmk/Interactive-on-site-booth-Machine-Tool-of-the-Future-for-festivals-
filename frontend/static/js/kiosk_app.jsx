@@ -78,12 +78,27 @@ function BrassCorners({ className = "" }) {
   );
 }
 
-// --- ФОНОВЫЕ ИНЖЕНЕРНЫЕ ЧЕРТЕЖИ (Drafting Blueprint Watermarks) ---
+// --- ФОНОВЫЕ ИНЖЕНЕРНЫЕ ЧЕРТЕЖИ И ОБВЯЗКА (Drafting Blueprint Watermarks & Machine Perimeter) ---
 function BlueprintWatermarks() {
   return (
-    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none hidden xl:block" aria-hidden="true">
+    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
+      {/* Декоративная контурная рамка станка по периметру экрана */}
+      <div className="absolute inset-2 sm:inset-3 border border-brass/25 rounded-2xl sm:rounded-3xl pointer-events-none z-0" />
+      <div className="absolute inset-3.5 sm:inset-5 border border-brass/15 rounded-xl sm:rounded-2xl pointer-events-none z-0" />
+
+      {/* Угловые узлы ЧПУ станка с заклепками */}
+      <div className="absolute top-3 left-3 w-3 h-3 rounded-full border border-brass/50 bg-brass/20 pointer-events-none z-0" />
+      <div className="absolute top-3 right-3 w-3 h-3 rounded-full border border-brass/50 bg-brass/20 pointer-events-none z-0" />
+      <div className="absolute bottom-3 left-3 w-3 h-3 rounded-full border border-brass/50 bg-brass/20 pointer-events-none z-0" />
+      <div className="absolute bottom-3 right-3 w-3 h-3 rounded-full border border-brass/50 bg-brass/20 pointer-events-none z-0" />
+
+      {/* Верхний центрированный калибровочный маркер */}
+      <div className="absolute top-2.5 left-1/2 -translate-x-1/2 px-4 py-0.5 border-b border-brass/25 font-mono text-[9px] text-brass/45 tracking-[0.25em] uppercase pointer-events-none z-0 hidden md:block">
+        ИНЖЕНЕРНАЯ ФОТОЛАБОРАТОРИЯ // КАЛИБРОВКА 0.02 ММ
+      </div>
+
       {/* Левые чертежные лимбы и шкалы градусов */}
-      <svg className="absolute -left-20 top-1/2 -translate-y-1/2 w-[420px] h-[420px] opacity-15 text-brass" viewBox="0 0 400 400" fill="none" stroke="currentColor">
+      <svg className="absolute -left-16 top-1/2 -translate-y-1/2 w-[380px] 2xl:w-[440px] h-[380px] 2xl:h-[440px] opacity-15 text-brass pointer-events-none z-0 hidden xl:block" viewBox="0 0 400 400" fill="none" stroke="currentColor">
         <circle cx="200" cy="200" r="190" strokeWidth="1" strokeDasharray="4 4" />
         <circle cx="200" cy="200" r="170" strokeWidth="1.5" />
         <circle cx="200" cy="200" r="130" strokeWidth="0.8" strokeDasharray="2 3" />
@@ -104,7 +119,7 @@ function BlueprintWatermarks() {
       </svg>
 
       {/* Правые чертежные лимбы и калибровка ЧПУ */}
-      <svg className="absolute -right-20 top-1/2 -translate-y-1/2 w-[420px] h-[420px] opacity-15 text-brass" viewBox="0 0 400 400" fill="none" stroke="currentColor">
+      <svg className="absolute -right-16 top-1/2 -translate-y-1/2 w-[380px] 2xl:w-[440px] h-[380px] 2xl:h-[440px] opacity-15 text-brass pointer-events-none z-0 hidden xl:block" viewBox="0 0 400 400" fill="none" stroke="currentColor">
         <circle cx="200" cy="200" r="185" strokeWidth="1.2" />
         <circle cx="200" cy="200" r="160" strokeWidth="0.8" strokeDasharray="6 3" />
         <circle cx="200" cy="200" r="110" strokeWidth="1.5" />
@@ -944,13 +959,12 @@ function WelcomeScreen({ onStart }) {
           <BrassCorners />
           <div className="w-9 h-9 rounded-lg bg-panel-graphite text-brass flex items-center justify-center shrink-0">
             <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 14h12v8H6z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
           <div>
             <span className="font-mono text-[9px] sm:text-[10px] font-bold text-ruby uppercase tracking-wider block">Артефакт 300 DPI</span>
-            <span className="font-serif font-bold text-ink-main text-xs sm:text-sm">Печать в руки</span>
+            <span className="font-serif font-bold text-ink-main text-xs sm:text-sm">Цифровой паспорт</span>
           </div>
         </div>
       </div>
@@ -1465,12 +1479,12 @@ function GeneratingScreen({ session }) {
       </span>
 
       <h2 className="font-serif font-black text-2xl sm:text-3xl md:text-4xl text-ink-main mb-1.5">
-        {isComposing ? "КОМПОНУЕМ ТВОРЧЕСКИЙ ПАСПОРТ... 🖨️" : "НЕЙРОСЕТЬ ГЕНЕРИРУЕТ ОБРАЗ... ✨"}
+        {isComposing ? "КОМПОНУЕМ ПАСПОРТ МАСТЕРА... 📜" : "НЕЙРОСЕТЬ ГЕНЕРИРУЕТ ОБРАЗ... ✨"}
       </h2>
 
       <p className="font-serif italic text-xs sm:text-sm text-ink-muted mb-3 sm:mb-4 max-w-lg">
         {isComposing
-          ? "Отливаем форму паспорта в качестве 300 DPI и наносим персональный QR-код гильдии..."
+          ? "Формируем полиграфический паспорт в качестве 300 DPI и наносим персональный QR-код..."
           : `Синтез былинного архетипа: ${session?.element_name || 'Стихия'} + ${session?.power_name || 'Суперсила'} + ${session?.color_name || 'Цвет'}...`}
       </p>
 
@@ -1598,9 +1612,8 @@ function EmailDispatchBox({ sessionId }) {
   );
 }
 
-// --- ЭКРАН 7: ФИНАЛЬНЫЙ ПАСПОРТ И СТАТУС ПЕЧАТИ (Result Slide) ---
-// --- ЭКРАН 7: ФИНАЛЬНЫЙ ПАСПОРТ И СТАТУС ПЕЧАТИ (Result Slide) ---
-function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
+// --- ЭКРАН 7: ФИНАЛЬНЫЙ ПАСПОРТ И ПОРТАЛ ВЫДАЧИ (Result Slide) ---
+function ResultScreen({ session, onFinish, onQrRevealed, onCardError }) {
   const [showQr, setShowQr] = useState(false);
   const [showEmailBox, setShowEmailBox] = useState(false);
   const isMaxPlatform = (window.KIOSK_CONFIG?.botPlatform || 'max').toLowerCase() !== 'telegram';
@@ -1609,6 +1622,12 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
     : (window.KIOSK_CONFIG?.telegramBotUsername || window.KIOSK_CONFIG?.maxBotUsername || '');
   const [botUsername, setBotUsername] = useState(initialUsername.replace(/^@/, '').trim());
   const qrRevealDelay = Number(window.KIOSK_CONFIG?.qrRevealDelayMs || 1500);
+
+  useEffect(() => {
+    if (!session?.final_card_path) {
+      if (onCardError) onCardError();
+    }
+  }, [session?.final_card_path, onCardError]);
 
   useEffect(() => {
     if (!botUsername) {
@@ -1666,17 +1685,11 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
           </h2>
         </div>
 
-        {/* Статусная плашка спулера печати */}
+        {/* Статусная плашка цифрового паспорта */}
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-panel-graphite border border-brass/60 shadow-industrial text-brass-bright font-mono text-[11px] sm:text-xs self-start sm:self-auto">
-          <span className="w-2.5 h-2.5 rounded-full bg-cyber-cyan animate-pulse"></span>
+          <span className="w-2.5 h-2.5 rounded-full bg-brass-bright animate-pulse"></span>
           <span className="font-bold tracking-wider">
-            {session?.print_status === 'printed'
-              ? "ПАСПОРТ НАПЕЧАТАН!"
-              : session?.print_status === 'printing'
-                ? "ПЕЧАТАЕМ НА ПРИНТЕРЕ..."
-                : !autoPrint
-                  ? "ЦИФРОВОЙ ПАСПОРТ ГОТОВ"
-                  : "ГОТОВО К ВЫДАЧЕ"}
+            ЦИФРОВОЙ ПАСПОРТ ГОТОВ 📜
           </span>
         </div>
       </div>
@@ -1698,10 +1711,13 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
                   src={cardUrl}
                   alt="Итоговый паспорт инженера"
                   className="max-h-[57vh] w-auto max-w-full object-contain block rounded"
+                  onError={() => {
+                    if (onCardError) onCardError();
+                  }}
                 />
               ) : (
                 <div className="p-10 text-center font-serif text-brass-bright text-sm">
-                  Загрузка паспорта мастера...
+                  Подготовка паспорта мастера...
                 </div>
               )}
             </div>
@@ -1813,29 +1829,47 @@ function ResultScreen({ session, onFinish, autoPrint, onQrRevealed }) {
   );
 }
 
-// --- ЭКРАН 8: ОШИБКА ОБОРУДОВАНИЯ (Error Screen) ---
-function ErrorScreen({ session, onFinish, busy }) {
-  const hasCard = Boolean(session?.final_card_path);
+// --- ЭКРАН 8: ОШИБКА ГЕНЕРАЦИИ / ОБОРУДОВАНИЯ (Error Screen) ---
+function ErrorScreen({ session, onFinish, onRetry, busy }) {
+  const isAiError = session?.meta?.error_code === 'ai_generation_failed' || Boolean(onRetry);
   return (
-    <main className="flex-1 flex flex-col items-center justify-center text-center px-6 max-w-3xl mx-auto animate-fade-in" role="alert">
-      <div className="w-24 h-24 rounded-full bg-ruby text-brass-bright border-4 border-brass flex items-center justify-center text-4xl mb-6 shadow-tactile-ruby">
+    <main className="flex-1 flex flex-col items-center justify-center text-center px-6 max-w-3xl mx-auto animate-fade-in relative z-20" role="alert">
+      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-ruby text-brass-bright border-4 border-brass flex items-center justify-center text-3xl sm:text-4xl mb-5 shadow-tactile-ruby">
         ⚙️
       </div>
-      <h2 className="font-serif font-black text-4xl sm:text-5xl text-ink-main mb-3">
-        {hasCard ? "КАРТОЧКА ГОТОВА, НО НЕ НАПЕЧАТАЛАСЬ" : "УПС! ЧТО-ТО ПОШЛО НЕ ТАК"}
+      <h2 className="font-serif font-black text-3xl sm:text-4xl md:text-5xl text-ink-main mb-3">
+        {isAiError ? "СБОЙ СИНТЕЗА ОБРАЗА" : "УПС! ЧТО-ТО ПОШЛО НЕ ТАК"}
       </h2>
-      <p className="font-serif italic text-xl text-ink-muted mb-8 max-w-xl">
-        {hasCard ? "Позови мастера станка — он допечатает твой паспорт за минуту." : "Позови мастера или попробуй запустить станок заново."}
+      <p className="font-serif italic text-base sm:text-lg text-ink-muted mb-7 max-w-xl">
+        {isAiError
+          ? "Не удалось сгенерировать фото. Пожалуйста, попробуйте еще раз."
+          : (session?.error_message || "Позовите мастера стенда или попробуйте запустить станок заново.")}
       </p>
-      {hasCard && (
-        <div className="relative p-2 bg-panel-graphite border-2 border-brass rounded-xl mb-8">
-          <BrassCorners />
-          <img src={`/media/cards/${session.id}.jpg?t=${Date.now()}`} alt="Твой паспорт инженера" className="w-64 rounded shadow-industrial" />
-        </div>
-      )}
-      <FolkButton variant="primary" size="xl" onClick={onFinish} disabled={busy} ariaLabel="Вернуться на главный экран">
-        <span>НАЧАТЬ ЗАНОВО</span>
-      </FolkButton>
+
+      <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md justify-center">
+        {onRetry && (
+          <FolkButton
+            variant="primary"
+            size="xl"
+            onClick={onRetry}
+            disabled={busy}
+            ariaLabel="Попробовать снова сгенерировать фото"
+            className="flex-1"
+          >
+            <span>ПОПРОБОВАТЬ СНОВА</span>
+          </FolkButton>
+        )}
+        <FolkButton
+          variant={onRetry ? "secondary" : "primary"}
+          size="xl"
+          onClick={onFinish}
+          disabled={busy}
+          ariaLabel="Вернуться на главный экран"
+          className="flex-1"
+        >
+          <span>В НАЧАЛО</span>
+        </FolkButton>
+      </div>
     </main>
   );
 }
@@ -1892,11 +1926,12 @@ function IdleModal({ isOpen, countdown, onStay, onLeave }) {
 function KioskRoot() {
   const [session, setSession] = useState(null);
   const [quizSchema, setQuizSchema] = useState([]);
-  const [autoPrint, setAutoPrint] = useState(true);
+  const [cardLoadError, setCardLoadError] = useState(false);
 
-  // Управление бездействием
+  // Управление бездействием (Folk-Tech Chronometer Controller)
   const [isIdleModalOpen, setIsIdleModalOpen] = useState(false);
-  const [idleCountdown, setIdleCountdown] = useState(5);
+  const [idleCountdown, setIdleCountdown] = useState(10);
+  const isIdleModalOpenRef = useRef(false);
   const idleTimerRef = useRef(null);
   const countdownIntervalRef = useRef(null);
 
@@ -1919,35 +1954,6 @@ function KioskRoot() {
       setSession(data && data.status !== 'IDLE' ? data : null);
     } catch (e) { /* обработка через статус связи */ }
   }, []);
-
-  const syncPrintStatus = useCallback(async () => {
-    try {
-      const data = await api('/api/print/status');
-      if (data && typeof data.enable_auto_print === 'boolean') {
-        setAutoPrint(data.enable_auto_print);
-      }
-    } catch (e) { }
-  }, []);
-
-  useEffect(() => {
-    syncPrintStatus();
-  }, [syncPrintStatus]);
-
-  const toggleAutoPrint = async () => {
-    try {
-      const res = await api('/api/print/toggle-auto-print', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: !autoPrint })
-      });
-      if (res && typeof res.enable_auto_print === 'boolean') {
-        setAutoPrint(res.enable_auto_print);
-        showNotice(res.enable_auto_print ? "Автопечать включена 🖨️" : "Автопечать выключена (только цифра)");
-      }
-    } catch (e) {
-      showNotice("Не удалось изменить режим печати");
-    }
-  };
 
   const runAction = useCallback(async (fn) => {
     if (busyRef.current) return;
@@ -2011,8 +2017,42 @@ function KioskRoot() {
     };
   }, [syncActiveSession]);
 
+  const handleReset = useCallback(async () => {
+    clearInterval(countdownIntervalRef.current);
+    clearTimeout(idleTimerRef.current);
+    isIdleModalOpenRef.current = false;
+    setIsIdleModalOpen(false);
+    setIdleCountdown(10);
+    setCardLoadError(false);
+    try {
+      await api('/api/session/reset', { method: 'POST' });
+    } catch (e) {
+      showNotice(friendlyError(e));
+    }
+    setSession(null);
+  }, [showNotice]);
+
+  const startCountdown = useCallback(() => {
+    isIdleModalOpenRef.current = true;
+    setIsIdleModalOpen(true);
+    setIdleCountdown(10);
+    clearInterval(countdownIntervalRef.current);
+    countdownIntervalRef.current = setInterval(() => {
+      setIdleCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownIntervalRef.current);
+          isIdleModalOpenRef.current = false;
+          setIsIdleModalOpen(false);
+          handleReset();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, [handleReset]);
+
   const resetIdleTimer = useCallback(() => {
-    if (isIdleModalOpen) return;
+    if (isIdleModalOpenRef.current) return;
     clearTimeout(idleTimerRef.current);
 
     if (!session || session.status === 'IDLE' || session.status === 'GENERATING' || session.status === 'COMPOSING') {
@@ -2020,16 +2060,36 @@ function KioskRoot() {
     }
 
     // На экране результата даём 45 секунд, чтобы посетитель успел спокойно навести камеру и отсканировать QR
-    const timeoutDuration = (session.status === 'COMPLETED' || session.status === 'PRINTING') ? 45000 : 15000;
+    const timeoutDuration = (session.status === 'COMPLETED' || session.status === 'READY_TO_PRINT' || session.status === 'PRINTING') ? 45000 : 15000;
 
     idleTimerRef.current = setTimeout(() => {
-      setIdleCountdown(5);
-      setIsIdleModalOpen(true);
+      startCountdown();
     }, timeoutDuration);
-  }, [session, isIdleModalOpen]);
+  }, [session, startCountdown]);
+
+  const handleStay = useCallback(() => {
+    clearInterval(countdownIntervalRef.current);
+    isIdleModalOpenRef.current = false;
+    setIsIdleModalOpen(false);
+    setIdleCountdown(10);
+    resetIdleTimer();
+  }, [resetIdleTimer]);
+
+  const handleLeave = useCallback(() => {
+    clearInterval(countdownIntervalRef.current);
+    clearTimeout(idleTimerRef.current);
+    isIdleModalOpenRef.current = false;
+    setIsIdleModalOpen(false);
+    setIdleCountdown(10);
+    handleReset();
+  }, [handleReset]);
 
   useEffect(() => {
-    const handleActivity = () => resetIdleTimer();
+    const handleActivity = () => {
+      if (!isIdleModalOpenRef.current) {
+        resetIdleTimer();
+      }
+    };
     window.addEventListener('touchstart', handleActivity, { passive: true });
     window.addEventListener('pointerdown', handleActivity, { passive: true });
     window.addEventListener('click', handleActivity, { passive: true });
@@ -2041,22 +2101,12 @@ function KioskRoot() {
       window.removeEventListener('pointerdown', handleActivity);
       window.removeEventListener('click', handleActivity);
       clearTimeout(idleTimerRef.current);
+      clearInterval(countdownIntervalRef.current);
     };
   }, [resetIdleTimer]);
 
-  useEffect(() => {
-    if (!isIdleModalOpen) return;
-    countdownIntervalRef.current = setInterval(() => setIdleCountdown(prev => Math.max(0, prev - 1)), 1000);
-    return () => clearInterval(countdownIntervalRef.current);
-  }, [isIdleModalOpen]);
-
-  useEffect(() => {
-    if (isIdleModalOpen && idleCountdown <= 0) {
-      handleReset();
-    }
-  }, [isIdleModalOpen, idleCountdown]);
-
   const handleStartSession = () => runAction(async () => {
+    setCardLoadError(false);
     const sess = await api('/api/session/new', { method: 'POST' });
     setSession(sess);
   });
@@ -2086,16 +2136,12 @@ function KioskRoot() {
     else await syncActiveSession();
   });
 
-  const handleReset = async () => {
-    setIsIdleModalOpen(false);
-    clearInterval(countdownIntervalRef.current);
-    try {
-      await api('/api/session/reset', { method: 'POST' });
-    } catch (e) {
-      showNotice(friendlyError(e));
-    }
-    setSession(null);
-  };
+  const handleRetryGeneration = () => runAction(async () => {
+    setCardLoadError(false);
+    const res = await api('/api/session/retry-generation', { method: 'POST' });
+    if (res && res.session) setSession(res.session);
+    else await syncActiveSession();
+  });
 
   const getStepIndex = () => {
     if (!session || session.status === 'IDLE') return 0;
@@ -2184,32 +2230,39 @@ function KioskRoot() {
       return <GeneratingScreen session={session} />;
     }
 
-    if (session.status === 'ERROR') {
-      return <ErrorScreen session={session} onFinish={handleReset} busy={busy} />;
+    if (session.status === 'ERROR' || cardLoadError) {
+      return (
+        <ErrorScreen
+          session={session}
+          onFinish={handleReset}
+          onRetry={handleRetryGeneration}
+          busy={busy}
+        />
+      );
     }
 
     return (
       <ResultScreen
         session={session}
         onFinish={handleReset}
-        autoPrint={autoPrint}
         onQrRevealed={resetIdleTimer}
+        onCardError={() => setCardLoadError(true)}
       />
     );
   };
 
   return (
     <div className="w-full h-full max-h-screen relative overflow-hidden flex items-center justify-center p-1 sm:p-2.5 box-border">
-      {/* Тонкие фоновые чертежные лимбы и шкалы градусов со Слайдов 07, 10, 20 */}
+      {/* Тонкие фоновые чертежные лимбы и шкалы градусов по периметру */}
       <BlueprintWatermarks />
 
       {/* Единая гармоничная выставочная станция (Фланг Левый + Центральная Консоль + Фланг Правый) */}
-      <div className="relative w-full max-w-[1720px] 2xl:max-w-[1880px] h-full max-h-[880px] 2xl:max-h-[940px] my-auto mx-auto flex items-stretch justify-center gap-3 xl:gap-5 z-20">
+      <div className="relative w-full max-w-[1720px] 2xl:max-w-[1900px] h-full max-h-[890px] 2xl:max-h-[950px] my-auto mx-auto flex items-stretch justify-center gap-3 xl:gap-5 z-20">
         {/* Левый кибер-хохломской фланг (Folk-Tech ЧПУ тотем) */}
         <CyberKhokhlomaFlankLeft />
 
         {/* Центральное интерактивное пространство киоска (пропорциональная сцена) */}
-        <div className="flex-1 w-full max-w-[1360px] 2xl:max-w-[1440px] h-full my-auto mx-auto flex flex-col justify-between p-2.5 sm:p-3.5 md:p-4 select-none relative z-20 overflow-hidden box-border bg-parchment/85 backdrop-blur-[2px] rounded-2xl border border-brass/35 sm:border-2 sm:border-brass/45 shadow-tactile transition-all">
+        <div className="flex-1 w-full max-w-[1360px] 2xl:max-w-[1460px] h-full my-auto mx-auto flex flex-col justify-between p-2.5 sm:p-3.5 md:p-4 select-none relative z-20 overflow-hidden box-border bg-parchment/90 backdrop-blur-[2px] rounded-2xl border border-brass/35 sm:border-2 sm:border-brass/45 shadow-tactile transition-all">
           {/* Латунная окантовка центрального интерактивного пространства */}
           <BrassCorners className="z-20 pointer-events-none" />
 
@@ -2235,19 +2288,9 @@ function KioskRoot() {
                 ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ
               </span>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <button
-                type="button"
-                onClick={toggleAutoPrint}
-                title="Переключить отправку на печать"
-                className={`px-2.5 sm:px-3 py-1 rounded-lg border font-mono text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none ${autoPrint
-                  ? "bg-panel-graphite text-brass-bright border-brass/50 hover:border-brass shadow-sm"
-                  : "bg-ruby/15 text-ruby border-ruby/40 hover:border-ruby shadow-sm"
-                  }`}
-              >
-                <span>🖨️</span>
-                <span>{autoPrint ? "ПЕЧАТЬ: ВКЛ" : "ПЕЧАТЬ: ВЫКЛ"}</span>
-              </button>
+            <div className="flex items-center gap-2 sm:gap-3 text-brass/75 font-mono text-[10px] sm:text-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-brass-bright animate-pulse" />
+              <span className="uppercase tracking-widest hidden sm:inline">СТАНОК БУДУЩЕГО</span>
             </div>
           </header>
 
@@ -2291,16 +2334,8 @@ function KioskRoot() {
           <IdleModal
             isOpen={isIdleModalOpen}
             countdown={idleCountdown}
-            onStay={() => {
-              setIsIdleModalOpen(false);
-              clearInterval(countdownIntervalRef.current);
-              resetIdleTimer();
-            }}
-            onLeave={() => {
-              setIsIdleModalOpen(false);
-              clearInterval(countdownIntervalRef.current);
-              handleReset();
-            }}
+            onStay={handleStay}
+            onLeave={handleLeave}
           />
         </div>
 

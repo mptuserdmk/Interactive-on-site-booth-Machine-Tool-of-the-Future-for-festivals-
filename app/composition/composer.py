@@ -17,26 +17,39 @@ class CardComposer:
         self._load_fonts()
 
     def _load_fonts(self):
-        # 1. Сначала проверяем локальные встроенные шрифты проекта (assets/fonts)
-        local_fonts_dir = settings.BASE_DIR / "assets" / "fonts"
-        bundled_bold = local_fonts_dir / "DejaVuSans-Bold.ttf"
-        bundled_regular = local_fonts_dir / "DejaVuSans.ttf"
+        # 1. Сначала проверяем локальные встроенные шрифты проекта (fonts/ttf или assets/fonts)
+        local_ttf_dir = settings.BASE_DIR / "fonts" / "ttf"
+        assets_fonts_dir = settings.BASE_DIR / "assets" / "fonts"
+        
+        bundled_bold = None
+        bundled_regular = None
+        
+        for fdir in (local_ttf_dir, assets_fonts_dir):
+            b_cand = fdir / "DejaVuSans-Bold.ttf"
+            r_cand = fdir / "DejaVuSans.ttf"
+            if b_cand.is_file() and not bundled_bold:
+                bundled_bold = b_cand
+            if r_cand.is_file() and not bundled_regular:
+                bundled_regular = r_cand
 
-        bold_font_path = str(bundled_bold) if bundled_bold.is_file() else None
-        regular_font_path = str(bundled_regular) if bundled_regular.is_file() else None
+        bold_font_path = str(bundled_bold) if bundled_bold and bundled_bold.is_file() else None
+        regular_font_path = str(bundled_regular) if bundled_regular and bundled_regular.is_file() else None
 
-        # 2. Если локальные не найдены, ищем в системных каталогах Linux и Windows
+        # 2. Если локальные не найдены, ищем в системных каталогах Linux (Мос РОСА, РЕД ОС, Astra, Ubuntu) и Windows
         if not bold_font_path or not regular_font_path:
             candidate_paths = [
-                # Linux DejaVu / Liberation / PT Astra (MOS, РЕД ОС, Astra, Debian, Ubuntu)
+                # Мос РОСА / Fedora / CentOS (системный путь /usr/share/fonts/TTF/dejavu)
+                "/usr/share/fonts/TTF/dejavu/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/TTF/dejavu/DejaVuSans.ttf",
+                "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/TTF/DejaVuSans.ttf",
+                # Ubuntu / Debian / Astra Linux
                 "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
                 "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
                 "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
                 "/usr/share/fonts/dejavu/DejaVuSans.ttf",
                 "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
                 "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-                "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
-                "/usr/share/fonts/TTF/DejaVuSans.ttf",
                 "/usr/share/fonts/truetype/pt-astra/PTAstraSans-Bold.ttf",
                 "/usr/share/fonts/truetype/pt-astra/PTAstraSans-Regular.ttf",
                 # Windows

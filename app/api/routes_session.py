@@ -39,6 +39,11 @@ async def reset_session():
     await session_manager.reset()
     return {"status": "ok"}
 
+@router.post("/retry-generation", summary="Retry AI generation on failure")
+async def retry_generation():
+    sess = await session_manager.retry_generation()
+    return {"status": "ok", "session": sess}
+
 @router.get("/history", summary="Get recent session history for operator")
 async def get_history(limit: int = Query(30, ge=1, le=200)):
     return db.get_recent_sessions(limit=limit)

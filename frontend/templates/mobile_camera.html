@@ -152,7 +152,7 @@
         } else if (res.status === 401) {
           toast.innerText = 'Нет доступа: отсканируйте QR на панели оператора ещё раз';
         } else if (res.status === 409) {
-          toast.innerText = 'Стенд сейчас занят (идёт квиз или печать) — дождитесь нового участника';
+          toast.innerText = 'Стенд сейчас занят (идёт квиз или синтез паспорта) — дождитесь нового участника';
         } else {
           toast.innerText = 'Ошибка отправки: ' + (data.detail || ('HTTP ' + res.status));
         }

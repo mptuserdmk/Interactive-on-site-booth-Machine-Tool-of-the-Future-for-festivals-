@@ -75,7 +75,7 @@ class Settings(BaseSettings):
     
     # Printer
     PRINTER_NAME: str = ""  # Empty string = default Windows printer
-    ENABLE_AUTO_PRINT: bool = True
+    ENABLE_AUTO_PRINT: bool = False
     PRINT_SIMULATION_MODE: bool = False  # If True, simulates print without sending to physical hardware
     
     REPRINT_COOLDOWN_SECONDS: int = 10  # защита бумаги от «REPRINT ×100»

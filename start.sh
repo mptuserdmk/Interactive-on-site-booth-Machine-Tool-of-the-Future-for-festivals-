@@ -6,9 +6,14 @@ set -e
 # Гарантированная поддержка UTF-8 и кириллицы (Astra Linux, РЕД ОС, РОСА, Ubuntu/Debian)
 # ==============================================================================
 
-# Принудительная установка полной UTF-8 локали
-export LANG="C.UTF-8"
-export LC_ALL="C.UTF-8"
+# Принудительная установка полной UTF-8 локали (ru_RU или C.UTF-8)
+if locale -a 2>/dev/null | grep -qi "ru_RU.utf8"; then
+    export LANG="ru_RU.UTF-8"
+    export LC_ALL="ru_RU.UTF-8"
+else
+    export LANG="C.UTF-8"
+    export LC_ALL="C.UTF-8"
+fi
 export PYTHONUTF8=1
 export PYTHONIOENCODING="utf-8"
 
@@ -28,12 +33,12 @@ if [ ! -f ".env" ]; then
     echo "[ВНИМАНИЕ] Впишите AI_API_KEY, PRINTER_NAME и ACCESS_TOKEN в .env перед фестивалем!"
 fi
 
-# Определение интерпретатора Python
+# Определение интерпретатора Python (поддержка venv и .venv)
 PY="python3"
-if [ -f ".venv/bin/python" ]; then
-    PY=".venv/bin/python"
-elif [ -f "venv/bin/python" ]; then
+if [ -f "venv/bin/python" ]; then
     PY="venv/bin/python"
+elif [ -f ".venv/bin/python" ]; then
+    PY=".venv/bin/python"
 elif command -v python3 >/dev/null 2>&1; then
     PY="python3"
 elif command -v python >/dev/null 2>&1; then
@@ -49,8 +54,10 @@ if [ ! -d ".venv" ] && [ ! -d "venv" ]; then
     fi
 fi
 
-# Проверка системных кириллических шрифтов (для информации)
-if ! ls assets/fonts/*.ttf >/dev/null 2>&1 && ! ls /usr/share/fonts/truetype/dejavu/*.ttf >/dev/null 2>&1; then
+# Проверка кириллических шрифтов
+if ls fonts/ttf/*.ttf >/dev/null 2>&1 || ls assets/fonts/*.ttf >/dev/null 2>&1; then
+    echo "[INFO] Локальные TrueType-шрифты DejaVu обнаружены в проекте."
+elif ! ls /usr/share/fonts/TTF/dejavu/*.ttf >/dev/null 2>&1 && ! ls /usr/share/fonts/truetype/dejavu/*.ttf >/dev/null 2>&1; then
     echo "[СОВЕТ] Для оптимальной полиграфии установите пакет шрифтов:"
     echo "  Debian/Ubuntu/MOS: sudo apt install -y fonts-dejavu-core"
     echo "  РЕД ОС / РОСА / ALT: sudo dnf install -y dejavu-sans-fonts"
@@ -69,7 +76,10 @@ echo "[2/2] Запуск сервера и интерфейса..."
 $PY run.py || {
     echo ""
     echo "[ОШИБКА] Сервер остановился с ошибкой."
-    echo "  - Проверьте, не занят ли порт (обычно 8000);"
+    echo "  - Проверьте, не занят ли порт (обычно 8000 или 12435);"
     echo "  - Проверьте настройки в файле .env."
-    exit 1
 }
+
+echo ""
+echo "Нажмите Enter для выхода..."
+read -r dummy 2>/dev/null || true

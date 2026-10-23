@@ -63,6 +63,9 @@ assets/fonts/*.otf
 .DS_Store
 Thumbs.db
 desktop.ini
+.directory
+Miniconda3*.sh
+miniconda*.sh
 
 # Logs & testing
 *.log

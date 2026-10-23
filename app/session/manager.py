@@ -266,7 +266,11 @@ class SessionManager:
 
             if not ai_result.success:
                 logger.error("AI generation failed for %s: %s", sess.id, ai_result.error)
-                await self._fail(sess, "Не удалось создать изображение: AI недоступен")
+                sess.meta["error_code"] = "ai_generation_failed"
+                sess.status = SessionState.ERROR
+                sess.error_message = "Не удалось сгенерировать фото. Пожалуйста, попробуйте еще раз."
+                self._save(sess)
+                await self._notify(sess)
                 return
 
             sess.generated_image_path = ai_result.image_path
@@ -285,18 +289,20 @@ class SessionManager:
             )
 
             sess.final_card_path = str(card_out)
-            sess.status = SessionState.READY_TO_PRINT
             sess.duration_seconds = round(time.time() - start_time, 2)
-            self._save(sess)
             self._cleanup_personal_files(sess)
-            auto_print = settings.ENABLE_AUTO_PRINT
-            if auto_print:
-                self._printing.add(sess.id)  # резерв до первого await: ручная печать сюда не влезет
-            await self._notify(sess)
 
-            # 3. Print — всегда своей сессии, даже если киоск уже перешёл к следующему посетителю
+            auto_print = getattr(settings, "ENABLE_AUTO_PRINT", False)
             if auto_print:
+                sess.status = SessionState.READY_TO_PRINT
+                self._save(sess)
+                self._printing.add(sess.id)  # резерв до первого await: ручная печать сюда не влезет
+                await self._notify(sess)
                 await self._print(sess)
+            else:
+                sess.status = SessionState.COMPLETED
+                self._save(sess)
+                await self._notify(sess)
 
         except asyncio.CancelledError:
             sess.status = SessionState.IDLE
@@ -366,6 +372,38 @@ class SessionManager:
             return await print_manager.print_card(card_path, session_id)
         finally:
             self._printing.discard(session_id)
+
+    async def retry_generation(self) -> SessionData:
+        """Повторный запуск генерации ИИ при ошибке с сохранением исходного фото и ответов квиза."""
+        sess = self.active_session
+        if not sess or sess.status != SessionState.ERROR:
+            raise InvalidTransition("Повторная генерация доступна только в состоянии ошибки")
+
+        if not sess.photo_path or not Path(sess.photo_path).exists():
+            sess.status = SessionState.PHOTO_PENDING
+            sess.error_message = None
+            sess.meta.pop("error_code", None)
+            self._save(sess)
+            await self._notify(sess)
+            return sess
+
+        combo = combination_manager.find(sess.element, sess.power, sess.color)
+        if not combo:
+            combo = combination_manager.get_default()
+
+        sess.status = SessionState.GENERATING
+        sess.error_message = None
+        sess.meta.pop("error_code", None)
+        self._save(sess)
+        await self._notify(sess)
+
+        task = asyncio.get_running_loop().create_task(
+            self._run_generation_and_composition_pipeline(sess, combo),
+            name=f"pipeline-{sess.id}"
+        )
+        self._tasks[sess.id] = task
+        task.add_done_callback(lambda t, sid=sess.id: self._tasks.pop(sid, None))
+        return sess
 
 
 session_manager = SessionManager()
