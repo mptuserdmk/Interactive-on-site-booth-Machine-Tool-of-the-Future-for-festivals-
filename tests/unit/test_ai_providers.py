@@ -231,3 +231,39 @@ async def test_mock_provider_inputs(tmp_path, fast_mock_ai, combo, kind):
         assert res.success is False
     else:
         assert res.success, res.error
+
+
+# --- BOTHUB_PROXY и маскирование учетных данных ---------------------------------------------
+
+def test_mask_proxy_url():
+    from app.api.routes_health import mask_proxy_url
+    assert mask_proxy_url(None) is None
+    assert mask_proxy_url("") is None
+    assert mask_proxy_url("   ") is None
+    assert mask_proxy_url("http://proxy.host:8080") == "http://proxy.host:8080"
+    assert mask_proxy_url("socks5://192.168.1.1:1080") == "socks5://192.168.1.1:1080"
+    assert mask_proxy_url("http://user:secret@proxy.host:8080") == "http://***:***@proxy.host:8080"
+    assert mask_proxy_url("socks5://admin:pass123@10.0.0.1:1080") == "socks5://***:***@10.0.0.1:1080"
+
+
+async def test_bothub_proxy_passed_to_httpx(monkeypatch, req, combo, api_key, tmp_path, respx_mock):
+    from app.config.settings import settings
+    monkeypatch.setattr(settings, "BOTHUB_PROXY", "http://user:pass@127.0.0.1:8888")
+
+    captured_kwargs = {}
+    orig_async_client = httpx.AsyncClient
+
+    class SpyAsyncClient(orig_async_client):
+        def __init__(self, *args, **kwargs):
+            captured_kwargs.update(kwargs)
+            super().__init__(*args, **kwargs)
+
+    monkeypatch.setattr(httpx, "AsyncClient", SpyAsyncClient)
+
+    respx_mock.post(BOTHUB_EDIT).respond(200, json={"data": [{"url": IMG_URL}]})
+    respx_mock.get(IMG_URL).respond(200, content=png_bytes(), headers={"content-type": "image/png"})
+
+    res = await provider("bothub").generate(req, combo, tmp_path / "out.jpg")
+    assert res.success, res.error
+    assert captured_kwargs.get("proxy") == "http://user:pass@127.0.0.1:8888"
+    assert captured_kwargs.get("trust_env") is False

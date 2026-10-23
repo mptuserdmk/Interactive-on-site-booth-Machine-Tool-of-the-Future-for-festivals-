@@ -1,7 +1,8 @@
 import asyncio
 import shutil
 import socket
-from urllib.parse import urlparse
+from typing import Optional
+from urllib.parse import urlparse, urlsplit
 from fastapi import APIRouter
 from app.config.settings import settings, get_local_ip
 from app.camera.manager import camera_manager
@@ -11,6 +12,23 @@ from app.quiz.engine import get_questions_schema
 from app.quiz.combinations import combination_manager
 
 router = APIRouter(prefix="/api", tags=["Health & Schema"])
+
+def mask_proxy_url(proxy_url: Optional[str]) -> Optional[str]:
+    """Маскирует учетные данные в строке прокси (http://user:pass@host:port -> http://***:***@host:port)."""
+    if not proxy_url or not str(proxy_url).strip():
+        return None
+    raw = str(proxy_url).strip()
+    try:
+        parsed = urlsplit(raw)
+        if parsed.username or parsed.password:
+            host_part = parsed.hostname or ""
+            if parsed.port:
+                host_part = f"{host_part}:{parsed.port}"
+            scheme = parsed.scheme or "http"
+            return f"{scheme}://***:***@{host_part}"
+        return raw
+    except Exception:
+        return "configured"
 
 @router.get("/health", summary="Full system diagnostic status")
 async def get_system_health():
@@ -56,6 +74,7 @@ async def get_system_health():
                 "configured_provider": settings.AI_PROVIDER,
                 "is_mock": ai_provider.name == "mock",
                 "key_ok": ai_key_ok,
+                "bothub_proxy_host": mask_proxy_url(getattr(settings, "BOTHUB_PROXY", None)),
                 "generations": ai_stats["total"],
                 "fallback_count": ai_stats["fallback_count"],
                 "last_fallback": ai_stats["last_fallback"],

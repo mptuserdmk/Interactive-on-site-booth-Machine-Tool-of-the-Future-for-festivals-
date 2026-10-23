@@ -37,7 +37,7 @@ def get_local_ip() -> str:
 
 class Settings(BaseSettings):
     # App info
-    APP_NAME: str = "AI-Фотолокация «Станок Будущего»"
+    APP_NAME: str = "AI-Фотолокация «Мастерская Будущего»"
     APP_VERSION: str = "1.0.0"
     HOST: str = "0.0.0.0"
     PORT: int = 8000
@@ -69,6 +69,7 @@ class Settings(BaseSettings):
     AI_API_KEY: str = ""
     BOTHUB_MODEL: str = "gemini-3.1-flash-lite-image"
     BOTHUB_API_BASE: str = "https://openai.bothub.chat/v1"
+    BOTHUB_PROXY: str = ""  # e.g. "http://user:pass@host:port" or "socks5://host:port"
     AI_SSL_VERIFY: bool = True
     AI_TIMEOUT_SECONDS: int = 35
     AI_FALLBACK_ON_ERROR: bool = True

@@ -200,7 +200,7 @@ class CardComposer:
         accent_hex = combo.get("color_hex", "#00d2ff")
         element_name = combo.get("element_name", "ИНЖЕНЕР")
         power_name = combo.get("power_name", "ТОЧНОСТЬ")
-        machine_name = combo.get("machine_name", "СТАНОК БУДУЩЕГО")
+        machine_name = combo.get("machine_name", "ИНЖЕНЕР БУДУЩЕГО")
         description = combo.get("description", "Создаёт инновации будущего.")
         location = combo.get("location", "Передовой производственный центр")
         full_width = self.width - 140

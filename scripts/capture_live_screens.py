@@ -20,7 +20,7 @@ def run():
         print("[2/11] Starting session (Clicking 'СОЗДАТЬ ОБРАЗ МАСТЕРА')...")
         start_btn = page.locator("button:has-text('СОЗДАТЬ ОБРАЗ МАСТЕРА')")
         start_btn.click()
-        page.wait_for_selector("text=ОПТИЧЕСКИЙ БЛОК ЧПУ")
+        page.wait_for_selector("text=ОПТИЧЕСКИЙ ВИЗОР")
         time.sleep(1.0)
         page.screenshot(path=str(OUT_DIR / "live_02_camera.png"))
 

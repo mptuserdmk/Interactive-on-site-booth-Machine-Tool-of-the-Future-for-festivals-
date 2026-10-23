@@ -3,10 +3,10 @@
  * @description Интерактивный выставочный комплекс «Осенний Промышленный Фестиваль Колледжей Москвы»
  * Визуальный стандарт: Неорусский стимпанк и хай-тек (Folk-Tech)
  * Разработано строго по спецификации react-presentation-design:
- * - Гармоничный синтез былинных мотивов, латуни, филиграни и станков с ЧПУ
+ * - Гармоничный синтез былинных мотивов, латуни, филиграни и передовых технологий
  * - Палитра: пергамент (#FBF8F1, #F4EEDA), латунь (#C59A45, #E8CA7B), багрянец (#BA1B1D), графит (#121820)
  * - Декоративные латунные уголки BrassCorners и анимированные шестерни
- * - Телеметрия ЧПУ, калибровка 0.02 мм по ГОСТ 2.0
+ * - Телеметрия лаборатории, калибровка 0.02 мм по ГОСТ 2.0
  * - Тактильные кнопки с поддержкой 8 состояний и таргет > 64px
  * - Полная совместимость с E2E тестами и офлайн-режимом
  */
@@ -48,10 +48,10 @@ async function api(url, options = {}) {
 }
 
 function friendlyError(e) {
-  if (e && e.status === 409) return "Секунду… калибровка станка";
+  if (e && e.status === 409) return "Секунду… калибровка оптического модуля";
   if (e && e.status === 503) return "Оптический датчик не отвечает — позови мастера 📷";
   if (e && e.status === 504) return "Оптический датчик не успел ответить — нажми ещё раз 📷";
-  if (e instanceof TypeError) return "Нет связи со станком — позови мастера";
+  if (e instanceof TypeError) return "Нет связи со стендом — позовите координатора";
   return (e && e.message) || "Сбой привода — попробуй ещё раз";
 }
 
@@ -82,11 +82,11 @@ function BrassCorners({ className = "" }) {
 function BlueprintWatermarks() {
   return (
     <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
-      {/* Декоративная контурная рамка станка по периметру экрана */}
+      {/* Декоративная контурная рамка комплекса по периметру экрана */}
       <div className="absolute inset-2 sm:inset-3 border border-brass/25 rounded-2xl sm:rounded-3xl pointer-events-none z-0" />
       <div className="absolute inset-3.5 sm:inset-5 border border-brass/15 rounded-xl sm:rounded-2xl pointer-events-none z-0" />
 
-      {/* Угловые узлы ЧПУ станка с заклепками */}
+      {/* Угловые узлы комплекса с заклепками */}
       <div className="absolute top-3 left-3 w-3 h-3 rounded-full border border-brass/50 bg-brass/20 pointer-events-none z-0" />
       <div className="absolute top-3 right-3 w-3 h-3 rounded-full border border-brass/50 bg-brass/20 pointer-events-none z-0" />
       <div className="absolute bottom-3 left-3 w-3 h-3 rounded-full border border-brass/50 bg-brass/20 pointer-events-none z-0" />
@@ -118,7 +118,7 @@ function BlueprintWatermarks() {
         ))}
       </svg>
 
-      {/* Правые чертежные лимбы и калибровка ЧПУ */}
+      {/* Правые чертежные лимбы и калибровка */}
       <svg className="absolute -right-16 top-1/2 -translate-y-1/2 w-[380px] 2xl:w-[440px] h-[380px] 2xl:h-[440px] opacity-15 text-brass pointer-events-none z-0 hidden xl:block" viewBox="0 0 400 400" fill="none" stroke="currentColor">
         <circle cx="200" cy="200" r="185" strokeWidth="1.2" />
         <circle cx="200" cy="200" r="160" strokeWidth="0.8" strokeDasharray="6 3" />
@@ -149,7 +149,7 @@ function CyberKhokhlomaFlankLeft() {
       aria-hidden="true"
       className="shrink-0 w-44 2xl:w-56 h-full flex flex-col justify-between select-none pointer-events-none hidden xl:flex relative z-10 transition-all py-1"
     >
-      {/* Вертикальная направляющая ось станка с заклепками */}
+      {/* Вертикальная направляющая ось комплекса с заклепками */}
       <div className="absolute left-8 top-12 bottom-12 w-[1px] bg-gradient-to-b from-brass/0 via-brass/40 to-brass/0 pointer-events-none -z-10" />
       <div className="absolute left-[30.5px] top-1/4 w-1.5 h-1.5 rounded-full bg-brass/70 pointer-events-none" />
       <div className="absolute left-[30.5px] top-3/4 w-1.5 h-1.5 rounded-full bg-brass/70 pointer-events-none" />
@@ -159,7 +159,7 @@ function CyberKhokhlomaFlankLeft() {
         <div className="mb-1 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-panel-graphite text-brass-bright border border-brass/50 shadow-brass-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-ruby animate-pulse"></span>
           <span className="font-mono text-[9px] 2xl:text-[10px] font-bold tracking-widest text-brass-bright uppercase">
-            ОБОРУДОВАНИЕ ЧПУ
+            ИНЖЕНЕРНЫЙ МОДУЛЬ
           </span>
         </div>
 
@@ -191,7 +191,7 @@ function CyberKhokhlomaFlankLeft() {
             <path d="M48,38 C68,32 92,38 102,52" fill="none" stroke="url(#goldKhokhGradLeft)" strokeWidth="1.6" strokeLinecap="round" />
             <path d="M78,105 C95,102 112,114 120,130" fill="none" stroke="url(#goldKhokhGradLeft)" strokeWidth="1.6" strokeLinecap="round" />
 
-            {/* Кибернетические дорожки ЧПУ (PCB traces) */}
+            {/* Кибернетические дорожки (PCB traces) */}
             <path d="M145,130 L175,130 L195,150 L220,150" fill="none" stroke="#C59A45" strokeWidth="1.4" opacity="0.85" />
             <circle cx="220" cy="150" r="3" fill="#F7DF94" stroke="#8B651B" strokeWidth="1" />
             <circle cx="220" cy="150" r="1" fill="#BA1B1D" />
@@ -275,14 +275,14 @@ function CyberKhokhlomaFlankLeft() {
         </div>
       </div>
 
-      {/* 2. Центральный узел: Инженерный приборный щиток «Калибровка ЧПУ 2.0» */}
+      {/* 2. Центральный узел: Инженерный приборный щиток «Калибровка Лаборатории 2.0» */}
       <div className="relative w-full max-w-[240px] 2xl:max-w-[260px] bg-panel-graphite/95 rounded-xl border-2 border-brass/70 shadow-industrial p-3.5 backdrop-blur-sm">
         <BrassCorners />
         <div className="flex items-center justify-between border-b border-brass/40 pb-1.5 mb-2">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-ruby animate-pulse"></span>
             <span className="font-mono text-[9px] 2xl:text-[10px] font-extrabold text-brass-bright tracking-widest uppercase">
-              СТАНОК ЧПУ // 2.0
+              ИНДУСТРИЯ ЧУДЕС // 2.0
             </span>
           </div>
           <span className="font-mono text-[8px] text-ink-faint">ГОСТ 2.0</span>
@@ -351,7 +351,7 @@ function CyberKhokhlomaFlankRight() {
       aria-hidden="true"
       className="shrink-0 w-44 2xl:w-56 h-full flex flex-col justify-between items-end select-none pointer-events-none hidden xl:flex relative z-10 transition-all py-1"
     >
-      {/* Вертикальная направляющая ось станка с заклепками */}
+      {/* Вертикальная направляющая ось комплекса с заклепками */}
       <div className="absolute right-8 top-12 bottom-12 w-[1px] bg-gradient-to-b from-brass/0 via-brass/40 to-brass/0 pointer-events-none -z-10" />
       <div className="absolute right-[30.5px] top-1/4 w-1.5 h-1.5 rounded-full bg-brass/70 pointer-events-none" />
       <div className="absolute right-[30.5px] top-3/4 w-1.5 h-1.5 rounded-full bg-brass/70 pointer-events-none" />
@@ -496,7 +496,7 @@ function CyberKhokhlomaFlankRight() {
         </div>
 
         <div className="mt-1.5 pt-1.5 border-t border-brass/30 flex items-center justify-between text-[8px] 2xl:text-[9px] font-mono text-brass-dim font-bold">
-          <span className="text-cyber-cyan">● СИНТЕЗ ЧПУ</span>
+          <span className="text-cyber-cyan">● НЕЙРОСИНТЕЗ ОБРАЗА</span>
           <span>ГИЛЬДИЯ МАСТЕРОВ</span>
         </div>
       </div>
@@ -558,7 +558,7 @@ const ICONS = {
       <ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(150 12 12)" />
     </svg>
   ),
-  // Роботы / ЧПУ-самоход
+  // Роботы / Автономные системы
   robots: (
     <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
       <rect width="16" height="14" x="4" y="6" rx="3" />
@@ -727,7 +727,7 @@ function FolkButton({
     primary: "bg-ruby text-white border-2 border-brass-bright border-b-6 border-ruby-dark active:border-b-2 active:translate-y-1 shadow-tactile-ruby hover:bg-[#A31618]",
     // Благородный пергамент с латунной окантовкой
     secondary: "bg-parchment-card text-ink-main border-2 border-brass border-b-6 border-brass-dim active:border-b-2 active:translate-y-1 shadow-tactile hover:bg-[#EDE5CE]",
-    // Графитовая панель станка
+    // Графитовая панель модуля
     dark: "bg-panel-graphite text-brass-bright border-2 border-brass/60 border-b-6 border-black active:border-b-2 active:translate-y-1 shadow-industrial hover:bg-panel-surface"
   };
 
@@ -881,7 +881,7 @@ function WelcomeScreen({ onStart }) {
       </h1>
 
       <p className="font-serif italic text-sm sm:text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed mb-3 sm:mb-4">
-        «Органический синтез традиционных сказок и передовой инженерии: посмотри в оптический визор, выбери былинную стихию и отчекань паспорт мастера на станке ЧПУ!»
+        «Органический синтез традиционных сказок и передовой инженерии: посмотри в оптический визор, выбери былинную стихию и получи персональный цифровой паспорт инженера будущего!»
       </p>
 
       {/* Механический триптих шестеренок */}
@@ -939,7 +939,7 @@ function WelcomeScreen({ onStart }) {
             {ICONS.camera}
           </div>
           <div>
-            <span className="font-mono text-[9px] sm:text-[10px] font-bold text-ruby uppercase tracking-wider block">Оптика ЧПУ</span>
+            <span className="font-mono text-[9px] sm:text-[10px] font-bold text-ruby uppercase tracking-wider block">Видоискатель</span>
             <span className="font-serif font-bold text-ink-main text-xs sm:text-sm">Оптический визор</span>
           </div>
         </div>
@@ -1049,7 +1049,7 @@ function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRe
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 border-b border-brass/40 pb-1.5 sm:pb-2 shrink-0">
         <div>
           <span className="text-[10px] sm:text-xs font-mono font-bold tracking-widest text-ruby uppercase">
-            ОПТИЧЕСКИЙ БЛОК ЧПУ // КАЛИБРОВКА ОБРАЗА
+            ОПТИЧЕСКИЙ ВИЗОР // КАЛИБРОВКА ОБРАЗА
           </span>
           <h2 className="text-2xl sm:text-3xl font-serif font-black tracking-tight text-ink-main mt-0.5">
             {!isReview
@@ -1062,12 +1062,12 @@ function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRe
           </h2>
           <p className="font-serif italic text-xs sm:text-sm text-ink-muted">
             {!isReview
-              ? "Взгляни в латунный визор станка и отчекань свой портрет для гильдии."
+              ? "Взгляни в латунный визор и зафиксируй свой портрет инженера."
               : isBlink
                 ? "Оптический датчик зафиксировал закрытые глаза. Рекомендуем переснять кадр, чтобы паспорт инженера получился безупречным!"
                 : noFace
                   ? "Оптический сенсор не зафиксировал лицо. Встаньте прямо напротив объектива."
-                  : "Оптический слепок зафиксирован. Утверди его или перезапусти оптику станка."}
+                  : "Оптический слепок зафиксирован. Утверди его или перезапусти визор."}
           </p>
         </div>
 
@@ -1089,9 +1089,9 @@ function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRe
         )}
       </div>
 
-      {/* 7/5 Асимметричная раскладка станка */}
+      {/* 7/5 Асимметричная раскладка комплекса */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 items-stretch flex-1 min-h-0 max-h-full">
-        {/* Левая 7-колоночная область видоискателя станка */}
+        {/* Левая 7-колоночная область видоискателя */}
         <div className="lg:col-span-7 relative bg-panel-graphite rounded-2xl overflow-hidden shadow-industrial border-4 border-brass/40 flex items-center justify-center h-full max-h-[55vh] min-h-0">
           <BrassCorners />
 
@@ -1131,7 +1131,7 @@ function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRe
 
               {/* Маркер телеметрии внизу кадра */}
               <div className="absolute bottom-2.5 left-4 right-4 flex justify-between items-center font-mono text-[9px] sm:text-[10px] text-brass-bright bg-panel-graphite/85 px-2.5 py-1 rounded border border-brass/30">
-                <span>ОПТИЧЕСКИЙ ДАТЧИК ЧПУ: АКТИВЕН</span>
+                <span>ОПТИЧЕСКИЙ ДАТЧИК: АКТИВЕН</span>
                 <span className="text-cyber-cyan">ТОЧНОСТЬ: 0.02 мм</span>
               </div>
             </div>
@@ -1146,7 +1146,7 @@ function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRe
             {isReview && isBlink ? (
               <div className="p-2.5 sm:p-3 rounded-xl bg-ruby/15 border-2 border-ruby text-ink-main shadow-tactile-ruby animate-pulse">
                 <span className="text-[9px] sm:text-[10px] font-mono uppercase font-bold tracking-wider text-ruby block mb-0.5">
-                  👁️ Оптический контроль станка
+                  👁️ Оптический видоискатель
                 </span>
                 <p className="mt-0.5 text-xs sm:text-sm font-serif italic text-ink-main leading-relaxed">
                   "Похоже, в момент вспышки глаза закрылись! Нажми «ПЕРЕСНЯТЬ ЗАНОВО», чтобы портрет мастера получился живым и выразительным."
@@ -1174,7 +1174,7 @@ function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRe
               </div>
             )}
 
-            {/* Индустриальная плашка телеметрии ЧПУ */}
+            {/* Индустриальная плашка телеметрии */}
             <div className="p-2.5 sm:p-3 rounded-xl bg-panel-graphite text-brass-bright border border-brass/40 flex items-center justify-between font-mono text-xs">
               <div className="flex items-center gap-2.5">
                 <div className="text-brass animate-spin-slow">
@@ -1183,7 +1183,7 @@ function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRe
                 <div>
                   <div className="font-bold text-white uppercase text-[11px] sm:text-xs">Привод оптической ячейки</div>
                   <div className="text-ink-faint text-[9px] sm:text-[10px]">
-                    {isReview && isBlink ? "Обнаружено закрытие век" : "Готовность 100% • Станок № 1"}
+                    {isReview && isBlink ? "Обнаружено закрытие век" : "Готовность 100% • Стенд № 1"}
                   </div>
                 </div>
               </div>
@@ -1305,10 +1305,10 @@ const BUTTON_BACKGROUNDS = {
   white: "/static/images/buttons/color_white.svg"
 };
 
-// Вертикальные технические надписи по ГОСТ/ЧПУ, расположенные сбоку карточки
+// Вертикальные технические надписи по ГОСТ 2.0, расположенные сбоку карточки
 const CARD_SIDE_LABELS = {
   // Стихии
-  space: "ОРБИТА // КОСМОС // ЧПУ",
+  space: "ОРБИТА // КОСМОС // ТЕХНОЛОГИИ",
   atom: "КВАНТ // ЯДРО // 12 ГэВ",
   robots: "КИБЕРНЕТИКА // АВТОМАТ",
   medicine: "БИОНИКА // ЖИВАЯ ВОДА",
@@ -1443,7 +1443,7 @@ function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type,
   );
 }
 
-// --- ЭКРАН 6: ГЕНЕРАЦИЯ И СБОРКА ЧПУ («Индустрия Чудес») ---
+// --- ЭКРАН 6: ГЕНЕРАЦИЯ И СБОРКА («Индустрия Чудес») ---
 function GeneratingScreen({ session }) {
   const isComposing = session?.status === 'COMPOSING';
   const progressPercent = isComposing ? 92 : 65;
@@ -1468,7 +1468,7 @@ function GeneratingScreen({ session }) {
           </svg>
         </div>
 
-        {/* Пульсирующий рубиновый кристалл в сердце станка */}
+        {/* Пульсирующий рубиновый кристалл в сердце комплекса */}
         <div className="w-8 h-8 rounded-full bg-ruby border-2 border-brass-bright flex items-center justify-center text-white shadow-brass-glow animate-pulse z-10 scale-90">
           {ICONS.sparkles}
         </div>
@@ -1500,7 +1500,7 @@ function GeneratingScreen({ session }) {
       <div className="mt-3 sm:mt-4 px-4 py-2.5 rounded-xl bg-panel-graphite border border-brass/40 font-mono text-[11px] sm:text-xs text-brass-bright text-left w-full max-w-md shadow-industrial">
         <div className="text-cyber-cyan font-bold">✓ Оптический слепок откалиброван (ГОСТ 2.0)</div>
         <div className="text-brass-bright font-bold">✓ Входные параметры: {(session?.element_name || '').toUpperCase()}</div>
-        <div className="text-ruby font-bold animate-pulse">● {isComposing ? "Верстка паспорта 300 DPI в золотой филиграни..." : "Синтез персонажа нейросетью ЧПУ..."}</div>
+        <div className="text-ruby font-bold animate-pulse">● {isComposing ? "Верстка паспорта 300 DPI в золотой филиграни..." : "Синтез персонажа нейросетью..."}</div>
       </div>
     </main>
   );
@@ -1694,7 +1694,7 @@ function ResultScreen({ session, onFinish, onQrRevealed, onCardError }) {
         </div>
       </div>
 
-      {/* 3-створчатый раскладной триптих станка (без скролла) */}
+      {/* 3-створчатый раскладной триптих (без скролла) */}
       <div className="flex flex-row items-center justify-center flex-1 min-h-0 max-h-full w-full overflow-hidden py-1">
         {/* СТВОРКА 1 (СЛЕВА): Паспорт инженера в латунной рамке */}
         <div
@@ -1843,7 +1843,7 @@ function ErrorScreen({ session, onFinish, onRetry, busy }) {
       <p className="font-serif italic text-base sm:text-lg text-ink-muted mb-7 max-w-xl">
         {isAiError
           ? "Не удалось сгенерировать фото. Пожалуйста, попробуйте еще раз."
-          : (session?.error_message || "Позовите мастера стенда или попробуйте запустить станок заново.")}
+          : (session?.error_message || "Позовите координатора стенда или попробуйте запустить лабораторию заново.")}
       </p>
 
       <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md justify-center">
@@ -1893,7 +1893,7 @@ function IdleModal({ isOpen, countdown, onStay, onLeave }) {
         </h3>
 
         <p className="font-serif italic text-lg text-ink-muted mb-8">
-          Хронометр станка отсчитывает секунды. Если не продолжить, экран вернется к началу.
+          Хронометр отсчитывает секунды. Если не продолжить, экран вернется к началу.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4">
@@ -2188,7 +2188,7 @@ function KioskRoot() {
       return (
         <SelectionScreen
           title="ВЫБЕРИ СВОЙ ВАЙБ 🚀"
-          subtitle="Какая былинная стихия и отрасль станка тебе ближе всего?"
+          subtitle="Какая былинная стихия и отрасль инженерии тебе ближе всего?"
           options={quizSchema[0]?.options || []}
           selectedId={session.element}
           busy={busy}
@@ -2258,7 +2258,7 @@ function KioskRoot() {
 
       {/* Единая гармоничная выставочная станция (Фланг Левый + Центральная Консоль + Фланг Правый) */}
       <div className="relative w-full max-w-[1720px] 2xl:max-w-[1900px] h-full max-h-[890px] 2xl:max-h-[950px] my-auto mx-auto flex items-stretch justify-center gap-3 xl:gap-5 z-20">
-        {/* Левый кибер-хохломской фланг (Folk-Tech ЧПУ тотем) */}
+        {/* Левый кибер-хохломской фланг (Folk-Tech тотем) */}
         <CyberKhokhlomaFlankLeft />
 
         {/* Центральное интерактивное пространство киоска (пропорциональная сцена) */}
@@ -2290,7 +2290,7 @@ function KioskRoot() {
             </div>
             <div className="flex items-center gap-2 sm:gap-3 text-brass/75 font-mono text-[10px] sm:text-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-brass-bright animate-pulse" />
-              <span className="uppercase tracking-widest hidden sm:inline">СТАНОК БУДУЩЕГО</span>
+              <span className="uppercase tracking-widest hidden sm:inline">МАСТЕРСКАЯ БУДУЩЕГО</span>
             </div>
           </header>
 

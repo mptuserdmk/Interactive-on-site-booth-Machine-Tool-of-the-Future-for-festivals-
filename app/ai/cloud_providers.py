@@ -296,7 +296,14 @@ class BothubProvider(ImageProvider):
         generations_url = f"{base_url}/images/generations"
 
         async def _attempt_generation(verify_ssl: Union[ssl.SSLContext, bool]) -> AIGenerationResult:
-            async with httpx.AsyncClient(timeout=settings.AI_TIMEOUT_SECONDS, verify=verify_ssl) as client:
+            proxy_url = getattr(settings, "BOTHUB_PROXY", None)
+            proxy_url = proxy_url.strip() if isinstance(proxy_url, str) and proxy_url.strip() else None
+            async with httpx.AsyncClient(
+                timeout=settings.AI_TIMEOUT_SECONDS,
+                verify=verify_ssl,
+                proxy=proxy_url,
+                trust_env=False
+            ) as client:
                 # 1. If we have an input photo from the kiosk, use the /v1/images/edits endpoint
                 if request.input_photo_path and Path(request.input_photo_path).exists():
                     with Image.open(request.input_photo_path) as im:
