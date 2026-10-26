@@ -4,7 +4,7 @@ import socket
 from typing import Optional
 from urllib.parse import urlparse, urlsplit
 from fastapi import APIRouter
-from app.config.settings import settings, get_local_ip
+from app.config.settings import settings, get_local_ip, normalize_proxy_url
 from app.camera.manager import camera_manager
 from app.printing.manager import print_manager
 from app.ai.manager import ai_manager
@@ -15,18 +15,18 @@ router = APIRouter(prefix="/api", tags=["Health & Schema"])
 
 def mask_proxy_url(proxy_url: Optional[str]) -> Optional[str]:
     """Маскирует учетные данные в строке прокси (http://user:pass@host:port -> http://***:***@host:port)."""
-    if not proxy_url or not str(proxy_url).strip():
+    norm = normalize_proxy_url(proxy_url)
+    if not norm:
         return None
-    raw = str(proxy_url).strip()
     try:
-        parsed = urlsplit(raw)
+        parsed = urlsplit(norm)
         if parsed.username or parsed.password:
             host_part = parsed.hostname or ""
             if parsed.port:
                 host_part = f"{host_part}:{parsed.port}"
             scheme = parsed.scheme or "http"
             return f"{scheme}://***:***@{host_part}"
-        return raw
+        return norm
     except Exception:
         return "configured"
 

@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 import httpx
 
-from app.config.settings import settings
+from app.config.settings import settings, normalize_proxy_url
 from app.storage.database import db
 
 logger = logging.getLogger("stanok.bot")
@@ -63,7 +63,7 @@ class TelegramBotService:
         self._running = True
 
         # Build proxy candidates: configured proxy, protocol alternative (http <-> socks5), and direct fallback
-        raw_proxy = (getattr(settings, "TELEGRAM_PROXY_URL", "") or getattr(settings, "PROXY_URL", "") or "").strip()
+        raw_proxy = normalize_proxy_url(getattr(settings, "TELEGRAM_PROXY_URL", "") or getattr(settings, "PROXY_URL", "") or "")
         candidates = []
         if raw_proxy:
             candidates.append(raw_proxy)

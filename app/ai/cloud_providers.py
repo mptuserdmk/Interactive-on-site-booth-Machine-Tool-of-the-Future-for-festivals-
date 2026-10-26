@@ -9,7 +9,7 @@ import httpx
 from pathlib import Path
 from typing import Dict, Any, Optional, Union
 from PIL import Image, ImageOps
-from app.config.settings import settings
+from app.config.settings import settings, normalize_proxy_url
 from app.ai.provider import ImageProvider
 from app.ai.models import AIGenerationRequest, AIGenerationResult
 from app.ai.prompts import build_negative_prompt
@@ -296,8 +296,7 @@ class BothubProvider(ImageProvider):
         generations_url = f"{base_url}/images/generations"
 
         async def _attempt_generation(verify_ssl: Union[ssl.SSLContext, bool]) -> AIGenerationResult:
-            proxy_url = getattr(settings, "BOTHUB_PROXY", None)
-            proxy_url = proxy_url.strip() if isinstance(proxy_url, str) and proxy_url.strip() else None
+            proxy_url = normalize_proxy_url(getattr(settings, "BOTHUB_PROXY", None))
             async with httpx.AsyncClient(
                 timeout=settings.AI_TIMEOUT_SECONDS,
                 verify=verify_ssl,

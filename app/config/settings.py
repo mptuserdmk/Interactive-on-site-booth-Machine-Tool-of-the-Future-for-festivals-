@@ -1,10 +1,42 @@
 import secrets
 import socket
 from pathlib import Path
+from typing import Optional
 from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+
+def normalize_proxy_url(proxy: Optional[str]) -> Optional[str]:
+    """
+    Нормализует строку прокси любого популярного формата в валидный URL для httpx.
+    Поддерживает:
+      - 'http://user:pass@host:port' / 'socks5://user:pass@host:port' (стандартный URL)
+      - 'host:port:user:pass' -> 'http://user:pass@host:port'
+      - 'http://host:port:user:pass' -> 'http://user:pass@host:port'
+      - 'socks5://host:port:user:pass' -> 'socks5://user:pass@host:port'
+      - 'host:port' -> 'http://host:port'
+    """
+    if not proxy or not str(proxy).strip():
+        return None
+    raw = str(proxy).strip()
+    proto = "http"
+    for p in ("socks5h://", "socks5://", "https://", "http://"):
+        if raw.startswith(p):
+            proto = p[:-3]
+            raw = raw[len(p):]
+            break
+    if "@" in raw:
+        return f"{proto}://{raw}"
+    parts = raw.split(":")
+    if len(parts) == 4:
+        host, port, user, pwd = parts
+        return f"{proto}://{user}:{pwd}@{host}:{port}"
+    elif len(parts) == 2:
+        host, port = parts
+        return f"{proto}://{host}:{port}"
+    return f"{proto}://{raw}"
 
 def _is_lan_ip(ip: str) -> bool:
     return bool(ip) and not ip.startswith(("127.", "169.254.", "0."))
