@@ -11,6 +11,7 @@ import respx
 from PIL import Image
 
 from helpers import make_photo_bytes, write_photo
+from app.config.settings import settings
 
 pytestmark = [pytest.mark.unit, pytest.mark.respx(assert_all_mocked=True, assert_all_called=False)]
 
@@ -267,3 +268,31 @@ async def test_bothub_proxy_passed_to_httpx(monkeypatch, req, combo, api_key, tm
     assert res.success, res.error
     assert captured_kwargs.get("proxy") == "http://user:pass@127.0.0.1:8888"
     assert captured_kwargs.get("trust_env") is False
+
+
+# --- Kandinsky (FusionBrain) Tests -------------------------------------------------------------
+
+async def test_kandinsky_missing_keys(monkeypatch, req, combo, tmp_path):
+    monkeypatch.setattr(settings, "KANDINSKY_API_KEY", "")
+    monkeypatch.setattr(settings, "AI_API_KEY", "")
+    monkeypatch.setattr(settings, "KANDINSKY_SECRET_KEY", "")
+    res = await provider("kandinsky").generate(req, combo, tmp_path / "out.jpg")
+    assert not res.success
+    assert "credentials missing" in res.error.lower()
+
+
+async def test_kandinsky_success(monkeypatch, respx_mock, req, combo, tmp_path):
+    import base64
+    monkeypatch.setattr(settings, "KANDINSKY_API_KEY", "test_key")
+    monkeypatch.setattr(settings, "KANDINSKY_SECRET_KEY", "test_secret")
+
+    base = "https://api-key.fusionbrain.ai"
+    respx_mock.get(f"{base}/key/api/v1/models").respond(200, json=[{"id": 4, "name": "Kandinsky"}])
+    respx_mock.post(f"{base}/key/api/v1/text2image/run").respond(200, json={"status": "INITIAL", "uuid": "test-uuid"})
+    b64_data = base64.b64encode(png_bytes()).decode("utf-8")
+    respx_mock.get(f"{base}/key/api/v1/text2image/status/test-uuid").respond(200, json={"status": "DONE", "images": [b64_data]})
+
+    res = await provider("kandinsky").generate(req, combo, tmp_path / "out.jpg")
+    assert res.success, res.error
+    assert is_image(res.image_path)
+

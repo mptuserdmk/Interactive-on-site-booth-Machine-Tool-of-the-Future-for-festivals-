@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional
 from app.config.settings import settings
 from app.ai.provider import ImageProvider
 from app.ai.mock_provider import MockProvider
-from app.ai.cloud_providers import FalAiProvider, ReplicateProvider, BothubProvider
+from app.ai.cloud_providers import FalAiProvider, ReplicateProvider, BothubProvider, KandinskyProvider
 from app.ai.models import AIGenerationRequest, AIGenerationResult
 
 logger = logging.getLogger("stanok.ai")
@@ -16,6 +16,7 @@ class AIManager:
         self.providers: Dict[str, ImageProvider] = {
             "mock": MockProvider(),
             "bothub": BothubProvider(),
+            "kandinsky": KandinskyProvider(),
             "fal": FalAiProvider(),
             "replicate": ReplicateProvider()
         }

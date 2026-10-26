@@ -1,13 +1,14 @@
 import asyncio
 import base64
 import io
+import json
 import logging
 import re
 import ssl
 import time
 import httpx
 from pathlib import Path
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, Tuple
 from PIL import Image, ImageOps
 from app.config.settings import settings, normalize_proxy_url
 from app.ai.provider import ImageProvider
@@ -413,4 +414,162 @@ class BothubProvider(ImageProvider):
                 duration_seconds=round(time.time() - start_time, 2),
                 error=f"{type(e).__name__}: {str(e)[:200]}"
             )
+
+
+class KandinskyProvider(ImageProvider):
+    """
+    Kandinsky 3.1 (FusionBrain / Сбер) Image Provider
+    Documentation: https://fusionbrain.ai/docs/ru/doc/api-dokumentaciya/
+    Работает в РФ напрямую через российские серверы (api-key.fusionbrain.ai).
+    """
+    BASE_URL = "https://api-key.fusionbrain.ai"
+
+    @property
+    def name(self) -> str:
+        return "kandinsky"
+
+    def _get_credentials(self) -> Tuple[str, str]:
+        api_key = (getattr(settings, "KANDINSKY_API_KEY", "") or getattr(settings, "AI_API_KEY", "") or "").strip()
+        secret_key = (getattr(settings, "KANDINSKY_SECRET_KEY", "") or "").strip()
+        return api_key, secret_key
+
+    async def health_check(self) -> bool:
+        api_key, secret_key = self._get_credentials()
+        return bool(api_key and secret_key and api_key_looks_valid(api_key))
+
+    async def _get_model_id(self, client: httpx.AsyncClient, headers: Dict[str, str]) -> int:
+        try:
+            resp = await client.get(f"{self.BASE_URL}/key/api/v1/models", headers=headers)
+            if resp.status_code == 200:
+                data = resp.json()
+                if isinstance(data, list) and data:
+                    return int(data[0].get("id", 4))
+        except Exception as e:
+            logger.debug("Failed to fetch Kandinsky models list: %s", e)
+        return 4
+
+    async def generate(
+        self,
+        request: AIGenerationRequest,
+        combo: Dict[str, Any],
+        output_path: Path
+    ) -> AIGenerationResult:
+        start_time = time.time()
+        api_key, secret_key = self._get_credentials()
+        if not api_key or not secret_key:
+            return AIGenerationResult(
+                success=False,
+                provider_name=self.name,
+                duration_seconds=0,
+                error="Kandinsky credentials missing. Please set KANDINSKY_API_KEY and KANDINSKY_SECRET_KEY in .env"
+            )
+
+        headers = {
+            "X-Key": f"Key {api_key}",
+            "X-Secret": f"Secret {secret_key}"
+        }
+
+        async def _attempt(verify_ssl: Union[ssl.SSLContext, bool]) -> AIGenerationResult:
+            proxy_url = normalize_proxy_url(getattr(settings, "BOTHUB_PROXY", None))
+            async with httpx.AsyncClient(
+                timeout=settings.AI_TIMEOUT_SECONDS,
+                verify=verify_ssl,
+                proxy=proxy_url,
+                trust_env=False
+            ) as client:
+                model_id = await self._get_model_id(client, headers)
+                params = {
+                    "type": "GENERATE",
+                    "numImages": 1,
+                    "width": 1024,
+                    "height": 1024,
+                    "generateParams": {
+                        "query": request.prompt
+                    }
+                }
+                data = {
+                    "model_id": (None, str(model_id)),
+                    "params": (None, json.dumps(params), "application/json")
+                }
+
+                run_resp = await client.post(
+                    f"{self.BASE_URL}/key/api/v1/text2image/run",
+                    headers=headers,
+                    files=data
+                )
+                if run_resp.status_code not in (200, 201):
+                    return AIGenerationResult(
+                        success=False,
+                        provider_name=self.name,
+                        duration_seconds=round(time.time() - start_time, 2),
+                        error=f"Kandinsky run error {short_error(run_resp)}"
+                    )
+
+                run_data = run_resp.json()
+                uuid = run_data.get("uuid")
+                if not uuid:
+                    return AIGenerationResult(
+                        success=False,
+                        provider_name=self.name,
+                        duration_seconds=round(time.time() - start_time, 2),
+                        error=f"Kandinsky missing uuid in response: {run_data}"
+                    )
+
+                poll_deadline = time.time() + settings.AI_TIMEOUT_SECONDS
+                while time.time() < poll_deadline:
+                    await asyncio.sleep(2.0)
+                    status_resp = await client.get(
+                        f"{self.BASE_URL}/key/api/v1/text2image/status/{uuid}",
+                        headers=headers
+                    )
+                    if status_resp.status_code != 200:
+                        continue
+                    status_data = status_resp.json()
+                    st = status_data.get("status")
+                    if st == "DONE":
+                        images = status_data.get("images", [])
+                        if not images:
+                            return AIGenerationResult(
+                                success=False,
+                                provider_name=self.name,
+                                duration_seconds=round(time.time() - start_time, 2),
+                                error="Kandinsky DONE but returned empty images list"
+                            )
+                        b64_img = images[0]
+                        img_bytes = base64.b64decode(b64_img)
+                        output_path.parent.mkdir(parents=True, exist_ok=True)
+                        await asyncio.to_thread(_validate_and_save, img_bytes, output_path)
+                        return AIGenerationResult(
+                            success=True,
+                            image_path=str(output_path),
+                            provider_name=self.name,
+                            duration_seconds=round(time.time() - start_time, 2)
+                        )
+                    elif st == "FAIL":
+                        desc = status_data.get("errorDescription", "Unknown error")
+                        return AIGenerationResult(
+                            success=False,
+                            provider_name=self.name,
+                            duration_seconds=round(time.time() - start_time, 2),
+                            error=f"Kandinsky generation failed: {desc}"
+                        )
+
+                return AIGenerationResult(
+                    success=False,
+                    provider_name=self.name,
+                    duration_seconds=round(time.time() - start_time, 2),
+                    error=f"Kandinsky polling timed out after {settings.AI_TIMEOUT_SECONDS}s"
+                )
+
+        ssl_ctx = get_ai_ssl_context()
+        try:
+            return await _attempt(ssl_ctx)
+        except Exception as e:
+            return AIGenerationResult(
+                success=False,
+                provider_name=self.name,
+                duration_seconds=round(time.time() - start_time, 2),
+                error=f"{type(e).__name__}: {str(e)[:200]}"
+            )
+
 

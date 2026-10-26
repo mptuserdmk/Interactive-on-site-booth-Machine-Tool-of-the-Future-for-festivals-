@@ -96,14 +96,16 @@ class Settings(BaseSettings):
     # Без USB-камеры «снимать» заглушку (демо). На фестивале — false: иначе ребёнку печатается mock-кадр
     CAMERA_MOCK_FALLBACK: bool = True
 
-    # AI Provider: 'mock', 'bothub', 'fal', 'replicate', 'openai', 'stability'
+    # AI Provider: 'mock', 'bothub', 'kandinsky', 'fal', 'replicate'
     AI_PROVIDER: str = "mock"
     AI_API_KEY: str = ""
     BOTHUB_MODEL: str = "gemini-3.1-flash-lite-image"
     BOTHUB_API_BASE: str = "https://openai.bothub.chat/v1"
     BOTHUB_PROXY: str = ""  # e.g. "http://user:pass@host:port" or "socks5://host:port"
+    KANDINSKY_API_KEY: str = ""
+    KANDINSKY_SECRET_KEY: str = ""
     AI_SSL_VERIFY: bool = True
-    AI_TIMEOUT_SECONDS: int = 35
+    AI_TIMEOUT_SECONDS: int = 45
     AI_FALLBACK_ON_ERROR: bool = True
     
     # Printer
