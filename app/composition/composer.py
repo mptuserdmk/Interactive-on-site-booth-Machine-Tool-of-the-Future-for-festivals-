@@ -132,7 +132,7 @@ class CardComposer:
 
         return base
 
-    def wrap_text(self, text: str, font: ImageFont.ImageFont, max_width: int, draw: ImageDraw.ImageDraw) -> list[str]:
+    def wrap_text(self, text: str, font: ImageFont.ImageFont, max_width: int, draw: ImageDraw.ImageDraw) -> List[str]:
         words = text.split()
         lines: List[str] = []
         current_line: List[str] = []

@@ -17,6 +17,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
@@ -40,7 +41,7 @@ def _unlink(path, dry_run: bool) -> bool:
     return False
 
 
-def cleanup(older_than_hours: float, now: float | None = None, dry_run: bool = False, export: str | None = None) -> dict:
+def cleanup(older_than_hours: float, now: Optional[float] = None, dry_run: bool = False, export: Optional[str] = None) -> dict:
     now = time.time() if now is None else now
     cutoff = datetime.fromtimestamp(now - older_than_hours * 3600, tz=timezone.utc).isoformat()
     old = db.sessions_older_than(cutoff)

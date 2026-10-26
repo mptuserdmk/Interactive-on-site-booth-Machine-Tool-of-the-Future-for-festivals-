@@ -14,6 +14,7 @@
     даже с loopback (вредный сайт, открытый в браузере на ПК стенда).
 """
 import secrets
+from typing import Optional
 from urllib.parse import urlencode, urlparse, parse_qsl
 
 from starlette.datastructures import Headers
@@ -31,17 +32,17 @@ LOOPBACK = {"127.0.0.1", "::1"}
 COOKIE_MAX_AGE = 3 * 24 * 3600
 
 
-def _same_origin(origin: str, host: str | None) -> bool:
+def _same_origin(origin: str, host: Optional[str]) -> bool:
     if not host or origin == "null":
         return False
     return urlparse(origin).netloc.lower() == host.lower()
 
 
-def _match(value: str | None, expected: str) -> bool:
+def _match(value: Optional[str], expected: str) -> bool:
     return bool(value) and bool(expected) and secrets.compare_digest(value, expected)
 
 
-def access_level(client_host: str | None, headers: Headers, cookies: dict) -> str | None:
+def access_level(client_host: Optional[str], headers: Headers, cookies: dict) -> Optional[str]:
     if settings.TRUST_LOOPBACK and client_host in LOOPBACK:
         return "full"
     header_token = headers.get("x-access-token")

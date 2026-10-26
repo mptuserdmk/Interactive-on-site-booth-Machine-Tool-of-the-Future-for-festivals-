@@ -3,7 +3,7 @@ import time
 import asyncio
 import logging
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 from app.config.settings import settings
 
 logger = logging.getLogger("stanok.print")
@@ -52,7 +52,7 @@ class PrintManager:
             logger.exception("EnumPrinters failed")
             return []
 
-    def _printer_problem(self, wp, name: str) -> tuple[Optional[str], int]:
+    def _printer_problem(self, wp, name: str) -> Tuple[Optional[str], int]:
         try:
             handle = wp.OpenPrinter(name)
             try:
