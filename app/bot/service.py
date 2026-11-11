@@ -298,8 +298,8 @@ class TelegramBotService:
             machine_name = session_safe.get("machine_name") or "Инженер Будущего"
             power_name = session_safe.get("power_name") or "Точность"
             location = session_safe.get("location") or "Центральный кластер"
-            festival_name = getattr(settings, "FESTIVAL_NAME", "ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ")
-            hashtag = getattr(settings, "FESTIVAL_HASHTAG", "#ФЕСТИВАЛЬ2026")
+            festival_name = getattr(settings, "FESTIVAL_NAME", "КОНКУРС ПРОФЕССИОНАЛЬНОГО МАСТЕРСТВА СРЕДИ СТАНОЧНИКОВ ДОЧЕРНИХ ОБЩЕСТВ АО «КОНЦЕРН ВКО «АЛМАЗ – АНТЕЙ»")
+            hashtag = getattr(settings, "FESTIVAL_HASHTAG", "#АЛМАЗАНТЕЙ2026")
 
             greeting = "🎉 <b>Твой цифровой паспорт готов!</b>"
             if is_fallback:
@@ -309,7 +309,7 @@ class TelegramBotService:
                 f"{greeting}\n\n"
                 f"🛠 <b>Специальность:</b> {machine_name}\n"
                 f"⚡ <b>Суперсила:</b> {power_name}\n"
-                f"📍 <b>Гильдия:</b> {location}\n\n"
+                f"📍 <b>Площадка:</b> {location}\n\n"
                 f"🏛 <i>{festival_name}</i>\n"
                 f"<b>{hashtag}</b>"
             )
@@ -329,8 +329,8 @@ class TelegramBotService:
     async def _send_welcome(self, chat_id: int, first_name: str):
         msg = (
             f"👋 Привет, {first_name}!\n\n"
-            f"Я официальный бот интерактивной фотолокации <b>«Мастерская Будущего»</b>.\n\n"
-            f"📸 <b>Как получить паспорт инженера:</b>\n"
+            f"Я официальный бот интерактивной фотолокации <b>Конкурса профессионального мастерства станочников АО «Концерн ВКО «Алмаз – Антей»</b>.\n\n"
+            f"📸 <b>Как получить паспорт мастера:</b>\n"
             f"1. Подойди к экрану нашего киоска.\n"
             f"2. Сделай фото и выбери черты своей специальности.\n"
             f"3. Наведи камеру смартфона на появившийся QR-код — и я моментально пришлю твою карточку сюда!"
@@ -340,7 +340,7 @@ class TelegramBotService:
     async def _send_help(self, chat_id: int, first_name: str):
         msg = (
             f"Привет, {first_name}!\n\n"
-            f"Чтобы получить свою готовую карточку, отсканируй QR-код на экране фотолокации «Мастерская Будущего».\n"
+            f"Чтобы получить свою готовую карточку, отсканируй QR-код на экране фотолокации Конкурса профмастерства «Алмаз – Антей».\n"
             f"Если у тебя есть код сессии, отправь команду: <code>/start код_сессии</code>"
         )
         await self._send_message(chat_id, msg)

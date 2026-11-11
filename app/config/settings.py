@@ -69,7 +69,7 @@ def get_local_ip() -> str:
 
 class Settings(BaseSettings):
     # App info
-    APP_NAME: str = "AI-Фотолокация «Мастерская Будущего»"
+    APP_NAME: str = "AI-Фотолокация «Конкурс профмастерства — Концерн ВКО «Алмаз – Антей»»"
     APP_VERSION: str = "1.0.0"
     HOST: str = "0.0.0.0"
     PORT: int = 8000
@@ -143,8 +143,9 @@ class Settings(BaseSettings):
     QR_REVEAL_DELAY_MS: int = 1500
     
     # Branding
-    FESTIVAL_NAME: str = "ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ"
-    FESTIVAL_HASHTAG: str = "#ФЕСТИВАЛЬ2026"
+    FESTIVAL_NAME: str = "КОНКУРС ПРОФЕССИОНАЛЬНОГО МАСТЕРСТВА СРЕДИ СТАНОЧНИКОВ ДОЧЕРНИХ ОБЩЕСТВ АО «КОНЦЕРН ВКО «АЛМАЗ – АНТЕЙ»"
+    EVENT_SHORT_NAME: str = "КОНКУРС ПРОФМАСТЕРСТВА СТАНОЧНИКОВ • КОНЦЕРН ВКО «АЛМАЗ – АНТЕЙ»"
+    FESTIVAL_HASHTAG: str = "#АЛМАЗАНТЕЙ2026"
 
     # Access control (S1): пустой токен → случайный при каждом старте (печатается в консоли)
     ACCESS_TOKEN: str = ""

@@ -209,11 +209,14 @@ class CardComposer:
         card = self.create_gradient_bg(accent_hex)
         draw = ImageDraw.Draw(card)
 
-        # 2. Header: ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ
-        header_font, header_lines = self.fit_text("ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ", True, 36, 22,
-                                                  full_width, 1, draw)
-        draw.text((70, 65), header_lines[0], font=header_font, fill="#ffffff")
-        draw.text((70, 115), "ПАСПОРТ ИНЖЕНЕРА БУДУЩЕГО // ID: " + self.short_code(session_id), font=self.font_sub, fill=accent_hex)
+        # 2. Header: Конкурс профессионального мастерства АО «Концерн ВКО «Алмаз – Антей»
+        header_text = (getattr(settings, "FESTIVAL_NAME", "") or "КОНКУРС ПРОФЕССИОНАЛЬНОГО МАСТЕРСТВА СТАНОЧНИКОВ • КОНЦЕРН ВКО «АЛМАЗ – АНТЕЙ»").strip()
+        header_font, header_lines = self.fit_text(header_text, True, 34, 22, full_width, 2, draw)
+        hy = 52
+        for hline in header_lines:
+            draw.text((70, hy), hline, font=header_font, fill="#ffffff")
+            hy += self._line_height(header_font)
+        draw.text((70, hy + 6), "ПАСПОРТ МАСТЕРА // ID: " + self.short_code(session_id), font=self.font_sub, fill=accent_hex)
 
         # 3. AI Portrait Photo Placement
         photo_box = (70, 175, self.width - 70, 975)  # 1060 x 800 px
@@ -292,7 +295,9 @@ class CardComposer:
 
         # 6. Footer (Bottom Left)
         draw.text((70, self.height - 110), f"{settings.FESTIVAL_HASHTAG}", font=self.font_footer, fill="#ffffff")
-        draw.text((70, self.height - 70), "Создано на интерактивном стенде распределения профессий будущего", font=self.font_small, fill="#5a708a")
+        footer_sub = "Конкурс профмастерства станочников • ММЗ «Авангард» • Москва 2026"
+        fsub_font, fsub_lines = self.fit_text(footer_sub, False, 22, 16, self.text_right_limit_near_qr - 70, 1, draw)
+        draw.text((70, self.height - 70), fsub_lines[0], font=fsub_font, fill="#5a708a")
 
         # Save result: 300 DPI в метаданных, иначе драйвер печатает в масштабе 72/96 DPI
         output_path.parent.mkdir(parents=True, exist_ok=True)

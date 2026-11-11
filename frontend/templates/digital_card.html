@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Твой Паспорт Инженера — Осенний Промышленный Фестиваль Колледжей Москвы</title>
+  <title>Твой Паспорт Мастера — Конкурс профмастерства «Алмаз – Антей»</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
@@ -156,7 +156,7 @@
     <div class="brass-corner corner-bl"></div>
     <div class="brass-corner corner-br"></div>
 
-    <div class="brand-stamp">⚙️ ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ // ПАСПОРТ МАСТЕРА</div>
+    <div class="brand-stamp">⚙️ {{ settings.EVENT_SHORT_NAME }} // ПАСПОРТ МАСТЕРА</div>
     <h1 class="craft-title">{{ session.machine_name if session else 'Инженер Будущего' }}</h1>
     <div class="power-badge">СУПЕРСИЛА: {{ (session.power_name if session else 'ТОЧНОСТЬ') | upper }}</div>
 
@@ -237,7 +237,7 @@
     </div>
 
     <div class="footer-stamp">
-      {{ settings.FESTIVAL_HASHTAG }} ● ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ
+      {{ settings.FESTIVAL_HASHTAG }} ● {{ settings.FESTIVAL_NAME }}
     </div>
   </div>
 

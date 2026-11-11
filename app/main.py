@@ -156,7 +156,7 @@ async def digital_card_page(request: Request, session_id: str):
         # Ссылка «Поделиться» собирается на сервере из канонического URL, а не из request.url (S13)
         share_url = "https://t.me/share/url?" + urlencode({
             "url": f"{settings.BASE_URL}/card/{session_id}",
-            "text": "Моя профессия будущего на Осеннем Промышленном Фестивале Колледжей Москвы!"
+            "text": "Мой образ мастера на Конкурсе профессионального мастерства станочников АО «Концерн ВКО «Алмаз – Антей»!"
         })
 
     return templates.TemplateResponse(

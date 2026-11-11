@@ -108,7 +108,7 @@ class EmailService:
         msg = MIMEMultipart("mixed")
         msg["From"] = settings.SMTP_FROM or settings.SMTP_USER or "noreply@kiosk-future.ru"
         msg["To"] = to_email
-        msg["Subject"] = f"Твой Паспорт Мастера: {machine_name} — Осенний Промышленный Фестиваль Колледжей Москвы"
+        msg["Subject"] = f"Твой Паспорт Мастера: {machine_name} — Конкурс профмастерства «Алмаз – Антей»"
 
         html_content = f"""<!DOCTYPE html>
 <html>
@@ -127,15 +127,15 @@ class EmailService:
 </head>
 <body>
   <div class="container">
-    <div class="stamp">⚙️ ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ</div>
+    <div class="stamp">⚙️ {settings.FESTIVAL_NAME}</div>
     <h1>{machine_name}</h1>
     <div class="power">СУПЕРСИЛА: {power_name}</div>
     <div class="quote">"{machine_desc}"</div>
     <a href="{digital_card_url}" class="btn">ОТКРЫТЬ ЦИФРОВОЙ ПАСПОРТ</a>
     <p style="font-size: 13px; color: #686662; margin-top: 12px;">Оригинал карточки 300 DPI также прикреплен к этому письму.</p>
     <div class="footer">
-      ОТ ТРАДИЦИЙ К БОЛЬШИМ ВОЗМОЖНОСТЯМ<br>
-      ЗНАНИЯ • ТЕХНОЛОГИИ • ЛЮДИ • БУДУЩЕЕ • МОСКВА 2026
+      ОТ МАСТЕРСТВА К ВЫСОКИМ ТЕХНОЛОГИЯМ<br>
+      МАСТЕРСТВО • ТЕХНОЛОГИИ • ЛЮДИ • БУДУЩЕЕ • МОСКВА 2026
     </div>
   </div>
 </body>

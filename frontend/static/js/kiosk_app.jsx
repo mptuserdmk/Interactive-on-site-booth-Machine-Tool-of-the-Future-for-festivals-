@@ -1,9 +1,9 @@
 /**
  * @file kiosk_app.jsx
- * @description Интерактивный выставочный комплекс «Осенний Промышленный Фестиваль Колледжей Москвы»
- * Визуальный стандарт: Неорусский стимпанк и хай-тек (Folk-Tech)
+ * @description Интерактивный выставочный комплекс «Конкурс профессионального мастерства станочников АО «Концерн ВКО «Алмаз – Антей»»
+ * Визуальный стандарт: Индустриальный стиль и хай-тек (Folk-Tech)
  * Разработано строго по спецификации react-presentation-design:
- * - Гармоничный синтез былинных мотивов, латуни, филиграни и передовых технологий
+ * - Гармоничный синтез инженерной точности, латуни, филиграни и передовых технологий
  * - Палитра: пергамент (#FBF8F1, #F4EEDA), латунь (#C59A45, #E8CA7B), багрянец (#BA1B1D), графит (#121820)
  * - Декоративные латунные уголки BrassCorners и анимированные шестерни
  * - Телеметрия лаборатории, калибровка 0.02 мм по ГОСТ 2.0
@@ -12,6 +12,12 @@
  */
 
 const { useState, useEffect, useRef, useCallback } = React;
+
+const EVENT_BRAND = {
+  shortTitle: "КОНКУРС ПРОФМАСТЕРСТВА СТАНОЧНИКОВ • КОНЦЕРН ВКО «АЛМАЗ – АНТЕЙ»",
+  fullTitle: "КОНКУРС ПРОФЕССИОНАЛЬНОГО МАСТЕРСТВА СРЕДИ СТАНОЧНИКОВ ДОЧЕРНИХ ОБЩЕСТВ АО «КОНЦЕРН ВКО «АЛМАЗ – АНТЕЙ»",
+  rightBadge: "ММЗ «АВАНГАРД» • СТАНОЧНИКИ"
+};
 
 // --- API Helper с обработкой ошибок и таймаутами ---
 async function api(url, options = {}) {
@@ -282,7 +288,7 @@ function CyberKhokhlomaFlankLeft() {
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-ruby animate-pulse"></span>
             <span className="font-mono text-[9px] 2xl:text-[10px] font-extrabold text-brass-bright tracking-widest uppercase">
-              ИНДУСТРИЯ ЧУДЕС // 2.0
+              ПРОФМАСТЕРСТВО // 2.0
             </span>
           </div>
           <span className="font-mono text-[8px] text-ink-faint">ГОСТ 2.0</span>
@@ -308,7 +314,7 @@ function CyberKhokhlomaFlankLeft() {
         </div>
 
         <div className="mt-1.5 pt-1.5 border-t border-brass/30 flex items-center justify-between text-[8px] 2xl:text-[9px] font-mono text-brass-dim font-bold">
-          <span>ЦППМ МГОК</span>
+          <span>ММЗ «АВАНГАРД»</span>
           <span className="text-ruby">● ОНЛАЙН</span>
         </div>
       </div>
@@ -337,7 +343,7 @@ function CyberKhokhlomaFlankLeft() {
           </div>
         </div>
         <div className="font-mono text-[9px] font-bold tracking-widest text-brass-dim uppercase mt-1 pl-1">
-          МГОК • ТЕХНОЛОГИИ
+          АЛМАЗ – АНТЕЙ • ТЕХНОЛОГИИ
         </div>
       </div>
     </aside>
@@ -468,14 +474,14 @@ function CyberKhokhlomaFlankRight() {
         </div>
       </div>
 
-      {/* 2. Центральный узел: Манифест Фестиваля «Русская Сказка 2.0» */}
+      {/* 2. Центральный узел: Манифест Конкурса профессионального мастерства */}
       <div className="relative w-full max-w-[240px] 2xl:max-w-[260px] bg-panel-graphite/95 rounded-xl border-2 border-brass/70 shadow-industrial p-3.5 backdrop-blur-sm text-right">
         <BrassCorners />
         <div className="flex items-center justify-between border-b border-brass/40 pb-1.5 mb-2">
           <span className="font-mono text-[8px] text-ink-faint">МОСКВА • 2026</span>
           <div className="flex items-center gap-1.5">
             <span className="font-mono text-[9px] 2xl:text-[10px] font-extrabold text-brass-bright tracking-widest uppercase">
-              ИНДУСТРИЯ ЧУДЕС
+              ИС КОНЦЕРНА
             </span>
             <span className="w-2 h-2 rounded-full bg-cyber-cyan animate-pulse"></span>
           </div>
@@ -483,11 +489,11 @@ function CyberKhokhlomaFlankRight() {
 
         <div className="flex flex-col items-center py-0.5 text-center">
           <div className="font-serif font-black text-sm 2xl:text-base text-parchment tracking-wide">
-            «РУССКАЯ СКАЗКА 2.0»
+            «СТАНОЧНИКИ КОНЦЕРНА»
           </div>
           <div className="h-0.5 w-16 bg-gradient-to-r from-transparent via-brass to-transparent my-1"></div>
           <p className="font-serif italic text-[10px] 2xl:text-[11px] text-brass-bright/90 leading-snug">
-            «Чудеса не по щучьему велению, а по инженерному расчету»
+            «Высокий класс точности — дело чести и инженерного расчёта»
           </p>
           <div className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-parchment/10 border border-brass/40 text-[8px] 2xl:text-[9px] font-mono font-bold text-parchment">
             <span>⚙️</span>
@@ -497,11 +503,11 @@ function CyberKhokhlomaFlankRight() {
 
         <div className="mt-1.5 pt-1.5 border-t border-brass/30 flex items-center justify-between text-[8px] 2xl:text-[9px] font-mono text-brass-dim font-bold">
           <span className="text-cyber-cyan">● НЕЙРОСИНТЕЗ ОБРАЗА</span>
-          <span>ГИЛЬДИЯ МАСТЕРОВ</span>
+          <span>ММЗ «АВАНГАРД»</span>
         </div>
       </div>
 
-      {/* 3. Нижний узел: Хохломская угловая виньетка и знак фестиваля */}
+      {/* 3. Нижний узел: Угловая виньетка и знак конкурса */}
       <div className="relative w-full flex flex-col items-end pb-2">
         <div className="flex items-center gap-2">
           <div className="text-brass-bright animate-spin-slow opacity-70 -mr-3">
@@ -525,7 +531,7 @@ function CyberKhokhlomaFlankRight() {
           </div>
         </div>
         <div className="font-mono text-[9px] font-bold tracking-widest text-brass-dim uppercase mt-1 pr-1">
-          ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ
+          КОНКУРС МАСТЕРСТВА
         </div>
       </div>
     </aside>
@@ -865,13 +871,13 @@ function WelcomeScreen({ onStart }) {
         </svg>
       </div>
 
-      {/* Партнерский штамп / Экосистема */}
-      <div className="inline-flex items-center gap-2 px-3.5 py-1 sm:py-1.5 rounded-lg bg-parchment-card border border-brass/50 text-brass-dim font-mono text-[10px] sm:text-xs font-bold tracking-widest uppercase mb-2 sm:mb-3 shadow-brass-sm">
-        <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-ruby"></span>
-        <span>ДЕПАРТАМЕНТ ОБРАЗОВАНИЯ И НАУКИ МОСКВЫ • ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ</span>
+      {/* Партнерский штамп / Мероприятие */}
+      <div className="inline-flex items-center justify-center gap-2 px-4 py-1 sm:py-1.5 rounded-lg bg-parchment-card border border-brass/50 text-brass-dim font-mono text-[10px] sm:text-xs font-bold tracking-wider uppercase mb-2 sm:mb-3 shadow-brass-sm max-w-3xl text-center leading-snug">
+        <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-ruby shrink-0"></span>
+        <span>{EVENT_BRAND.fullTitle}</span>
       </div>
 
-      {/* Монументальный былинный заголовок */}
+      {/* Монументальный заголовок */}
       <h1 className="font-serif font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-ink-main tracking-tight leading-tight mb-2 sm:mb-3">
         КЕМ ТЫ СТАНЕШЬ В{" "}
         <span className="relative inline-block text-ruby font-serif">
@@ -881,7 +887,7 @@ function WelcomeScreen({ onStart }) {
       </h1>
 
       <p className="font-serif italic text-sm sm:text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed mb-3 sm:mb-4">
-        «Органический синтез традиционных сказок и передовой инженерии: посмотри в оптический визор, выбери былинную стихию и получи персональный цифровой паспорт инженера будущего!»
+        «Органический синтез профессионального мастерства и передовой инженерии: посмотри в оптический визор, выбери технологическую стихию и получи персональный цифровой паспорт мастера!»
       </p>
 
       {/* Механический триптих шестеренок */}
@@ -950,7 +956,7 @@ function WelcomeScreen({ onStart }) {
             {ICONS.gear}
           </div>
           <div>
-            <span className="font-mono text-[9px] sm:text-[10px] font-bold text-ruby uppercase tracking-wider block">Былины & Наука</span>
+            <span className="font-mono text-[9px] sm:text-[10px] font-bold text-ruby uppercase tracking-wider block">Мастерство & Наука</span>
             <span className="font-serif font-bold text-ink-main text-xs sm:text-sm">100 Профессий</span>
           </div>
         </div>
@@ -1164,12 +1170,12 @@ function CameraScreen({ isReview, sessionId, session, onCapture, onConfirm, onRe
             ) : (
               <div className="p-2.5 sm:p-3 rounded-xl bg-parchment border border-brass/30">
                 <span className="text-[9px] sm:text-[10px] font-mono uppercase font-bold tracking-wider text-ruby block">
-                  Сказочный наказ мастера
+                  Ориентир мастера
                 </span>
                 <p className="mt-0.5 text-xs sm:text-sm font-serif italic text-ink-main leading-relaxed">
                   {isReview
-                    ? "Взгляд ясный и открытый — как и подобает инженеру будущего! Утверждай снимок."
-                    : "Держи взгляд прямой и смелый, как подобает инженеру Руси великой. Нажми рубиновый затвор, когда будешь готов!"}
+                    ? "Взгляд ясный и открытый — как и подобает мастеру будущего! Утверждай снимок."
+                    : "Держи взгляд прямой и смелый, как подобает настоящему профессионалу своего дела. Нажми рубиновый затвор, когда будешь готов!"}
                 </p>
               </div>
             )}
@@ -1341,7 +1347,7 @@ function SelectionScreen({ title, subtitle, options, selectedId, onSelect, type,
       <div className="border-b border-brass/40 pb-1.5 sm:pb-2 flex flex-col sm:flex-row sm:items-end justify-between gap-1 shrink-0">
         <div>
           <span className="text-[10px] sm:text-xs font-mono font-bold tracking-widest text-ruby uppercase">
-            {type === 'element' ? 'ШАГ 02 // БЫЛИННАЯ ОТРАСЛЬ' : type === 'power' ? 'ШАГ 03 // СУПЕРСИЛА МАСТЕРА' : 'ШАГ 04 // ГЕРБОВЫЙ ЦВЕТ'}
+            {type === 'element' ? 'ШАГ 02 // ПРОМЫШЛЕННАЯ ОТРАСЛЬ' : type === 'power' ? 'ШАГ 03 // СУПЕРСИЛА МАСТЕРА' : 'ШАГ 04 // ЦВЕТ ОБРАЗА'}
           </span>
           <h2 className="text-2xl sm:text-3xl font-serif font-black text-ink-main mt-0.5">
             {title}
@@ -1474,8 +1480,8 @@ function GeneratingScreen({ session }) {
         </div>
       </div>
 
-      <span className="font-mono text-[10px] sm:text-xs font-bold tracking-widest text-ruby uppercase mb-1">
-        ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ
+      <span className="font-mono text-[10px] sm:text-xs font-bold tracking-widest text-ruby uppercase mb-1 text-center">
+        {EVENT_BRAND.shortTitle}
       </span>
 
       <h2 className="font-serif font-black text-2xl sm:text-3xl md:text-4xl text-ink-main mb-1.5">
@@ -1485,7 +1491,7 @@ function GeneratingScreen({ session }) {
       <p className="font-serif italic text-xs sm:text-sm text-ink-muted mb-3 sm:mb-4 max-w-lg">
         {isComposing
           ? "Формируем полиграфический паспорт в качестве 300 DPI и наносим персональный QR-код..."
-          : `Синтез былинного архетипа: ${session?.element_name || 'Стихия'} + ${session?.power_name || 'Суперсила'} + ${session?.color_name || 'Цвет'}...`}
+          : `Синтез профессионального образа: ${session?.element_name || 'Стихия'} + ${session?.power_name || 'Суперсила'} + ${session?.color_name || 'Цвет'}...`}
       </p>
 
       {/* Латунный индикатор прогресса */}
@@ -1794,7 +1800,7 @@ function ResultScreen({ session, onFinish, onQrRevealed, onCardError }) {
             </div>
 
             <div className="p-1.5 sm:p-2 rounded-xl bg-panel-graphite text-brass-bright border border-brass/40 font-mono text-[10px] sm:text-xs">
-              <span className="text-ruby font-bold">📍 ГИЛЬДИЯ:</span> {session?.location || "Центральный производственный кластер"}
+              <span className="text-ruby font-bold">📍 ПЛОЩАДКА:</span> {session?.location || "Центральный производственный кластер"}
             </div>
           </div>
 
@@ -2188,7 +2194,7 @@ function KioskRoot() {
       return (
         <SelectionScreen
           title="ВЫБЕРИ СВОЙ ВАЙБ 🚀"
-          subtitle="Какая былинная стихия и отрасль инженерии тебе ближе всего?"
+          subtitle="Какая технологическая стихия и отрасль инженерии тебе ближе всего?"
           options={quizSchema[0]?.options || []}
           selectedId={session.element}
           busy={busy}
@@ -2202,7 +2208,7 @@ function KioskRoot() {
       return (
         <SelectionScreen
           title="ВЫБЕРИ СУПЕРСИЛУ ⚡"
-          subtitle="Какая богатырская способность поможет совершать инженерные открытия?"
+          subtitle="Какое профессиональное качество поможет добиваться точных инженерных результатов?"
           options={quizSchema[1]?.options || []}
           selectedId={session.power}
           busy={busy}
@@ -2216,7 +2222,7 @@ function KioskRoot() {
       return (
         <SelectionScreen
           title="ВЫБЕРИ ЦВЕТ ОБРАЗА 🎨"
-          subtitle="Какая гербовая эмаль подчеркнет твой стиль и оборудование?"
+          subtitle="Какая цветовая палитра подчеркнет твой стиль и оборудование?"
           options={quizSchema[2]?.options || []}
           selectedId={session.color}
           busy={busy}
@@ -2282,15 +2288,15 @@ function KioskRoot() {
 
           {/* Верхний статус-бар */}
           <header className="shrink-0 mb-1 sm:mb-2 pb-1.5 sm:pb-2 border-b border-brass/30 flex items-center justify-between text-[11px] sm:text-xs font-mono text-brass-dim">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <span className="w-2 h-2 rounded-full bg-ruby"></span>
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-ruby shrink-0"></span>
               <span className="font-bold tracking-widest uppercase truncate max-w-[280px] sm:max-w-none">
-                ОСЕННИЙ ПРОМЫШЛЕННЫЙ ФЕСТИВАЛЬ КОЛЛЕДЖЕЙ МОСКВЫ
+                {EVENT_BRAND.shortTitle}
               </span>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 text-brass/75 font-mono text-[10px] sm:text-xs">
+            <div className="flex items-center gap-2 sm:gap-3 text-brass/75 font-mono text-[10px] sm:text-xs shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-brass-bright animate-pulse" />
-              <span className="uppercase tracking-widest hidden sm:inline">МАСТЕРСКАЯ БУДУЩЕГО</span>
+              <span className="uppercase tracking-widest hidden sm:inline">{EVENT_BRAND.rightBadge}</span>
             </div>
           </header>
 
@@ -2315,14 +2321,14 @@ function KioskRoot() {
                 <circle cx="12" cy="12" r="3" />
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
               </svg>
-              <span>ОТ ТРАДИЦИЙ К БОЛЬШИМ ВОЗМОЖНОСТЯМ</span>
+              <span>ОТ МАСТЕРСТВА К ВЫСОКИМ ТЕХНОЛОГИЯМ</span>
             </div>
             <span className="hidden sm:inline text-brass/40">•</span>
             <div className="flex items-center gap-1.5 font-serif font-black text-ruby tracking-wider uppercase text-xs sm:text-sm">
               <svg className="w-3.5 h-3.5 text-brass inline-block shrink-0 fill-current" viewBox="0 0 24 24">
                 <path d="M12 0l2.8 8.5L23.5 12l-8.7 2.8L12 23.5l-2.8-8.7L0.5 12l8.7-2.8z" />
               </svg>
-              <span>ЗНАНИЯ • ТЕХНОЛОГИИ • ЛЮДИ • БУДУЩЕЕ</span>
+              <span>МАСТЕРСТВО • ТЕХНОЛОГИИ • ЛЮДИ • БУДУЩЕЕ</span>
             </div>
             <span className="hidden sm:inline text-brass/40">•</span>
             <span className="tracking-widest uppercase text-ink-muted">
