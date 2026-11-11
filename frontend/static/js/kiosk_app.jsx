@@ -19,6 +19,36 @@ const EVENT_BRAND = {
   rightBadge: "ММЗ «АВАНГАРД» • СТАНОЧНИКИ"
 };
 
+const EVENT_LOGOS = [
+  {
+    src: "/static/images/logos/logo_mmz_avangard.png",
+    alt: "ММЗ Авангард",
+    label: "ММЗ «АВАНГАРД»",
+    sub: "Предприятие"
+  },
+  {
+    src: "/static/images/logos/logo_konkurs_stanochniki.png",
+    alt: "Станочники — Конкурс профессионального мастерства",
+    label: "СТАНОЧНИКИ",
+    sub: "ИС Концерна",
+    featured: true
+  },
+  {
+    src: "/static/images/logos/logo_almaz_antey.png",
+    alt: "Концерн ВКО Алмаз – Антей",
+    label: "АЛМАЗ – АНТЕЙ",
+    sub: "Концерн ВКО"
+  }
+];
+
+function HeaderLogoBadge({ src, alt }) {
+  return (
+    <span className="w-6 h-6 rounded-md bg-panel-graphite border border-brass/60 flex items-center justify-center p-0.5 shrink-0 shadow-sm">
+      <img src={src} alt={alt} className="w-full h-full object-contain" />
+    </span>
+  );
+}
+
 // --- API Helper с обработкой ошибок и таймаутами ---
 async function api(url, options = {}) {
   const timeoutMs = options.timeoutMs || (url.includes('/api/camera') ? 8000 : 75000);
@@ -62,24 +92,24 @@ function friendlyError(e) {
 }
 
 // --- ДЕКОРАТИВНЫЕ ЛАТУННЫЕ УГОЛКИ (Folk-Tech Brass Corners) ---
-function BrassCorners({ className = "" }) {
+function BrassCorners({ className = "", showDots = true }) {
   return (
     <div className={`absolute inset-0 pointer-events-none ${className}`}>
       {/* Верхний левый */}
       <div className="absolute top-2.5 left-2.5 w-6 h-6 sm:w-8 sm:h-8 border-t-2 border-l-2 border-brass pointer-events-none" />
-      <div className="absolute top-3.5 left-3.5 w-1.5 h-1.5 bg-brass rounded-full opacity-70 pointer-events-none" />
+      {showDots && <div className="absolute top-3.5 left-3.5 w-1.5 h-1.5 bg-brass rounded-full opacity-70 pointer-events-none" />}
 
       {/* Верхний правый */}
       <div className="absolute top-2.5 right-2.5 w-6 h-6 sm:w-8 sm:h-8 border-t-2 border-r-2 border-brass pointer-events-none" />
-      <div className="absolute top-3.5 right-3.5 w-1.5 h-1.5 bg-brass rounded-full opacity-70 pointer-events-none" />
+      {showDots && <div className="absolute top-3.5 right-3.5 w-1.5 h-1.5 bg-brass rounded-full opacity-70 pointer-events-none" />}
 
       {/* Нижний левый */}
       <div className="absolute bottom-2.5 left-2.5 w-6 h-6 sm:w-8 sm:h-8 border-b-2 border-l-2 border-brass pointer-events-none" />
-      <div className="absolute bottom-3.5 left-3.5 w-1.5 h-1.5 bg-brass rounded-full opacity-70 pointer-events-none" />
+      {showDots && <div className="absolute bottom-3.5 left-3.5 w-1.5 h-1.5 bg-brass rounded-full opacity-70 pointer-events-none" />}
 
       {/* Нижний правый */}
       <div className="absolute bottom-2.5 right-2.5 w-6 h-6 sm:w-8 sm:h-8 border-b-2 border-r-2 border-brass pointer-events-none" />
-      <div className="absolute bottom-3.5 right-3.5 w-1.5 h-1.5 bg-brass rounded-full opacity-70 pointer-events-none" />
+      {showDots && <div className="absolute bottom-3.5 right-3.5 w-1.5 h-1.5 bg-brass rounded-full opacity-70 pointer-events-none" />}
     </div>
   );
 }
@@ -864,21 +894,38 @@ function WelcomeScreen({ onStart }) {
 
   return (
     <main className="flex-1 h-full max-h-full flex flex-col items-center justify-center text-center px-4 max-w-4xl mx-auto animate-fade-in relative">
-      {/* Декоративная фоновая латунная шестерня */}
-      <div className="absolute -top-12 opacity-5 pointer-events-none animate-spin-slow">
-        <svg className="w-80 h-80 text-brass" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
-        </svg>
+      {/* Панель логотипов организаторов и конкурса на фирменном графите */}
+      <div className="relative inline-flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-5 px-4 sm:px-5 py-1.5 sm:py-2 rounded-xl bg-panel-graphite/95 border border-brass/70 shadow-sm mb-2 sm:mb-2.5 z-10">
+        {EVENT_LOGOS.map((logo, idx) => (
+          <React.Fragment key={logo.alt}>
+            {idx > 0 && <span className="hidden sm:block h-6 w-[1px] bg-brass/30" />}
+            <div className="flex items-center gap-2 text-left">
+              <img
+                src={logo.src}
+                alt={logo.alt}
+                className={`${logo.featured ? "h-7 sm:h-8" : "h-6 sm:h-7"} w-auto object-contain shrink-0 drop-shadow-sm`}
+              />
+              <div className="leading-tight">
+                <div className="font-mono text-[9px] sm:text-[10px] font-extrabold tracking-wider text-parchment uppercase">
+                  {logo.label}
+                </div>
+                <div className="font-mono text-[8px] text-brass-bright/80 tracking-widest uppercase">
+                  {logo.sub}
+                </div>
+              </div>
+            </div>
+          </React.Fragment>
+        ))}
       </div>
 
       {/* Партнерский штамп / Мероприятие */}
-      <div className="inline-flex items-center justify-center gap-2 px-4 py-1 sm:py-1.5 rounded-lg bg-parchment-card border border-brass/50 text-brass-dim font-mono text-[10px] sm:text-xs font-bold tracking-wider uppercase mb-2 sm:mb-3 shadow-brass-sm max-w-3xl text-center leading-snug">
+      <div className="inline-flex items-center justify-center gap-2 px-4 py-1 sm:py-1.5 rounded-lg bg-parchment-card border border-brass/50 text-brass-dim font-mono text-[10px] sm:text-xs font-bold tracking-wider uppercase mb-1.5 sm:mb-2 shadow-brass-sm max-w-3xl text-center leading-snug">
         <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-ruby shrink-0"></span>
         <span>{EVENT_BRAND.fullTitle}</span>
       </div>
 
       {/* Монументальный заголовок */}
-      <h1 className="font-serif font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-ink-main tracking-tight leading-tight mb-2 sm:mb-3">
+      <h1 className="font-serif font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-ink-main tracking-tight leading-tight mb-1.5 sm:mb-2">
         КЕМ ТЫ СТАНЕШЬ В{" "}
         <span className="relative inline-block text-ruby font-serif">
           БУДУЩЕМ?
@@ -886,12 +933,12 @@ function WelcomeScreen({ onStart }) {
         </span>
       </h1>
 
-      <p className="font-serif italic text-sm sm:text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed mb-3 sm:mb-4">
+      <p className="font-serif italic text-sm sm:text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed mb-2 sm:mb-3">
         «Органический синтез профессионального мастерства и передовой инженерии: посмотри в оптический визор, выбери технологическую стихию и получи персональный цифровой паспорт мастера!»
       </p>
 
       {/* Механический триптих шестеренок */}
-      <div className="flex items-center justify-center gap-3 mb-3 sm:mb-5 pointer-events-none">
+      <div className="flex items-center justify-center gap-3 mb-2 sm:mb-3 pointer-events-none">
         <div className="text-brass animate-spin-slow opacity-80">
           <svg className="w-8 h-8 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="12" cy="12" r="3" />
@@ -2269,8 +2316,20 @@ function KioskRoot() {
 
         {/* Центральное интерактивное пространство киоска (пропорциональная сцена) */}
         <div className="flex-1 w-full max-w-[1360px] 2xl:max-w-[1460px] h-full my-auto mx-auto flex flex-col justify-between p-2.5 sm:p-3.5 md:p-4 select-none relative z-20 overflow-hidden box-border bg-parchment/90 backdrop-blur-[2px] rounded-2xl border border-brass/35 sm:border-2 sm:border-brass/45 shadow-tactile transition-all">
-          {/* Латунная окантовка центрального интерактивного пространства */}
-          <BrassCorners className="z-20 pointer-events-none" />
+          {/* Постоянный статичный золотой фон-водяной знак «ММЗ Авангард» */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden"
+          >
+            <img
+              src="/static/images/logos/logo_mmz_avangard_gold.png"
+              alt=""
+              className="w-[320px] sm:w-[420px] md:w-[480px] h-auto object-contain opacity-[0.11]"
+            />
+          </div>
+
+          {/* Латунная окантовка центрального интерактивного пространства (без золотых точек поверх логотипов) */}
+          <BrassCorners className="z-20 pointer-events-none" showDots={false} />
 
           {/* Потеря связи со стендом */}
           {!connected && (
@@ -2287,52 +2346,54 @@ function KioskRoot() {
           )}
 
           {/* Верхний статус-бар */}
-          <header className="shrink-0 mb-1 sm:mb-2 pb-1.5 sm:pb-2 border-b border-brass/30 flex items-center justify-between text-[11px] sm:text-xs font-mono text-brass-dim">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <span className="w-2 h-2 rounded-full bg-ruby shrink-0"></span>
-              <span className="font-bold tracking-widest uppercase truncate max-w-[280px] sm:max-w-none">
+          <header className="relative z-10 shrink-0 mb-1 sm:mb-2 pb-1.5 sm:pb-2 px-2.5 sm:px-3.5 border-b border-brass/30 flex items-center justify-between text-[11px] sm:text-xs font-mono text-brass-dim gap-2">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <HeaderLogoBadge src="/static/images/logos/logo_konkurs_stanochniki.png" alt="Станочники" />
+              <span className="font-bold tracking-widest uppercase truncate max-w-[260px] sm:max-w-none">
                 {EVENT_BRAND.shortTitle}
               </span>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 text-brass/75 font-mono text-[10px] sm:text-xs shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-brass-bright animate-pulse" />
+            <div className="flex items-center gap-2 text-brass/75 font-mono text-[10px] sm:text-xs shrink-0">
               <span className="uppercase tracking-widest hidden sm:inline">{EVENT_BRAND.rightBadge}</span>
             </div>
           </header>
 
           {/* Индикатор шагов */}
           {session && session.status !== 'IDLE' && (
-            <div className="shrink-0 mb-1 sm:mb-2">
+            <div className="relative z-10 shrink-0 mb-1 sm:mb-2">
               <FolkStepTracker currentStep={getStepIndex()} />
             </div>
           )}
 
           {/* Рабочий холст слайда */}
-          <div className="flex-1 min-h-0 w-full flex items-center justify-center my-auto overflow-hidden">
+          <div className="relative z-10 flex-1 min-h-0 w-full flex items-center justify-center my-auto overflow-hidden">
             <ErrorBoundary onReset={handleReset}>
               {renderScreen()}
             </ErrorBoundary>
           </div>
 
-          {/* Фирменный подвал мероприятия (симметричная 3-колоночная сетка с «МОСКВА 2026» строго по центру) */}
-          <footer className="shrink-0 mt-1 sm:mt-2 pt-1.5 sm:pt-2 border-t border-brass/40 w-full max-w-5xl mx-auto flex flex-col md:grid md:grid-cols-[1fr_auto_1fr] items-center gap-1.5 md:gap-4 text-[10px] sm:text-xs font-mono text-center">
-            <div className="flex items-center gap-1.5 text-brass-dim font-bold tracking-widest uppercase md:justify-self-start">
+          {/* Фирменный подвал мероприятия (симметричная 3-колоночная сетка с «МОСКВА 2026» по центру и логотипом справа снизу) */}
+          <footer className="relative z-10 shrink-0 mt-1 sm:mt-2 pt-1.5 sm:pt-2 px-2.5 sm:px-3.5 border-t border-brass/40 w-full mx-auto flex flex-col md:grid md:grid-cols-[1fr_auto_1fr] items-center gap-1.5 md:gap-2 2xl:gap-4 text-[9px] lg:text-[10px] 2xl:text-xs font-mono text-center">
+            <div className="flex items-center gap-1.5 text-brass-dim font-bold tracking-wide 2xl:tracking-widest uppercase md:justify-self-start whitespace-nowrap">
               <svg className="w-3.5 h-3.5 text-brass inline-block shrink-0 animate-spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="3" />
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
               </svg>
               <span>ОТ МАСТЕРСТВА К ВЫСОКИМ ТЕХНОЛОГИЯМ</span>
             </div>
-            <div className="flex items-center gap-2 tracking-widest uppercase text-ink-muted font-bold md:justify-self-center whitespace-nowrap">
+            <div className="flex items-center gap-1.5 lg:gap-2 tracking-widest uppercase text-ink-muted font-bold md:justify-self-center whitespace-nowrap">
               <span className="hidden md:inline text-brass/40">•</span>
               <span>МОСКВА 2026</span>
               <span className="hidden md:inline text-brass/40">•</span>
             </div>
-            <div className="flex items-center gap-1.5 font-serif font-black text-ruby tracking-wider uppercase text-xs sm:text-sm md:justify-self-end">
-              <svg className="w-3.5 h-3.5 text-brass inline-block shrink-0 fill-current" viewBox="0 0 24 24">
-                <path d="M12 0l2.8 8.5L23.5 12l-8.7 2.8L12 23.5l-2.8-8.7L0.5 12l8.7-2.8z" />
-              </svg>
-              <span>МАСТЕРСТВО • ТЕХНОЛОГИИ • ЛЮДИ • БУДУЩЕЕ</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 md:justify-self-end whitespace-nowrap">
+              <div className="flex items-center gap-1 font-serif font-black text-ruby tracking-normal 2xl:tracking-wide uppercase text-[11px] lg:text-xs 2xl:text-sm whitespace-nowrap">
+                <svg className="w-3 h-3 lg:w-3.5 lg:h-3.5 text-brass inline-block shrink-0 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 0l2.8 8.5L23.5 12l-8.7 2.8L12 23.5l-2.8-8.7L0.5 12l8.7-2.8z" />
+                </svg>
+                <span>МАСТЕРСТВО • ТЕХНОЛОГИИ • ЛЮДИ • БУДУЩЕЕ</span>
+              </div>
+              <HeaderLogoBadge src="/static/images/logos/logo_almaz_antey.png" alt="Концерн ВКО Алмаз – Антей" />
             </div>
           </footer>
 
