@@ -2314,26 +2314,26 @@ function KioskRoot() {
             </ErrorBoundary>
           </div>
 
-          {/* Tale-Tech Bar / Фирменный подвал по канону презентации фестиваля */}
-          <footer className="shrink-0 mt-1 sm:mt-2 pt-1.5 sm:pt-2 border-t border-brass/40 w-full max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-6 text-[10px] sm:text-xs font-mono text-center">
-            <div className="flex items-center gap-1.5 text-brass-dim font-bold tracking-widest uppercase">
+          {/* Фирменный подвал мероприятия (симметричная 3-колоночная сетка с «МОСКВА 2026» строго по центру) */}
+          <footer className="shrink-0 mt-1 sm:mt-2 pt-1.5 sm:pt-2 border-t border-brass/40 w-full max-w-5xl mx-auto flex flex-col md:grid md:grid-cols-[1fr_auto_1fr] items-center gap-1.5 md:gap-4 text-[10px] sm:text-xs font-mono text-center">
+            <div className="flex items-center gap-1.5 text-brass-dim font-bold tracking-widest uppercase md:justify-self-start">
               <svg className="w-3.5 h-3.5 text-brass inline-block shrink-0 animate-spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
               </svg>
               <span>ОТ МАСТЕРСТВА К ВЫСОКИМ ТЕХНОЛОГИЯМ</span>
             </div>
-            <span className="hidden sm:inline text-brass/40">•</span>
-            <div className="flex items-center gap-1.5 font-serif font-black text-ruby tracking-wider uppercase text-xs sm:text-sm">
+            <div className="flex items-center gap-2 tracking-widest uppercase text-ink-muted font-bold md:justify-self-center whitespace-nowrap">
+              <span className="hidden md:inline text-brass/40">•</span>
+              <span>МОСКВА 2026</span>
+              <span className="hidden md:inline text-brass/40">•</span>
+            </div>
+            <div className="flex items-center gap-1.5 font-serif font-black text-ruby tracking-wider uppercase text-xs sm:text-sm md:justify-self-end">
               <svg className="w-3.5 h-3.5 text-brass inline-block shrink-0 fill-current" viewBox="0 0 24 24">
                 <path d="M12 0l2.8 8.5L23.5 12l-8.7 2.8L12 23.5l-2.8-8.7L0.5 12l8.7-2.8z" />
               </svg>
               <span>МАСТЕРСТВО • ТЕХНОЛОГИИ • ЛЮДИ • БУДУЩЕЕ</span>
             </div>
-            <span className="hidden sm:inline text-brass/40">•</span>
-            <span className="tracking-widest uppercase text-ink-muted">
-              МОСКВА 2026
-            </span>
           </footer>
 
           {/* Хронометр бездействия */}
